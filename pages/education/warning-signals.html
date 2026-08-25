@@ -1,0 +1,425 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Warning Signals — Tropical Cyclone Information System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/base.css" />
+    <link rel="stylesheet" href="../../css/components/header.css" />
+    <link rel="stylesheet" href="../../css/components/buttons.css" />
+    <link rel="stylesheet" href="../../css/components/footer.css" />
+    <link rel="stylesheet" href="../../css/pages/warning-signals.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <!-- Hero -->
+    <section class="ws-hero">
+      <div class="ws-hero-inner">
+        <div class="ws-hero-text">
+          <nav class="ws-breadcrumb" aria-label="Breadcrumb">
+            <a href="index.html">Education Hub</a>
+            <span aria-hidden="true">/</span>
+            <span>Warning Signals</span>
+          </nav>
+          <h1>Typhoon Warning Signals</h1>
+          <p>
+            The Philippine Atmospheric, Geophysical and Astronomical Services
+            Administration (PAGASA) raises Tropical Cyclone Warning Signals
+            (TCWS) from No.&nbsp;1 to No.&nbsp;5 as a storm approaches. Each
+            level tells you how strong the winds will be — and what your family
+            should do about it.
+          </p>
+          <div class="ws-hero-actions">
+            <a href="#signals" class="ws-btn ws-btn-primary">
+              View the 5 Signals
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                <path
+                  d="M12 5v14M6 13l6 6 6-6"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+            <a href="evacuation-guide.html" class="ws-btn ws-btn-ghost">
+              Evacuation Guide
+            </a>
+          </div>
+        </div>
+
+        <div class="ws-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- signal flag pole -->
+            <rect x="60" y="30" width="6" height="240" rx="3" fill="#0f2e4c" />
+            <rect x="40" y="270" width="120" height="8" rx="4" fill="#c7d8f0" />
+            <!-- flag 1 (blue) -->
+            <path d="M66 34l96 18v52l-96-18V34z" fill="#1d4ed8" />
+            <text x="112" y="72" text-anchor="middle" font-family="Inter, sans-serif" font-size="30" font-weight="800" fill="#fff">1</text>
+            <!-- flag 2 (yellow) -->
+            <path d="M66 96l96 18v52l-96-18V96z" fill="#eab308" />
+            <text x="112" y="134" text-anchor="middle" font-family="Inter, sans-serif" font-size="30" font-weight="800" fill="#fff">2</text>
+            <!-- flag 3 (orange) -->
+            <path d="M66 158l96 18v52l-96-18v-52z" fill="#ea580c" />
+            <text x="112" y="196" text-anchor="middle" font-family="Inter, sans-serif" font-size="30" font-weight="800" fill="#fff">3</text>
+            <!-- wind swirl -->
+            <g stroke="#93c5fd" stroke-width="4" stroke-linecap="round" fill="none">
+              <path d="M210 70h84M210 90h64" />
+              <path d="M294 62a9 9 0 11-3 17" />
+              <path d="M274 82a9 9 0 11-3 17" />
+            </g>
+            <!-- storm cloud -->
+            <circle cx="250" cy="150" r="22" fill="#3b82f6" />
+            <circle cx="276" cy="142" r="26" fill="#60a5fa" />
+            <circle cx="298" cy="152" r="18" fill="#3b82f6" />
+            <rect x="232" y="158" width="86" height="16" rx="8" fill="#60a5fa" />
+            <g stroke="#1d4ed8" stroke-width="4" stroke-linecap="round">
+              <path d="M246 186l-5 15M266 186l-5 15M286 186l-5 15M304 186l-5 15" />
+            </g>
+            <!-- house with wind -->
+            <path d="M232 258v-34l30-22 30 22v34h-60z" fill="#fff" stroke="#c7d8f0" stroke-width="2.5" />
+            <rect x="254" y="234" width="16" height="24" rx="2" fill="#93c5fd" />
+            <g stroke="#93c5fd" stroke-width="3.5" stroke-linecap="round" fill="none">
+              <path d="M316 232h44M316 246h34M316 260h44" />
+              <path d="M360 224a8 8 0 11-3 15M350 252a8 8 0 11-3 15" />
+            </g>
+            <rect x="30" y="286" width="370" height="4" rx="2" fill="#dbe7f7" />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <main class="ws-main">
+      <!-- How the signals work -->
+      <section class="ws-card ws-how">
+        <div class="ws-how-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+            <path d="M12 11v5M12 7.5v.5" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" />
+          </svg>
+        </div>
+        <div>
+          <h2>How the signals work</h2>
+          <p>
+            A warning signal is raised based on the <strong>expected wind
+            intensity</strong> over an area — not on whether it is currently
+            raining or windy. Signals can be raised even under clear skies,
+            upgraded as a storm strengthens, or lowered once winds die down.
+            Always act at the <em>first</em> announcement, not when the weather
+            turns bad.
+          </p>
+        </div>
+      </section>
+
+      <!-- The five signals -->
+      <h2 class="ws-section-title" id="signals">The Five Warning Signals</h2>
+
+      <section class="ws-signal-list">
+        <!-- Signal No. 1 -->
+        <article class="ws-signal level-1">
+          <div class="ws-signal-flag">
+            <span class="ws-signal-num">1</span>
+            <span class="ws-signal-wind">39–61 km/h</span>
+            <span class="ws-signal-lead">May be raised ~36 hrs before impact</span>
+          </div>
+          <div class="ws-signal-body">
+            <h3>Winds of 39–61 km/h within 36 hours</h3>
+            <div class="ws-signal-cols">
+              <div>
+                <h4>Expected impacts</h4>
+                <ul>
+                  <li>Twigs of small trees may sway and break</li>
+                  <li>Rice crops in flowering stage may suffer damage</li>
+                  <li>Light damage to old, dilapidated structures</li>
+                  <li>Sea conditions: small to moderate waves</li>
+                </ul>
+              </div>
+              <div>
+                <h4>What to do</h4>
+                <ul>
+                  <li>Monitor PAGASA bulletins and local advisories</li>
+                  <li>Check your emergency go-bag and supplies</li>
+                  <li>Secure pets and lightweight outdoor items</li>
+                  <li>Fishers with small craft should not venture out</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Signal No. 2 -->
+        <article class="ws-signal level-2">
+          <div class="ws-signal-flag">
+            <span class="ws-signal-num">2</span>
+            <span class="ws-signal-wind">62–88 km/h</span>
+            <span class="ws-signal-lead">May be raised ~24 hrs before impact</span>
+          </div>
+          <div class="ws-signal-body">
+            <h3>Winds of 62–88 km/h within 24 hours</h3>
+            <div class="ws-signal-cols">
+              <div>
+                <h4>Expected impacts</h4>
+                <ul>
+                  <li>Some coconut and banana trees may be tilted or broken</li>
+                  <li>Light to moderate damage to old roofs and houses</li>
+                  <li>Rice and corn crops may be significantly damaged</li>
+                  <li>Travel by light vehicles may be risky; sea travel unsafe for small craft</li>
+                </ul>
+              </div>
+              <div>
+                <h4>What to do</h4>
+                <ul>
+                  <li>Stay indoors and away from windows</li>
+                  <li>Reinforce doors, windows, and roofing</li>
+                  <li>Prepare for possible power interruptions</li>
+                  <li>Review your family evacuation plan</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Signal No. 3 -->
+        <article class="ws-signal level-3">
+          <div class="ws-signal-flag">
+            <span class="ws-signal-num">3</span>
+            <span class="ws-signal-wind">89–117 km/h</span>
+            <span class="ws-signal-lead">May be raised ~18 hrs before impact</span>
+          </div>
+          <div class="ws-signal-body">
+            <h3>Winds of 89–117 km/h within 18 hours</h3>
+            <div class="ws-signal-cols">
+              <div>
+                <h4>Expected impacts</h4>
+                <ul>
+                  <li>Heavy damage to agriculture; many trees downed</li>
+                  <li>Moderate to heavy damage to old and substandard structures</li>
+                  <li>Power lines may be toppled; outages likely</li>
+                  <li>Sea travel hazardous for most vessels</li>
+                </ul>
+              </div>
+              <div>
+                <h4>What to do</h4>
+                <ul>
+                  <li>Evacuate early if you live in a flood- or landslide-prone area</li>
+                  <li>Charge phones and power banks fully</li>
+                  <li>Store drinking water in clean containers</li>
+                  <li>Keep family members within one safe location</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Signal No. 4 -->
+        <article class="ws-signal level-4">
+          <div class="ws-signal-flag">
+            <span class="ws-signal-num">4</span>
+            <span class="ws-signal-wind">118–184 km/h</span>
+            <span class="ws-signal-lead">May be raised ~12 hrs before impact</span>
+          </div>
+          <div class="ws-signal-body">
+            <h3>Winds of 118–184 km/h within 12 hours</h3>
+            <div class="ws-signal-cols">
+              <div>
+                <h4>Expected impacts</h4>
+                <ul>
+                  <li>Severe damage to houses, buildings, and infrastructure</li>
+                  <li>Coconut plantations may be largely destroyed</li>
+                  <li>Widespread power and communication outages</li>
+                  <li>Very rough seas; all sea travel extremely dangerous</li>
+                </ul>
+              </div>
+              <div>
+                <h4>What to do</h4>
+                <ul>
+                  <li>Evacuate immediately to the nearest safe shelter</li>
+                  <li>Turn off electricity and LPG if flooding is likely</li>
+                  <li>Bring your go-bag, documents, and water</li>
+                  <li>Stay away from rivers, coasts, and steep slopes</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Signal No. 5 -->
+        <article class="ws-signal level-5">
+          <div class="ws-signal-flag">
+            <span class="ws-signal-num">5</span>
+            <span class="ws-signal-wind">185+ km/h</span>
+            <span class="ws-signal-lead">May be raised ~3 hrs before impact</span>
+          </div>
+          <div class="ws-signal-body">
+            <h3>Winds of 185 km/h or higher within 3 hours</h3>
+            <div class="ws-signal-cols">
+              <div>
+                <h4>Expected impacts</h4>
+                <ul>
+                  <li>Widespread, near-total devastation of structures</li>
+                  <li>Extreme wind damage even to well-built buildings</li>
+                  <li>Debris-filled winds make outdoor movement deadly</li>
+                  <li>Long-lasting loss of utilities and access routes</li>
+                </ul>
+              </div>
+              <div>
+                <h4>What to do</h4>
+                <ul>
+                  <li>Shelter in the strongest part of an evacuation center</li>
+                  <li>If sheltering at home, stay in an interior room on the lowest floor (above flood level)</li>
+                  <li>Do not leave shelter until officials declare it safe</li>
+                  <li>Watch out for the calm "eye" — winds return suddenly</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </article>
+      </section>
+
+      <!-- Quick reference table -->
+      <section class="ws-card">
+        <h2 class="ws-card-title">Quick Reference</h2>
+        <div class="ws-table-wrap">
+          <table class="ws-table">
+            <thead>
+              <tr>
+                <th>Signal</th>
+                <th>Wind Speed</th>
+                <th>Lead Time</th>
+                <th>Damage Level</th>
+                <th>Key Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="ws-dot dot-1"></span>No. 1</td>
+                <td>39–61 km/h</td>
+                <td>36 hours</td>
+                <td>Very light to light</td>
+                <td>Monitor and prepare</td>
+              </tr>
+              <tr>
+                <td><span class="ws-dot dot-2"></span>No. 2</td>
+                <td>62–88 km/h</td>
+                <td>24 hours</td>
+                <td>Light to moderate</td>
+                <td>Stay indoors, secure home</td>
+              </tr>
+              <tr>
+                <td><span class="ws-dot dot-3"></span>No. 3</td>
+                <td>89–117 km/h</td>
+                <td>18 hours</td>
+                <td>Moderate to heavy</td>
+                <td>Evacuate if at risk</td>
+              </tr>
+              <tr>
+                <td><span class="ws-dot dot-4"></span>No. 4</td>
+                <td>118–184 km/h</td>
+                <td>12 hours</td>
+                <td>Heavy to very heavy</td>
+                <td>Evacuate immediately</td>
+              </tr>
+              <tr>
+                <td><span class="ws-dot dot-5"></span>No. 5</td>
+                <td>185+ km/h</td>
+                <td>3 hours</td>
+                <td>Widespread devastation</td>
+                <td>Shelter in strongest structure</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <p class="ws-table-note">
+          Wind ranges and lead times follow PAGASA's revised TCWS guidelines
+          (2022). Always follow the latest official bulletin for your area.
+        </p>
+      </section>
+
+      <!-- Reminders -->
+      <section class="ws-card ws-reminders">
+        <h2 class="ws-card-title">Important Reminders</h2>
+        <div class="ws-reminder-grid">
+          <div class="ws-reminder">
+            <span class="ws-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M12 4l9 16H3l9-16z" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" fill="none" />
+                <path d="M12 10v4.5M12 17.2v.3" stroke="#d97706" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <div>
+              <h3>Signals are about wind, not rain</h3>
+              <p>Heavy flooding can happen even at Signal No. 1. Watch rainfall warnings too.</p>
+            </div>
+          </div>
+          <div class="ws-reminder">
+            <span class="ws-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <circle cx="12" cy="12" r="8" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+                <path d="M12 7v5l3.5 2" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              </svg>
+            </span>
+            <div>
+              <h3>Signals change — keep updated</h3>
+              <p>Signals can be upgraded or downgraded as the storm moves. Check bulletins every few hours.</p>
+            </div>
+          </div>
+          <div class="ws-reminder">
+            <span class="ws-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <circle cx="9" cy="8" r="3" stroke="#059669" stroke-width="1.8" fill="none" />
+                <path d="M4 19c0-3 2.2-5 5-5s5 2 5 5" stroke="#059669" stroke-width="1.8" stroke-linecap="round" fill="none" />
+                <path d="M17 8h5M17 12h5" stroke="#059669" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
+            <div>
+              <h3>Act early, not when it's strong</h3>
+              <p>The safest evacuation happens before Signal No. 3. Don't wait for the worst.</p>
+            </div>
+          </div>
+          <div class="ws-reminder">
+            <span class="ws-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M12 3l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V6l8-3z" stroke="#7c3aed" stroke-width="1.8" stroke-linejoin="round" fill="none" />
+                <path d="M9 12l2 2 4-4" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
+            <div>
+              <h3>Follow local officials</h3>
+              <p>Preemptive evacuation orders from your barangay override everything else. Comply promptly.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom CTA -->
+      <section class="ws-cta">
+        <div class="ws-cta-left">
+          <div class="ws-cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+              <path d="M4 4h16v13H8l-4 3V4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none" />
+              <path d="M8 9h8M8 12.5h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h2>Know the signal? Know your route.</h2>
+            <p>Pair your signal knowledge with a ready evacuation plan and a packed go-bag.</p>
+          </div>
+        </div>
+        <div class="ws-cta-actions">
+          <a href="evacuation-guide.html" class="ws-btn ws-btn-primary">Evacuation Guide</a>
+          <a href="preparedness-tips.html" class="ws-btn ws-btn-outline">Preparedness Tips</a>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="../../js/main.js" data-root="../../"></script>
+  </body>
+</html>

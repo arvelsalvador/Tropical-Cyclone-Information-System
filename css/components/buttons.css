@@ -1,0 +1,23 @@
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+.btn-prepared {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--blue-600);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  padding: 11px 22px;
+  border-radius: var(--radius-full);
+  white-space: nowrap;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease;
+}
+
+.btn-prepared:hover {
+  background: #1741b8;
+  transform: translateY(-1px);
+}

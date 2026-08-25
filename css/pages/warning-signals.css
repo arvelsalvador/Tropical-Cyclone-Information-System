@@ -1,0 +1,584 @@
+/* ==========================================================================
+   Warning Signals — hero, signal cards, quick reference, reminders, CTA
+   ========================================================================== */
+.ws-hero {
+  background: linear-gradient(180deg, #eaf2fd 0%, #dce9fb 100%);
+  padding: 48px 40px 0;
+  overflow: hidden;
+}
+
+.ws-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.ws-hero-text {
+  padding-bottom: 48px;
+  max-width: 560px;
+}
+
+.ws-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.ws-breadcrumb a {
+  color: var(--blue-600);
+}
+
+.ws-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.ws-hero-text h1 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--navy-900);
+  margin-bottom: 16px;
+}
+
+.ws-hero-text p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+.ws-hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.ws-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 11px 20px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.ws-btn-primary {
+  color: #fff;
+  background: var(--blue-600);
+}
+
+.ws-btn-primary:hover {
+  background: var(--blue-500);
+}
+
+.ws-btn-ghost {
+  color: var(--blue-600);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #c7d8f9;
+}
+
+.ws-btn-ghost:hover {
+  background: #fff;
+}
+
+.ws-btn-outline {
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid var(--border-light);
+}
+
+.ws-btn-outline:hover {
+  background: var(--bg-soft);
+  border-color: #cfd8e3;
+}
+
+.ws-hero-art {
+  flex-shrink: 0;
+  width: 420px;
+  max-width: 44%;
+}
+
+.ws-hero-art svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
+   Layout & generic card
+   ========================================================================== */
+.ws-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 40px 96px;
+}
+
+.ws-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.ws-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+/* How the signals work */
+.ws-how {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 0;
+}
+
+.ws-how-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--blue-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ws-how h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 8px;
+}
+
+.ws-how p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+/* ==========================================================================
+   Signal cards (escalating severity)
+   ========================================================================== */
+.ws-section-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin-top: 48px;
+}
+
+.ws-signal-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.ws-signal {
+  display: flex;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+/* colored flag column */
+.ws-signal-flag {
+  width: 168px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 16px;
+  color: #fff;
+}
+
+.ws-signal-num {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.ws-signal-num::before {
+  content: "SIGNAL";
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  opacity: 0.85;
+  margin-bottom: 4px;
+}
+
+.ws-signal-wind {
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ws-signal-lead {
+  font-size: 10.5px;
+  font-weight: 500;
+  opacity: 0.85;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.level-1 .ws-signal-flag {
+  background: #3b82f6;
+}
+
+.level-2 .ws-signal-flag {
+  background: #eab308;
+}
+
+.level-3 .ws-signal-flag {
+  background: #ea580c;
+}
+
+.level-4 .ws-signal-flag {
+  background: #dc2626;
+}
+
+.level-5 .ws-signal-flag {
+  background: #7f1d1d;
+}
+
+/* signal body */
+.ws-signal-body {
+  flex: 1;
+  padding: 22px 24px;
+}
+
+.ws-signal-body h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 14px;
+}
+
+.ws-signal-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.ws-signal-cols h4 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.ws-signal-cols ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.ws-signal-cols li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.ws-signal-cols li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.level-1 .ws-signal-cols li::before {
+  background: #3b82f6;
+}
+
+.level-2 .ws-signal-cols li::before {
+  background: #eab308;
+}
+
+.level-3 .ws-signal-cols li::before {
+  background: #ea580c;
+}
+
+.level-4 .ws-signal-cols li::before {
+  background: #dc2626;
+}
+
+.level-5 .ws-signal-cols li::before {
+  background: #7f1d1d;
+}
+
+/* ==========================================================================
+   Quick reference table
+   ========================================================================== */
+.ws-table-wrap {
+  overflow-x: auto;
+}
+
+.ws-table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 640px;
+}
+
+.ws-table th {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-align: left;
+  color: var(--text-muted);
+  background: var(--bg-soft);
+  padding: 10px 14px;
+}
+
+.ws-table th:first-child {
+  border-radius: 8px 0 0 8px;
+}
+
+.ws-table th:last-child {
+  border-radius: 0 8px 8px 0;
+}
+
+.ws-table td {
+  font-size: 13.5px;
+  color: var(--text-body);
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.ws-table tr:last-child td {
+  border-bottom: none;
+}
+
+.ws-table td:first-child {
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.ws-dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+.dot-1 {
+  background: #3b82f6;
+}
+
+.dot-2 {
+  background: #eab308;
+}
+
+.dot-3 {
+  background: #ea580c;
+}
+
+.dot-4 {
+  background: #dc2626;
+}
+
+.dot-5 {
+  background: #7f1d1d;
+}
+
+.ws-table-note {
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-top: 14px;
+}
+
+/* ==========================================================================
+   Reminders
+   ========================================================================== */
+.ws-reminder-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ws-reminder {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.ws-reminder-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ws-reminder h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.ws-reminder p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Bottom CTA
+   ========================================================================== */
+.ws-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 26px 28px;
+  margin-top: 24px;
+}
+
+.ws-cta-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.ws-cta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--blue-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ws-cta-left h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.ws-cta-left p {
+  font-size: 13px;
+  color: #b9c9de;
+  margin-top: 3px;
+}
+
+.ws-cta-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 900px) {
+  .ws-hero {
+    padding: 36px 20px 0;
+  }
+
+  .ws-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .ws-hero-text {
+    padding-bottom: 0;
+  }
+
+  .ws-hero-text h1 {
+    font-size: 30px;
+  }
+
+  .ws-hero-art {
+    max-width: 100%;
+    align-self: center;
+  }
+
+  .ws-main {
+    padding: 24px 20px 64px;
+  }
+
+  /* stack flag above body */
+  .ws-signal {
+    flex-direction: column;
+  }
+
+  .ws-signal-flag {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 14px 20px;
+  }
+
+  .ws-signal-num {
+    font-size: 30px;
+  }
+
+  .ws-signal-num::before {
+    display: none;
+  }
+
+  .ws-signal-lead {
+    text-align: right;
+    margin-left: auto;
+  }
+
+  .ws-signal-body {
+    padding: 18px 20px;
+  }
+
+  .ws-signal-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .ws-reminder-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .ws-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

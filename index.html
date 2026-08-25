@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Tropical Cyclone Information System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/base.css" />
+    <link rel="stylesheet" href="css/components/header.css" />
+    <link rel="stylesheet" href="css/components/buttons.css" />
+    <link rel="stylesheet" href="css/components/footer.css" />
+    <link rel="stylesheet" href="css/pages/home.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <!-- Hero Section -->
+    <main>
+      <section class="hero">
+        <div class="hero-bg"></div>
+        <div class="hero-inner">
+          <h1 class="hero-title">
+            Understand the Past.<br />Prepare for the Future.
+          </h1>
+          <p class="hero-subtitle">
+            Explore historical typhoons in Camarines Norte, learn about warning
+            signals, and compare incoming storms using official PAGASA data —
+            built for students, by research.
+          </p>
+        </div>
+
+        <div class="feature-cards">
+          <div class="feature-card">
+            <div class="feature-icon icon-blue">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M4 20V10M10 20V4M16 20v-7M22 20V8"
+                  stroke="#fff"
+                  stroke-width="2.2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h3>Historical Typhoon Data</h3>
+              <p>
+                Explore typhoon frequency, paths, landfalls, and impacts in
+                Camarines Norte from 2010–2020.
+              </p>
+              <a href="pages/historical-data.html" class="feature-link"
+                >View Data <span>&rarr;</span></a
+              >
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon icon-green">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M12 3v18M5 8l-3 5a4 4 0 008 0l-3-5H5zM19 8l-3 5a4 4 0 008 0l-3-5h-4zM5 8h14M9 21h6"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h3>Compare Storms</h3>
+              <p>
+                Compare an incoming cyclone with past storms to understand
+                possible impacts.
+              </p>
+              <a href="pages/compare-storms.html" class="feature-link"
+                >Compare Now <span>&rarr;</span></a
+              >
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon icon-orange">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M12 3L2 8l10 5 8-4v6M6 10.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-5.5"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h3>Disaster Education</h3>
+              <p>
+                Learn about typhoon warning signals, evacuation, preparedness,
+                and safety tips.
+              </p>
+              <a
+                href="pages/education/warning-signals.html"
+                class="feature-link"
+                >Start Learning <span>&rarr;</span></a
+              >
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-icon icon-teal">
+              <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+                <path
+                  d="M6 2h9l5 5v15H6V2z"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M14 2v5h5M9 13h6M9 17h6"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <div class="feature-text">
+              <h3>Resources</h3>
+              <p>
+                Access guides, infographics, and downloadable materials for
+                reference.
+              </p>
+              <a href="pages/resources.html" class="feature-link"
+                >View Resources <span>&rarr;</span></a
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="home-lower">
+        <div class="home-lower-inner">
+          <div class="info-card overview-card">
+            <h2>Historical Typhoon Overview</h2>
+            <p class="card-subtitle">Camarines Norte (2010–2020)</p>
+
+            <div class="stat-grid">
+              <div class="stat-item stat-blue">
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                    <path
+                      d="M12 12c3-1 5-3 5-6a5 5 0 00-9-3M12 12c-3 1-5 3-5 6a5 5 0 009 3M12 12a3 3 0 100 6 3 3 0 000-6z"
+                      stroke="#1D4ED8"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                </span>
+                <div class="stat-text">
+                  <span class="stat-number">34</span>
+                  <span class="stat-label">Total Typhoons</span>
+                  <p class="stat-desc">Entered or affected Camarines Norte</p>
+                </div>
+              </div>
+
+              <div class="stat-item stat-green">
+                <span class="stat-icon">
+                  <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                    <path
+                      d="M12 3v13M12 16l-4-4M12 16l4-4M6 21h12"
+                      stroke="#059669"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      fill="none"
+                    />
+                  </svg>
+                </span>
+                <div class="stat-text">
+                  <span class="stat-number">12</span>
+                  <span class="stat-label">Landfalls</span>
+                  <p class="stat-desc">Direct landfalls in the province</p>
+                </div>
+              </div>
+            </div>
+
+            <a href="pages/historical-data.html" class="btn-outline"
+              >View Full Historical Data</a
+            >
+          </div>
+
+          <div class="info-card storms-card">
+            <h2>Recent Notable Storms</h2>
+            <ul class="storm-list">
+              <li class="storm-row">
+                <div class="storm-left">
+                  <span class="storm-icon">⚡</span>
+                  <div>
+                    <p class="storm-name">Typhoon Rolly (Goni)</p>
+                    <p class="storm-date">November 2020</p>
+                  </div>
+                </div>
+                <div class="storm-right">
+                  <span class="signal-badge signal-5">Signal 5</span>
+                  <span class="chevron-icon">›</span>
+                </div>
+              </li>
+              <li class="storm-row">
+                <div class="storm-left">
+                  <span class="storm-icon">⚡</span>
+                  <div>
+                    <p class="storm-name">Typhoon Quinta</p>
+                    <p class="storm-date">October 2020</p>
+                  </div>
+                </div>
+                <div class="storm-right">
+                  <span class="signal-badge signal-4">Signal 4</span>
+                  <span class="chevron-icon">›</span>
+                </div>
+              </li>
+              <li class="storm-row">
+                <div class="storm-left">
+                  <span class="storm-icon">⚡</span>
+                  <div>
+                    <p class="storm-name">Typhoon Ompong (Mangkhut)</p>
+                    <p class="storm-date">September 2018</p>
+                  </div>
+                </div>
+                <div class="storm-right">
+                  <span class="signal-badge signal-4">Signal 4</span>
+                  <span class="chevron-icon">›</span>
+                </div>
+              </li>
+            </ul>
+            <a href="pages/historical-data.html" class="link-view-all"
+              >View all storms →</a
+            >
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="js/main.js" data-root=""></script>
+  </body>
+</html>

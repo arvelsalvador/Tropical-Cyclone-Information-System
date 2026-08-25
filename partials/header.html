@@ -1,0 +1,92 @@
+<!-- Shared site header: announcement bar + navbar (paths are relative to site root) -->
+<div class="announcement-bar">
+  <span class="announcement-icon">📣</span>
+  <p>Always stay informed. This platform uses official PAGASA data.</p>
+</div>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <span class="logo-icon">
+        <svg
+          viewBox="0 0 40 40"
+          fill="none"
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <circle cx="20" cy="20" r="20" fill="#1D4ED8" />
+          <circle cx="26" cy="14" r="5" fill="#FBBF24" />
+          <path
+            d="M6 24c2-4 4-6 8-6s5 3 8 3 4-3 8-3 6 2 8 6"
+            stroke="#fff"
+            stroke-width="2"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <path
+            d="M4 29c2-3.5 4-5 8-5s5 2.5 8 2.5 4-2.5 8-2.5 6 1.5 8 5"
+            stroke="#fff"
+            stroke-width="2"
+            stroke-linecap="round"
+            fill="none"
+          />
+          <path
+            d="M12 20c0-5 2-8 2-8"
+            stroke="#0F766E"
+            stroke-width="2"
+            stroke-linecap="round"
+          />
+        </svg>
+      </span>
+      <span class="logo-text">Tropical Cyclone<br />Information System</span>
+    </a>
+
+    <nav class="main-nav">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="pages/historical-data.html" class="nav-link">Historical Data</a>
+      <a href="pages/compare-storms.html" class="nav-link">Compare Storms</a>
+      <div class="nav-dropdown">
+        <button class="nav-link dropdown-toggle">
+          Education
+          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16">
+            <path
+              d="M6 9l6 6 6-6"
+              stroke="currentColor"
+              stroke-width="2"
+              fill="none"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+        </button>
+        <div class="dropdown-menu">
+          <a href="pages/education/index.html">Education Hub</a>
+          <a href="pages/education/warning-signals.html">Warning Signals</a>
+          <a href="pages/education/evacuation-guide.html">Evacuation Guide</a>
+          <a href="pages/education/preparedness-tips.html">Preparedness Tips</a>
+        </div>
+      </div>
+      <a href="pages/resources.html" class="nav-link">Resources</a>
+      <a href="pages/about.html" class="nav-link">About</a>
+      <a href="pages/contact.html" class="nav-link">Contact</a>
+    </nav>
+
+    <div class="header-actions">
+      <button
+        class="btn-prepared"
+        onclick="location.href='pages/education/preparedness-tips.html'"
+      >
+        <svg viewBox="0 0 24 24" width="16" height="16">
+          <path
+            d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z"
+            fill="currentColor"
+          />
+        </svg>
+        Be Prepared
+      </button>
+    </div>
+
+    <button class="mobile-menu-toggle" aria-label="Toggle menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</header>

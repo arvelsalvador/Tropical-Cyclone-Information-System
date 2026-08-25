@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>About — Tropical Cyclone Information System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/components/header.css" />
+    <link rel="stylesheet" href="../css/components/buttons.css" />
+    <link rel="stylesheet" href="../css/components/footer.css" />
+    <link rel="stylesheet" href="../css/pages/about.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <!-- Hero -->
+    <section class="ab-hero">
+      <div class="ab-hero-inner">
+        <div class="ab-hero-text">
+          <h1>About Typhoon Timeline Camarines Norte</h1>
+          <p>
+            We provide reliable and easy-to-understand information to help our
+            community prepare for and respond to typhoons and other weather
+            hazards.
+          </p>
+        </div>
+
+        <div class="ab-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 520 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- sky gradient layers -->
+            <rect x="0" y="0" width="520" height="340" fill="url(#skyGrad)" />
+            <defs>
+              <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="340">
+                <stop offset="0%" stop-color="#1e3a5f" />
+                <stop offset="60%" stop-color="#2d5a8a" />
+                <stop offset="100%" stop-color="#93c5fd" />
+              </linearGradient>
+            </defs>
+
+            <!-- clouds -->
+            <ellipse cx="100" cy="80" rx="60" ry="22" fill="rgba(255,255,255,0.12)" />
+            <ellipse cx="140" cy="72" rx="45" ry="18" fill="rgba(255,255,255,0.1)" />
+            <ellipse cx="380" cy="60" rx="55" ry="20" fill="rgba(255,255,255,0.1)" />
+            <ellipse cx="420" cy="52" rx="40" ry="16" fill="rgba(255,255,255,0.08)" />
+
+            <!-- mountains / hills background -->
+            <path d="M0 220 Q60 160 140 190 Q220 220 300 170 Q380 120 460 180 L520 200 L520 340 L0 340Z" fill="#1e4d7a" opacity="0.5" />
+            <path d="M0 250 Q80 200 180 230 Q280 260 380 210 Q460 180 520 220 L520 340 L0 340Z" fill="#2563a0" opacity="0.4" />
+
+            <!-- water -->
+            <rect x="0" y="270" width="520" height="70" fill="#3b82f6" opacity="0.3" />
+            <path d="M0 280 Q60 272 120 280 Q180 288 240 280 Q300 272 360 280 Q420 288 480 280 L520 280 L520 340 L0 340Z" fill="#60a5fa" opacity="0.25" />
+            <path d="M0 295 Q80 288 160 295 Q240 302 320 295 Q400 288 480 295 L520 295 L520 340 L0 340Z" fill="#93c5fd" opacity="0.2" />
+
+            <!-- palm tree left -->
+            <rect x="56" y="190" width="4" height="70" rx="2" fill="#1a3a5c" />
+            <path d="M58 190 Q30 170 10 185" stroke="#1a3a5c" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path d="M58 190 Q40 160 20 165" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round" fill="none" />
+            <path d="M58 190 Q80 165 100 175" stroke="#1a3a5c" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path d="M58 190 Q75 158 95 160" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round" fill="none" />
+
+            <!-- palm tree right -->
+            <rect x="448" y="175" width="4" height="80" rx="2" fill="#1a3a5c" />
+            <path d="M450 175 Q420 155 400 170" stroke="#1a3a5c" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path d="M450 175 Q430 148 410 152" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round" fill="none" />
+            <path d="M450 175 Q475 150 495 160" stroke="#1a3a5c" stroke-width="5" stroke-linecap="round" fill="none" />
+            <path d="M450 175 Q470 142 490 145" stroke="#1a3a5c" stroke-width="4" stroke-linecap="round" fill="none" />
+
+            <!-- lighthouse base -->
+            <rect x="350" y="210" width="50" height="50" rx="4" fill="#e2e8f0" />
+            <rect x="355" y="215" width="40" height="40" rx="3" fill="#f1f5f9" />
+
+            <!-- lighthouse tower -->
+            <rect x="365" y="140" width="20" height="72" fill="#e2e8f0" />
+            <rect x="363" y="145" width="24" height="6" fill="#1d4ed8" />
+            <rect x="363" y="160" width="24" height="6" fill="#1d4ed8" />
+            <rect x="363" y="175" width="24" height="6" fill="#1d4ed8" />
+            <rect x="363" y="190" width="24" height="6" fill="#1d4ed8" />
+
+            <!-- lighthouse top -->
+            <rect x="360" y="128" width="30" height="14" rx="3" fill="#0f2e4c" />
+            <rect x="366" y="118" width="18" height="12" rx="2" fill="#1d4ed8" />
+
+            <!-- lighthouse light beam -->
+            <path d="M375 124 L320 90 L320 110Z" fill="rgba(251,191,36,0.25)" />
+            <path d="M375 124 L430 90 L430 110Z" fill="rgba(251,191,36,0.25)" />
+            <circle cx="375" cy="124" r="5" fill="#fbbf24" />
+
+            <!-- lighthouse roof -->
+            <path d="M358 128 L375 108 L392 128Z" fill="#0a2540" />
+
+            <!-- small boat -->
+            <path d="M180 290 Q190 282 210 282 Q220 282 225 290Z" fill="#1d4ed8" opacity="0.6" />
+            <rect x="200" y="272" width="2" height="14" fill="#1d4ed8" opacity="0.5" />
+            <path d="M202 272 L215 278 L202 282Z" fill="rgba(255,255,255,0.4)" />
+
+            <!-- ground / shore -->
+            <path d="M0 260 Q100 250 200 258 Q300 266 400 255 Q480 248 520 254 L520 270 L0 270Z" fill="#1e4d7a" opacity="0.35" />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <main class="ab-main">
+      <!-- Mission & Vision -->
+      <div class="ab-mv-grid">
+        <div class="ab-mv-card">
+          <div class="ab-mv-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <circle cx="12" cy="12" r="9" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+              <circle cx="12" cy="12" r="5" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+              <circle cx="12" cy="12" r="1.5" fill="#1d4ed8" />
+            </svg>
+          </div>
+          <div>
+            <h2>Our Mission</h2>
+            <p>
+              To empower the people of Camarines Norte with accessible and
+              accurate weather information that promotes preparedness,
+              resilience, and safety.
+            </p>
+          </div>
+        </div>
+
+        <div class="ab-mv-card">
+          <div class="ab-mv-icon">
+            <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+              <circle cx="12" cy="12" r="3" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+            </svg>
+          </div>
+          <div>
+            <h2>Our Vision</h2>
+            <p>
+              A safer Camarines Norte where every individual and community is
+              informed, prepared, and resilient in the face of typhoons and
+              disasters.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Who We Are -->
+      <div class="ab-wwa-card">
+        <div class="ab-wwa-icon">
+          <svg viewBox="0 0 24 24" width="24" height="24" fill="none">
+            <circle cx="8" cy="8" r="3" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+            <path d="M3 19c0-3 2.2-5 5-5s5 2 5 5" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" fill="none" />
+            <circle cx="17" cy="9" r="2.4" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+            <path d="M14.5 18c.3-2.2 1.6-3.5 3.5-3.5s3.2 1.3 3.5 3.5" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" fill="none" />
+          </svg>
+        </div>
+        <div>
+          <h2>Who We Are</h2>
+          <p>
+            Typhoon Timeline Camarines Norte is a public service platform built
+            to provide timely and reliable information using official data from
+            PAGASA. We are committed to helping our community stay informed and
+            prepared before, during, and after typhoons.
+          </p>
+        </div>
+      </div>
+
+      <!-- CTA Banner -->
+      <div class="ab-cta">
+        <div class="ab-cta-left">
+          <div class="ab-cta-icon">
+            <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+              <rect x="4" y="8" width="16" height="13" rx="3" stroke="#fff" stroke-width="1.8" fill="none" />
+              <path d="M8 8V6a4 4 0 018 0v2" stroke="#fff" stroke-width="1.8" fill="none" />
+              <circle cx="12" cy="15" r="2" fill="#fff" />
+            </svg>
+          </div>
+          <div class="ab-cta-text">
+            <h3>Prepared today. Safer tomorrow.</h3>
+            <p>
+              Thank you for visiting Typhoon Timeline Camarines Norte.<br />
+              Together, let's build a more prepared and resilient community.
+            </p>
+          </div>
+        </div>
+        <a href="pages/education/preparedness-tips.html" class="ab-cta-btn">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
+            <path d="M12 2l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V5l8-3z" fill="currentColor" />
+          </svg>
+          Be Prepared
+        </a>
+      </div>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="../js/main.js" data-root="../"></script>
+  </body>
+</html>

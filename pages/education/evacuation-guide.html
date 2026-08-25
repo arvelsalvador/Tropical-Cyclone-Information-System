@@ -1,0 +1,413 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Evacuation Guide — Tropical Cyclone Information System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../../css/base.css" />
+    <link rel="stylesheet" href="../../css/components/header.css" />
+    <link rel="stylesheet" href="../../css/components/buttons.css" />
+    <link rel="stylesheet" href="../../css/components/footer.css" />
+    <link rel="stylesheet" href="../../css/pages/evacuation-guide.css" />
+  </head>
+  <body>
+    <div id="site-header"></div>
+
+    <!-- Hero -->
+    <section class="eg-hero">
+      <div class="eg-hero-inner">
+        <div class="eg-hero-text">
+          <nav class="eg-breadcrumb" aria-label="Breadcrumb">
+            <a href="index.html">Education Hub</a>
+            <span aria-hidden="true">/</span>
+            <span>Evacuation Guide</span>
+          </nav>
+          <h1>Evacuation Guide</h1>
+          <p>
+            When a typhoon threatens, the safest decision is the one made
+            early. This guide walks you through <strong>when to leave</strong>,
+            <strong>where to go</strong>, and <strong>what to bring</strong> —
+            so your household can move quickly and calmly if an evacuation
+            order is issued.
+          </p>
+          <div class="eg-hero-actions">
+            <a href="#when" class="eg-btn eg-btn-primary">
+              When to Evacuate
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
+                <path
+                  d="M12 5v14M6 13l6 6 6-6"
+                  stroke="#fff"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </a>
+            <a href="#go-bag" class="eg-btn eg-btn-ghost">Build a Go-Bag</a>
+          </div>
+        </div>
+
+        <div class="eg-hero-art" aria-hidden="true">
+          <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <!-- route path -->
+            <path
+              d="M30 250 C 110 250, 120 170, 200 170 S 300 90, 390 60"
+              stroke="#93c5fd"
+              stroke-width="5"
+              stroke-dasharray="2 14"
+              stroke-linecap="round"
+              fill="none"
+            />
+            <!-- home start marker -->
+            <path d="M18 258v-26l22-16 22 16v26H18z" fill="#fff" stroke="#0f2e4c" stroke-width="2.5" />
+            <rect x="32" y="242" width="12" height="16" rx="2" fill="#93c5fd" />
+            <!-- walking person -->
+            <circle cx="200" cy="140" r="10" fill="#1d4ed8" />
+            <path d="M200 152v22M200 158l-14 10M200 158l14 8M200 174l-11 18M200 174l11 18"
+              stroke="#1d4ed8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+            <!-- go-bag -->
+            <rect x="238" y="196" width="34" height="42" rx="8" fill="#eab308" />
+            <path d="M247 198v-6a8 8 0 0116 0v6" stroke="#b45309" stroke-width="4" fill="none" />
+            <rect x="248" y="212" width="14" height="10" rx="2" fill="#fde68a" />
+            <!-- shelter end marker -->
+            <path d="M330 96l44-26 44 26v40h-88V96z" fill="#1d4ed8" />
+            <path d="M330 96l44-26 44 26" stroke="#93c5fd" stroke-width="3" fill="none" />
+            <rect x="366" y="112" width="14" height="24" rx="2" fill="#fff" />
+            <text x="374" y="86" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#0f2e4c">SHELTER</text>
+            <!-- storm clouds behind -->
+            <circle cx="120" cy="70" r="18" fill="#bfdbfe" />
+            <circle cx="146" cy="62" r="22" fill="#93c5fd" />
+            <circle cx="170" cy="72" r="15" fill="#bfdbfe" />
+            <g stroke="#93c5fd" stroke-width="4" stroke-linecap="round">
+              <path d="M112 92l-4 12M138 94l-4 12M162 90l-4 12" />
+            </g>
+            <rect x="20" y="286" width="380" height="4" rx="2" fill="#dbe7f7" />
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <main class="eg-main">
+      <!-- Key principle -->
+      <section class="eg-card eg-principle">
+        <div class="eg-principle-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+            <circle cx="12" cy="12" r="9" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
+            <path d="M12 7v5l3.5 2" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" fill="none" />
+          </svg>
+        </div>
+        <div>
+          <h2>The golden rule: leave early</h2>
+          <p>
+            Roads flood quickly and visibility drops fast. Evacuating while
+            conditions are still manageable takes under an hour — evacuating
+            at the height of a storm can be impossible. If you live in a
+            <strong>flood-prone, landslide-prone, or coastal area</strong>, or
+            your home is made of light materials, treat evacuation as your
+            <em>default</em> plan, not a last resort.
+          </p>
+        </div>
+      </section>
+
+      <!-- When to evacuate -->
+      <h2 class="eg-section-title" id="when">When Should You Evacuate?</h2>
+      <p class="eg-section-sub">
+        Match your situation to the current PAGASA warning signal. Not sure
+        what each signal means?
+        <a href="warning-signals.html">Read the Warning Signals guide</a>.
+      </p>
+
+      <section class="eg-decision-list">
+        <article class="eg-decision stay">
+          <div class="eg-decision-badge">
+            <span class="eg-decision-label">Stay Home</span>
+            <span class="eg-decision-scope">Signal No. 1–2</span>
+          </div>
+          <div class="eg-decision-body">
+            <h3>Prepare and monitor — no need to leave yet</h3>
+            <ul>
+              <li>Check your go-bag, water, and food supplies</li>
+              <li>Charge phones, power banks, and flashlights</li>
+              <li>Secure windows, roofing, and outdoor items</li>
+              <li>Identify your nearest evacuation center and route</li>
+              <li>Agree on a family meeting point and communication plan</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="eg-decision ready">
+          <div class="eg-decision-badge">
+            <span class="eg-decision-label">Be Ready to Leave</span>
+            <span class="eg-decision-scope">Signal No. 3</span>
+          </div>
+          <div class="eg-decision-body">
+            <h3>Evacuate now if you are in a risky area</h3>
+            <ul>
+              <li>Leave immediately if you are near rivers, coasts, or slopes</li>
+              <li>Houses with light materials should consider moving early</li>
+              <li>Move valuables and documents to waterproof bags, high up</li>
+              <li>Expect power interruptions — top off all batteries</li>
+              <li>Keep listening to official bulletins every hour</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="eg-decision go">
+          <div class="eg-decision-badge">
+            <span class="eg-decision-label">Evacuate Now</span>
+            <span class="eg-decision-scope">Signal No. 4–5</span>
+          </div>
+          <div class="eg-decision-body">
+            <h3>Everyone in at-risk areas must be in a safe shelter</h3>
+            <ul>
+              <li>Leave before conditions worsen — do not wait for landfall</li>
+              <li>Turn off electricity and LPG at the main switch if leaving</li>
+              <li>Bring the go-bag, water, and important documents only</li>
+              <li>Never attempt to cross flooded roads or swollen rivers</li>
+              <li>If travel is no longer safe, shelter in the strongest interior room</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="eg-decision order">
+          <div class="eg-decision-badge">
+            <span class="eg-decision-label">Mandatory Order</span>
+            <span class="eg-decision-scope">Any signal</span>
+          </div>
+          <div class="eg-decision-body">
+            <h3>A preemptive evacuation order always wins</h3>
+            <ul>
+              <li>When your barangay or LGU orders evacuation, comply immediately</li>
+              <li>Officials know local flood history better than any forecast</li>
+              <li>Bring pets only if the center explicitly allows animals</li>
+              <li>Help neighbors who are elderly, disabled, or living alone</li>
+              <li>Register with center staff so family can find you</li>
+            </ul>
+          </div>
+        </article>
+      </section>
+
+      <!-- Evacuation timeline -->
+      <h2 class="eg-section-title" id="steps">Your Evacuation, Step by Step</h2>
+
+      <section class="eg-steps">
+        <article class="eg-step">
+          <div class="eg-step-num">1</div>
+          <div class="eg-step-body">
+            <h3>Confirm the order and destination</h3>
+            <p>
+              Verify the evacuation advisory through official channels —
+              PAGASA, your barangay, or your LGU's page. Confirm which
+              evacuation center is open; it may differ from the nearest one.
+            </p>
+          </div>
+        </article>
+
+        <article class="eg-step">
+          <div class="eg-step-num">2</div>
+          <div class="eg-step-body">
+            <h3>Secure the house</h3>
+            <p>
+              Unplug appliances, switch off the main breaker, close the LPG
+              tank valve, and move belongings off the floor. Lock windows and
+              doors. Inform a relative outside the area that you are leaving.
+            </p>
+          </div>
+        </article>
+
+        <article class="eg-step">
+          <div class="eg-step-num">3</div>
+          <div class="eg-step-body">
+            <h3>Take the go-bag and leave</h3>
+            <p>
+              One bag per person, packed and by the door in advance. Wear
+              sturdy closed shoes and rain gear. Follow the designated route —
+              never shortcuts through floodwater, underpasses, or riverbanks.
+            </p>
+          </div>
+        </article>
+
+        <article class="eg-step">
+          <div class="eg-step-num">4</div>
+          <div class="eg-step-body">
+            <h3>Check in at the evacuation center</h3>
+            <p>
+              Register every family member with center staff. Note the
+              location of exits, clinics, and water points. Keep children
+              within sight at all times.
+            </p>
+          </div>
+        </article>
+
+        <article class="eg-step">
+          <div class="eg-step-num">5</div>
+          <div class="eg-step-body">
+            <h3>Return only when declared safe</h3>
+            <p>
+              Wait for the official all-clear. Watch for the storm's calm
+              "eye" — winds return suddenly from the opposite direction.
+              At home, check for gas leaks and damaged wires before
+              reconnecting power.
+            </p>
+          </div>
+        </article>
+      </section>
+
+      <!-- Go-bag checklist -->
+      <h2 class="eg-section-title" id="go-bag">The Go-Bag Checklist</h2>
+      <p class="eg-section-sub">
+        Tick items off as you pack — your progress is saved on this device so
+        you can finish packing later or restock after a storm.
+      </p>
+
+      <section class="eg-card eg-checklist-card">
+        <div class="eg-progress-row">
+          <div class="eg-progress-info">
+            <span class="eg-progress-title">Packing progress</span>
+            <span class="eg-progress-count" id="eg-progress-count">0 of 0 items</span>
+          </div>
+          <span class="eg-progress-pct" id="eg-progress-pct">0%</span>
+        </div>
+        <div class="eg-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="eg-progress-bar">
+          <div class="eg-progress-fill" id="eg-progress-fill"></div>
+        </div>
+
+        <div class="eg-checklist" id="eg-checklist">
+          <!-- categories injected by js/pages/evacuation-guide.js -->
+        </div>
+
+        <div class="eg-checklist-actions">
+          <button type="button" class="eg-btn eg-btn-outline" id="eg-check-all">Check all</button>
+          <button type="button" class="eg-btn eg-btn-outline" id="eg-uncheck-all">Uncheck all</button>
+          <button type="button" class="eg-btn eg-btn-outline" id="eg-reset">Reset saved progress</button>
+        </div>
+      </section>
+
+      <!-- What to bring / leave -->
+      <section class="eg-card">
+        <h2 class="eg-card-title">Bring vs. Leave Behind</h2>
+        <div class="eg-table-wrap">
+          <table class="eg-table">
+            <thead>
+              <tr>
+                <th>Bring</th>
+                <th>Leave Behind / Do Before Leaving</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>Water (at least 3 L per person per day)</td>
+                <td>Large furniture and appliances</td>
+              </tr>
+              <tr>
+                <td>Ready-to-eat food for 3 days</td>
+                <td>Valuables that can be replaced</td>
+              </tr>
+              <tr>
+                <td>IDs and documents in a waterproof pouch</td>
+                <td>Propane/LPG tanks — close valves instead</td>
+              </tr>
+              <tr>
+                <td>Medicines, first aid, and prescriptions</td>
+                <td>Cars in flood-prone parking — move to higher ground</td>
+              </tr>
+              <tr>
+                <td>Flashlight, radio, and fully charged power banks</td>
+                <td>Never bring: weapons, alcohol, or flammables to a shelter</td>
+              </tr>
+              <tr>
+                <td>Cash in small bills and loose change</td>
+                <td>Do not wait to pack — 10 minutes is enough</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- Reminders -->
+      <section class="eg-card eg-reminders">
+        <h2 class="eg-card-title">Critical Reminders</h2>
+        <div class="eg-reminder-grid">
+          <div class="eg-reminder">
+            <span class="eg-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M3 7c3-2 6 2 9 0s6 2 9 0M3 12c3-2 6 2 9 0s6 2 9 0M3 17c3-2 6 2 9 0s6 2 9 0" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              </svg>
+            </span>
+            <div>
+              <h3>15 cm of moving water can knock you down</h3>
+              <p>Turn around, don't drown. Never walk or drive through floodwater — it hides open manholes and debris.</p>
+            </div>
+          </div>
+          <div class="eg-reminder">
+            <span class="eg-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M12 4l9 16H3l9-16z" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" fill="none" />
+                <path d="M12 10v4.5M12 17.2v.3" stroke="#d97706" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
+            <div>
+              <h3>Know two routes, not one</h3>
+              <p>Floods can block your primary route. Agree on a backup route and a meeting point in case family members are separated.</p>
+            </div>
+          </div>
+          <div class="eg-reminder">
+            <span class="eg-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <circle cx="9" cy="8" r="3" stroke="#059669" stroke-width="1.8" fill="none" />
+                <path d="M4 19c0-3 2.2-5 5-5s5 2 5 5" stroke="#059669" stroke-width="1.8" stroke-linecap="round" fill="none" />
+                <circle cx="17" cy="9" r="2.4" stroke="#059669" stroke-width="1.8" fill="none" />
+                <path d="M14.5 18c.3-2.2 1.6-3.5 3.5-3.5s3.2 1.3 3.5 3.5" stroke="#059669" stroke-width="1.8" stroke-linecap="round" fill="none" />
+              </svg>
+            </span>
+            <div>
+              <h3>Plan for those who need help</h3>
+              <p>Assign one adult per senior, child, or person with a disability. Include their medicines and special needs in the go-bag.</p>
+            </div>
+          </div>
+          <div class="eg-reminder">
+            <span class="eg-reminder-icon">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M5 12.5l4 4L19 7" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none" />
+              </svg>
+            </span>
+            <div>
+              <h3>Practice the plan before the storm</h3>
+              <p>Walk the route with your family during fair weather. A plan you have rehearsed takes half the time when it matters.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Bottom CTA -->
+      <section class="eg-cta">
+        <div class="eg-cta-left">
+          <div class="eg-cta-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+              <path d="M4 4h16v13H8l-4 3V4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none" />
+              <path d="M8 9h8M8 12.5h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
+            </svg>
+          </div>
+          <div>
+            <h2>Route ready? Bag packed? You're prepared.</h2>
+            <p>Round out your plan with signal knowledge and everyday preparedness habits.</p>
+          </div>
+        </div>
+        <div class="eg-cta-actions">
+          <a href="warning-signals.html" class="eg-btn eg-btn-light">Warning Signals</a>
+          <a href="preparedness-tips.html" class="eg-btn eg-btn-outline-light">Preparedness Tips</a>
+        </div>
+      </section>
+    </main>
+
+    <div id="site-footer"></div>
+
+    <script src="../../js/main.js" data-root="../../"></script>
+    <script src="../../js/pages/evacuation-guide.js"></script>
+  </body>
+</html>

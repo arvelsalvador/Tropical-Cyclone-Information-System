@@ -1,0 +1,416 @@
+/* ==========================================================================
+   Resources — hero, hotline cards, resource sections, link cards, CTA
+   ========================================================================== */
+.res-hero {
+  background: linear-gradient(100deg, #0a2540 0%, #0f2e4c 60%, #143a5e 100%);
+  color: #fff;
+  padding: 34px 40px;
+}
+
+.res-hero-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.res-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.res-hero-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #f97316, #ea580c);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.res-hero-left h1 {
+  font-size: 26px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.res-hero-left p {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 4px;
+  max-width: 500px;
+}
+
+.res-hero-quick {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 14px 18px;
+  max-width: 320px;
+}
+
+.res-hero-quick-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.res-hero-quick strong {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.res-hero-quick p {
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.65);
+  margin-top: 3px;
+}
+
+/* ==========================================================================
+   Layout
+   ========================================================================== */
+.res-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px 40px 80px;
+}
+
+/* ==========================================================================
+   Section headings
+   ========================================================================== */
+.res-section-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin-top: 40px;
+}
+
+.res-section-title:first-child {
+  margin-top: 0;
+}
+
+.res-section-sub {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-top: 6px;
+  margin-bottom: 20px;
+}
+
+/* ==========================================================================
+   Emergency hotlines
+   ========================================================================== */
+.res-hotline-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.res-hotline {
+  display: flex;
+  gap: 14px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.res-hotline:hover {
+  background: var(--blue-50);
+  border-color: #c7d8f9;
+}
+
+.res-hotline-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+}
+
+.res-hotline-icon.red {
+  background: #dc2626;
+}
+
+.res-hotline-icon.orange {
+  background: #ea580c;
+}
+
+.res-hotline-icon.blue {
+  background: var(--blue-600);
+}
+
+.res-hotline-icon.green {
+  background: #059669;
+}
+
+.res-hotline-icon.purple {
+  background: #7c3aed;
+}
+
+.res-hotline-icon.teal {
+  background: #0d9488;
+}
+
+.res-hotline-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.res-hotline-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 2px;
+}
+
+.res-hotline-number {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--blue-600);
+  letter-spacing: 0.01em;
+}
+
+.res-hotline-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.res-hotline-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue-600);
+  margin-top: 6px;
+}
+
+.res-hotline-link:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Resource cards grid
+   ========================================================================== */
+.res-card-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.res-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 22px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.res-card:hover {
+  background: var(--blue-50);
+  border-color: #c7d8f9;
+}
+
+.res-card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.res-card-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.res-card-icon.blue {
+  background: var(--blue-50);
+  color: var(--blue-600);
+}
+
+.res-card-icon.green {
+  background: var(--green-50);
+  color: #059669;
+}
+
+.res-card-icon.orange {
+  background: var(--orange-50);
+  color: #ea580c;
+}
+
+.res-card-icon.purple {
+  background: var(--purple-100);
+  color: #7c3aed;
+}
+
+.res-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.res-card p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-body);
+  margin-bottom: 14px;
+}
+
+.res-card-links {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.res-card-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-600);
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border-light);
+  transition: color 0.15s ease;
+}
+
+.res-card-link:last-child {
+  border-bottom: none;
+}
+
+.res-card-link:hover {
+  color: var(--blue-500);
+}
+
+.res-card-link svg {
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Quick links list
+   ========================================================================== */
+.res-links-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.res-link-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.res-link-row:last-child {
+  border-bottom: none;
+}
+
+.res-link-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--text-muted);
+}
+
+.res-link-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.res-link-name {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.res-link-desc {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.res-link-url {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue-600);
+  flex-shrink: 0;
+}
+
+.res-link-url:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .res-hotline-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .res-card-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .res-hero {
+    padding: 24px 20px;
+  }
+
+  .res-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .res-main {
+    padding: 20px 20px 64px;
+  }
+
+  .res-hotline-grid {
+    grid-template-columns: 1fr;
+  }
+}

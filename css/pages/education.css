@@ -1,0 +1,458 @@
+/* ==========================================================================
+   Education hub — hero, topics, resources, fact card, CTA
+   ========================================================================== */
+.edu-hero {
+  background: linear-gradient(180deg, #eaf2fd 0%, #dce9fb 100%);
+  padding: 56px 40px 0;
+  overflow: hidden;
+}
+
+.edu-hero-inner {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.edu-hero-text {
+  padding-bottom: 56px;
+  max-width: 480px;
+}
+
+.edu-hero-text h1 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--navy-900);
+  margin-bottom: 16px;
+}
+
+.edu-hero-text p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+.edu-hero-art {
+  flex-shrink: 0;
+  width: 520px;
+  max-width: 48%;
+}
+
+.edu-hero-art svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
+   Layout & cards
+   ========================================================================== */
+.edu-main {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px 40px 80px;
+}
+
+.edu-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.edu-main .edu-card:first-child {
+  margin-top: 0;
+}
+
+.edu-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 18px;
+}
+
+/* ==========================================================================
+   Explore Topics
+   ========================================================================== */
+.topics-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 16px;
+}
+
+.topic-card {
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px 16px;
+  transition:
+    transform 0.18s ease,
+    box-shadow 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.topic-card:hover {
+  transform: translateY(-3px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-card);
+}
+
+.topic-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.icon-sky {
+  background: #dbeafe;
+}
+
+.icon-green {
+  background: var(--green-50);
+}
+
+.icon-orange {
+  background: var(--orange-50);
+}
+
+.icon-purple {
+  background: var(--purple-100);
+}
+
+.icon-teal {
+  background: #ccfbf1;
+}
+
+.topic-card h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.topic-card p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.topic-arrow {
+  margin-top: 12px;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--blue-600);
+  transition: transform 0.18s ease;
+}
+
+.topic-card:hover .topic-arrow {
+  transform: translateX(4px);
+}
+
+/* ==========================================================================
+   Learning Resources + Did You Know
+   ========================================================================== */
+.edu-mid-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.9fr) minmax(0, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.edu-mid-grid .edu-card {
+  margin-top: 24px;
+  height: 100%;
+}
+
+.resources-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.resource-tile {
+  display: flex;
+  flex-direction: column;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.resource-tile:hover {
+  transform: translateY(-3px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-card);
+}
+
+.resource-thumb {
+  width: 100%;
+  height: 110px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 12px;
+}
+
+.thumb-blue {
+  background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+}
+
+.thumb-navy {
+  background: linear-gradient(135deg, #0a2540, #1e3a5f);
+}
+
+.thumb-light {
+  background: linear-gradient(135deg, #f1f5f9, #e2e8f0);
+}
+
+.resource-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: var(--blue-600);
+}
+
+.resource-body h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin: 5px 0 6px;
+}
+
+.resource-body p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  flex: 1;
+}
+
+.resource-btn {
+  display: inline-block;
+  margin-top: 12px;
+  align-self: flex-start;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--blue-600);
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  padding: 7px 14px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.resource-tile:hover .resource-btn {
+  background: var(--blue-50);
+  border-color: #c7d8f9;
+}
+
+.resources-footer {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+}
+
+.view-all-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--blue-600);
+}
+
+.view-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Did You Know */
+.fact-card {
+  display: flex;
+  gap: 14px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 18px;
+  margin-bottom: 18px;
+}
+
+.fact-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.fact-text {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.55;
+  color: var(--text-dark);
+}
+
+.fact-sub {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.fact-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 10px 18px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease;
+}
+
+.fact-btn:hover {
+  background: var(--bg-soft);
+  border-color: #cfd8e3;
+}
+
+/* ==========================================================================
+   Bottom CTA
+   ========================================================================== */
+.edu-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 22px 28px;
+  margin-top: 24px;
+}
+
+.edu-cta-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.edu-cta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--blue-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.edu-cta-left h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.edu-cta-left p {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-top: 3px;
+}
+
+.edu-cta-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: #fff;
+  background: var(--blue-600);
+  border-radius: 10px;
+  padding: 11px 22px;
+  flex-shrink: 0;
+  transition: background 0.15s ease;
+}
+
+.edu-cta-btn:hover {
+  background: var(--blue-500);
+}
+
+/* ==========================================================================
+   Education Responsive
+   ========================================================================== */
+@media (max-width: 1100px) {
+  .topics-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .edu-mid-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 900px) {
+  .edu-hero {
+    padding: 40px 20px 0;
+  }
+
+  .edu-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .edu-hero-text {
+    padding-bottom: 0;
+  }
+
+  .edu-hero-art {
+    max-width: 100%;
+    align-self: center;
+  }
+
+  .edu-main {
+    padding: 20px 20px 64px;
+  }
+
+  .topics-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .resources-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .edu-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .topics-grid {
+    grid-template-columns: 1fr;
+  }
+}

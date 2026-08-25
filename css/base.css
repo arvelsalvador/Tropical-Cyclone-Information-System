@@ -1,0 +1,117 @@
+/* ==========================================================================
+   Variables, Reset & Base Typography
+   ========================================================================== */
+:root {
+  --navy-900: #0a2540;
+  --navy-800: #0f2e4c;
+  --blue-600: #1d4ed8;
+  --blue-500: #2563eb;
+  --blue-50: #eef4ff;
+  --text-dark: #0f1e33;
+  --text-body: #4b5a6e;
+  --text-muted: #7c8aa0;
+  --border-light: #e6eaf0;
+  --bg-page: #ffffff;
+  --bg-soft: #f7f9fc;
+
+  --green-500: #10b981;
+  --green-50: #ecfdf5;
+  --orange-500: #f97316;
+  --orange-50: #fff7ed;
+  --teal-500: #14b8a6;
+  --purple-100: #ede9fe;
+  --purple-600: #7c3aed;
+
+  --font-sans:
+    "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-full: 999px;
+  --shadow-card: 0 4px 24px rgba(15, 30, 51, 0.06);
+  --shadow-elevated: 0 20px 50px rgba(15, 30, 51, 0.12);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--text-dark);
+  background: var(--bg-page);
+  -webkit-font-smoothing: antialiased;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+}
+button {
+  font-family: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+ul {
+  list-style: none;
+}
+
+/* ==========================================================================
+   Shared Page Layout (used by every subpage)
+   ========================================================================== */
+.page-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 64px 40px 96px;
+}
+
+.page-main h1 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+  color: var(--navy-900);
+  margin-bottom: 16px;
+}
+
+.page-intro {
+  font-size: 17px;
+  line-height: 1.65;
+  color: var(--text-body);
+  max-width: 720px;
+}
+
+.page-section {
+  margin-top: 48px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+}
+
+.page-section h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 10px;
+}
+
+.page-section p {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+@media (max-width: 900px) {
+  .page-main {
+    padding: 40px 20px 64px;
+  }
+  .page-main h1 {
+    font-size: 30px;
+  }
+  .page-section {
+    padding: 24px;
+  }
+}

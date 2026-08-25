@@ -1,0 +1,599 @@
+/* ==========================================================================
+   Preparedness Tips — hero, phase cards, checklists, tips grid, CTA
+   ========================================================================== */
+.pt-hero {
+  background: linear-gradient(180deg, #eaf2fd 0%, #dce9fb 100%);
+  padding: 48px 40px 0;
+  overflow: hidden;
+}
+
+.pt-hero-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 40px;
+}
+
+.pt-hero-text {
+  padding-bottom: 48px;
+  max-width: 560px;
+}
+
+.pt-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  margin-bottom: 14px;
+}
+
+.pt-breadcrumb a {
+  color: var(--blue-600);
+}
+
+.pt-breadcrumb a:hover {
+  text-decoration: underline;
+}
+
+.pt-hero-text h1 {
+  font-size: 40px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: var(--navy-900);
+  margin-bottom: 16px;
+}
+
+.pt-hero-text p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+.pt-hero-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.pt-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 10px;
+  padding: 11px 20px;
+  transition:
+    background 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.pt-btn-primary {
+  color: #fff;
+  background: var(--blue-600);
+}
+
+.pt-btn-primary:hover {
+  background: var(--blue-500);
+}
+
+.pt-btn-ghost {
+  color: var(--blue-600);
+  background: rgba(255, 255, 255, 0.7);
+  border: 1px solid #c7d8f9;
+}
+
+.pt-btn-ghost:hover {
+  background: #fff;
+}
+
+.pt-btn-outline {
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid var(--border-light);
+}
+
+.pt-btn-outline:hover {
+  background: var(--bg-soft);
+  border-color: #cfd8e3;
+}
+
+.pt-btn-light {
+  color: var(--blue-600);
+  background: #fff;
+}
+
+.pt-btn-light:hover {
+  background: var(--blue-50);
+}
+
+.pt-btn-outline-light {
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+}
+
+.pt-btn-outline-light:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.pt-hero-art {
+  flex-shrink: 0;
+  width: 420px;
+  max-width: 44%;
+}
+
+.pt-hero-art svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* ==========================================================================
+   Layout & generic card
+   ========================================================================== */
+.pt-main {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 32px 40px 96px;
+}
+
+.pt-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 24px;
+  margin-top: 24px;
+}
+
+.pt-card-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 16px;
+}
+
+/* Key principle */
+.pt-principle {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  margin-top: 0;
+}
+
+.pt-principle-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: var(--blue-50);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pt-principle h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 8px;
+}
+
+.pt-principle p {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--text-body);
+}
+
+/* ==========================================================================
+   Section headings
+   ========================================================================== */
+.pt-section-title {
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin-top: 48px;
+}
+
+.pt-section-sub {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin-top: 8px;
+}
+
+.pt-section-sub a {
+  color: var(--blue-600);
+  font-weight: 600;
+}
+
+.pt-section-sub a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Phase cards (before / during / after)
+   ========================================================================== */
+.pt-phase-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pt-phase {
+  display: flex;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+}
+
+.pt-phase-badge {
+  width: 168px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 24px 16px;
+  color: #fff;
+  text-align: center;
+}
+
+.pt-phase-label {
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.pt-phase-scope {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  opacity: 0.85;
+}
+
+.before .pt-phase-badge {
+  background: #10b981;
+}
+
+.during .pt-phase-badge {
+  background: #ea580c;
+}
+
+.after .pt-phase-badge {
+  background: var(--blue-600);
+}
+
+.pt-phase-body {
+  flex: 1;
+  padding: 22px 24px;
+}
+
+.pt-phase-body h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 14px;
+}
+
+.pt-phase-cols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.pt-phase-cols h4 {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+
+.pt-phase-cols ul {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.pt-phase-cols li {
+  position: relative;
+  padding-left: 16px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.pt-phase-cols li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+
+.before .pt-phase-cols li::before {
+  background: #10b981;
+}
+
+.during .pt-phase-cols li::before {
+  background: #ea580c;
+}
+
+.after .pt-phase-cols li::before {
+  background: var(--blue-600);
+}
+
+/* ==========================================================================
+   Emergency kit checklist
+   ========================================================================== */
+.pt-checklist-card {
+  margin-top: 24px;
+}
+
+.pt-progress-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.pt-progress-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pt-progress-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.pt-progress-count {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.pt-progress-pct {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+.pt-progress-track {
+  height: 8px;
+  background: var(--bg-soft);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.pt-progress-fill {
+  height: 100%;
+  background: var(--blue-600);
+  border-radius: var(--radius-full);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.pt-checklist {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pt-check-category h3 {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+.pt-check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border-light);
+  cursor: pointer;
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-body);
+}
+
+.pt-check-item:last-child {
+  border-bottom: none;
+}
+
+.pt-check-item input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  margin-top: 2px;
+  accent-color: var(--blue-600);
+  flex-shrink: 0;
+  cursor: pointer;
+}
+
+.pt-check-item input[type="checkbox"]:checked + span {
+  color: var(--text-muted);
+  text-decoration: line-through;
+}
+
+.pt-checklist-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+/* ==========================================================================
+   Tips grid
+   ========================================================================== */
+.pt-tips-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 20px;
+}
+
+.pt-tip {
+  display: flex;
+  gap: 12px;
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-md);
+  padding: 16px;
+}
+
+.pt-tip-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pt-tip h3 {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.pt-tip p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Bottom CTA
+   ========================================================================== */
+.pt-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 26px 28px;
+  margin-top: 24px;
+}
+
+.pt-cta-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.pt-cta-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: var(--blue-600);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.pt-cta-left h2 {
+  font-size: 17px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.pt-cta-left p {
+  font-size: 13px;
+  color: #b9c9de;
+  margin-top: 3px;
+}
+
+.pt-cta-actions {
+  display: flex;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+/* ==========================================================================
+   Responsive
+   ========================================================================== */
+@media (max-width: 900px) {
+  .pt-hero {
+    padding: 36px 20px 0;
+  }
+
+  .pt-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 20px;
+  }
+
+  .pt-hero-text {
+    padding-bottom: 0;
+  }
+
+  .pt-hero-text h1 {
+    font-size: 30px;
+  }
+
+  .pt-hero-art {
+    max-width: 100%;
+    align-self: center;
+  }
+
+  .pt-main {
+    padding: 24px 20px 64px;
+  }
+
+  /* stack badge above body */
+  .pt-phase {
+    flex-direction: column;
+  }
+
+  .pt-phase-badge {
+    width: 100%;
+    flex-direction: row;
+    justify-content: flex-start;
+    padding: 14px 20px;
+  }
+
+  .pt-phase-body {
+    padding: 18px 20px;
+  }
+
+  .pt-phase-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .pt-tips-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pt-cta {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
