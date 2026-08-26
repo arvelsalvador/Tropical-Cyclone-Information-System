@@ -13,17 +13,27 @@
 .hero-bg {
   position: absolute;
   inset: 0;
-  background-image:
-    linear-gradient(
-      90deg,
-      rgba(255, 255, 255, 0.75) 0%,
-      rgba(255, 255, 255, 0.15) 45%,
-      rgba(255, 255, 255, 0) 65%
-    ),
-    url("../../assets/images/Storm_bg.jpg");
-  background-size: cover;
-  background-position: center;
   z-index: 0;
+}
+
+.hero-bg video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
+}
+
+.hero-bg::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.75) 0%,
+    rgba(255, 255, 255, 0.15) 45%,
+    rgba(255, 255, 255, 0) 65%
+  );
 }
 
 .hero-inner {
@@ -54,16 +64,23 @@
 .feature-cards {
   position: relative;
   z-index: 3;
-  max-width: 1320px;
-  margin: auto auto -70px;
+  max-width: 1620px;
+  margin: auto auto -140px;
   width: calc(100% - 80px);
   background: #fff;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-elevated);
-  padding: 36px 40px;
+  padding: 48px 40px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 32px;
+  transition: box-shadow var(--dur-med) var(--ease-out);
+}
+
+.feature-cards:hover {
+  box-shadow:
+    var(--shadow-elevated),
+    0 0 0 1px rgba(29, 78, 216, 0.05);
 }
 
 .feature-card {
@@ -72,6 +89,12 @@
   align-items: flex-start;
   padding-right: 24px;
   border-right: 1px solid var(--border-light);
+}
+
+.feature-text {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .feature-card:last-child {
@@ -114,6 +137,11 @@
   line-height: 1.5;
   color: var(--text-muted);
   margin-bottom: 12px;
+  flex: 1;
+}
+
+.feature-link {
+  margin-top: auto;
 }
 
 .feature-link {
@@ -125,8 +153,16 @@
   gap: 4px;
 }
 
+.feature-link span {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
 .feature-link:hover {
   text-decoration: underline;
+}
+
+.feature-link:hover span {
+  transform: translateX(4px);
 }
 
 /* ==========================================================================
@@ -210,6 +246,14 @@
 .stat-item {
   border-radius: var(--radius-md);
   padding: 20px;
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) ease;
+}
+
+.stat-item:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-card);
 }
 
 .stat-blue {
@@ -222,6 +266,11 @@
 .stat-icon {
   display: inline-flex;
   margin-bottom: 10px;
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.stat-item:hover .stat-icon {
+  transform: scale(1.12) rotate(6deg);
 }
 
 .stat-number {
@@ -267,13 +316,24 @@
   background: var(--blue-50);
   border-radius: var(--radius-md);
   transition:
-    background 0.15s ease,
-    transform 0.15s ease;
+    background var(--dur-fast) ease,
+    transform var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+
+.btn-outline::after {
+  content: "→";
+  transition: transform var(--dur-med) var(--ease-out);
 }
 
 .btn-outline:hover {
   background: #dfe9fe;
-  transform: translateY(-1px);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.15);
+}
+
+.btn-outline:hover::after {
+  transform: translateX(4px);
 }
 
 /* Storm list */
@@ -290,11 +350,14 @@
   justify-content: space-between;
   padding: 14px 12px;
   border-radius: var(--radius-md);
-  transition: background 0.15s ease;
+  transition:
+    background var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
 }
 
 .storm-row:hover {
   background: var(--bg-soft);
+  transform: translateX(2px);
 }
 
 .storm-left {
@@ -330,21 +393,47 @@
   font-weight: 600;
   padding: 4px 10px;
   border-radius: var(--radius-full);
+  transition: transform var(--dur-fast) var(--ease-spring);
 }
 
+.storm-row:hover .signal-badge {
+  transform: scale(1.06);
+}
+
+.signal-1 {
+  background: var(--signal-1-bg);
+  color: var(--signal-1-fg);
+}
+.signal-2 {
+  background: var(--signal-2-bg);
+  color: var(--signal-2-fg);
+}
+.signal-3 {
+  background: var(--signal-3-bg);
+  color: var(--signal-3-fg);
+}
 .signal-5 {
-  background: var(--purple-100);
-  color: var(--purple-600);
+  background: var(--signal-5-bg);
+  color: var(--signal-5-fg);
 }
 
 .signal-4 {
-  background: var(--orange-50);
-  color: var(--orange-500);
+  background: var(--signal-4-bg);
+  color: var(--signal-4-fg);
 }
 
 .chevron-icon {
   color: var(--text-muted);
   font-size: 16px;
+  display: inline-block;
+  transition:
+    transform var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) ease;
+}
+
+.storm-row:hover .chevron-icon {
+  transform: translateX(3px);
+  color: var(--blue-600);
 }
 
 .link-view-all {
@@ -359,38 +448,25 @@
 
 /* Feature card hover motion */
 .feature-card {
-  transition: transform 0.2s ease;
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) ease;
+  border-radius: var(--radius-md);
 }
 
 .feature-card:hover {
-  transform: translateY(-3px);
+  transform: translateY(-4px);
 }
 
 .feature-icon {
-  transition: transform 0.2s ease;
+  transition:
+    transform var(--dur-med) var(--ease-spring),
+    box-shadow var(--dur-med) ease;
 }
 
 .feature-card:hover .feature-icon {
-  transform: scale(1.08);
-}
-
-@media (max-width: 900px) {
-  .home-lower {
-    padding: 100px 20px 60px;
-  }
-  .home-lower-inner {
-    grid-template-columns: 1fr;
-  }
-  .stat-grid {
-    grid-template-columns: 1fr;
-  }
-}
-/* ==========================================================================
-   Home — Lower Section (Overview + Notable Storms)
-   ========================================================================== */
-.home-lower {
-  background: var(--bg-soft);
-  padding: 130px 40px 80px;
+  transform: scale(1.08) rotate(-4deg);
+  box-shadow: 0 8px 16px rgba(15, 30, 51, 0.18);
 }
 
 .home-lower-inner {
