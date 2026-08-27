@@ -30,9 +30,10 @@
   inset: 0;
   background: linear-gradient(
     90deg,
-    rgba(255, 255, 255, 0.75) 0%,
-    rgba(255, 255, 255, 0.15) 45%,
-    rgba(255, 255, 255, 0) 65%
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(255, 255, 255, 0.8) 38%,
+    rgba(255, 255, 255, 0.45) 62%,
+    rgba(255, 255, 255, 0.05) 85%
   );
 }
 
@@ -51,6 +52,7 @@
   color: var(--navy-900);
   margin-bottom: 24px;
   letter-spacing: -0.01em;
+  text-shadow: 0 1px 14px rgba(255, 255, 255, 0.65);
 }
 
 .hero-subtitle {
@@ -58,6 +60,7 @@
   line-height: 1.6;
   color: var(--text-body);
   max-width: 560px;
+  text-shadow: 0 1px 10px rgba(255, 255, 255, 0.7);
 }
 
 /* Floating feature cards */
@@ -178,6 +181,10 @@
     padding-bottom: 24px;
     padding-right: 0;
   }
+  .feature-card:nth-last-child(-n + 2) {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
 }
 
 @media (max-width: 900px) {
@@ -197,13 +204,27 @@
     margin: 48px auto -50px;
     width: calc(100% - 40px);
   }
+  .feature-card {
+    border-bottom: 1px solid var(--border-light);
+    padding-bottom: 24px;
+  }
+  .feature-card:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+}
+
+@media (max-width: 1024px) {
+  .home-lower-inner {
+    grid-template-columns: 1fr;
+  }
 }
 /* ==========================================================================
    Home — Lower Section (Overview + Notable Storms)
    ========================================================================== */
 .home-lower {
   background: var(--bg-soft);
-  padding: 130px 40px 80px;
+  padding: 175px 40px 80px;
 }
 
 .home-lower-inner {
@@ -446,27 +467,8 @@
   text-decoration: underline;
 }
 
-/* Feature card hover motion */
 .feature-card {
-  transition:
-    transform var(--dur-med) var(--ease-out),
-    border-color var(--dur-med) ease;
   border-radius: var(--radius-md);
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-}
-
-.feature-icon {
-  transition:
-    transform var(--dur-med) var(--ease-spring),
-    box-shadow var(--dur-med) ease;
-}
-
-.feature-card:hover .feature-icon {
-  transform: scale(1.08) rotate(-4deg);
-  box-shadow: 0 8px 16px rgba(15, 30, 51, 0.18);
 }
 
 .home-lower-inner {
@@ -656,31 +658,31 @@
   text-decoration: underline;
 }
 
-/* Feature card hover motion */
-.feature-card {
-  transition: transform 0.2s ease;
-}
 
-.feature-card:hover {
-  transform: translateY(-3px);
-}
-
-.feature-icon {
-  transition: transform 0.2s ease;
-}
-
-.feature-card:hover .feature-icon {
-  transform: scale(1.08);
-}
 
 @media (max-width: 900px) {
   .home-lower {
-    padding: 100px 20px 60px;
+    padding: 130px 20px 60px;
   }
   .home-lower-inner {
     grid-template-columns: 1fr;
   }
   .stat-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-title {
+    font-size: 30px;
+  }
+  .home-lower {
+    padding: 120px 16px 56px;
+  }
+  .info-card {
+    padding: 24px;
+  }
+  .storm-row {
+    padding: 12px 8px;
   }
 }

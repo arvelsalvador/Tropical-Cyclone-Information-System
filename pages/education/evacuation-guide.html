@@ -19,28 +19,24 @@
     <div id="site-header"><div class="announcement-bar">
   <span class="announcement-icon">📣</span>
   <p>Always stay informed. This platform uses official PAGASA data.</p>
+  <button class="announcement-close" type="button" aria-label="Dismiss announcement">
+    &times;
+  </button>
 </div>
 <header class="site-header">
   <div class="header-inner">
     <a href="../../index.html" class="logo">
       <span class="logo-icon">
-        <svg viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="20" cy="20" r="20" fill="#1D4ED8" />
-          <circle cx="26" cy="14" r="5" fill="#FBBF24" />
-          <path d="M6 24c2-4 4-6 8-6s5 3 8 3 4-3 8-3 6 2 8 6" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" />
-          <path d="M4 29c2-3.5 4-5 8-5s5 2.5 8 2.5 4-2.5 8-2.5 6 1.5 8 5" stroke="#fff" stroke-width="2" stroke-linecap="round" fill="none" />
-          <path d="M12 20c0-5 2-8 2-8" stroke="#0F766E" stroke-width="2" stroke-linecap="round" />
-        </svg>
+        <img src="../../assets/images/Logo.png" alt="Tropical Cyclone Information System logo" />
       </span>
       <span class="logo-text">
-        <span class="logo-title">Typhoon Timeline</span>
-        <span class="logo-sub">Camarines Norte</span>
+        <span class="logo-title">Tropical Cyclone Information System</span>
       </span>
     </a>
     <nav class="main-nav">
       <a href="../../index.html" class="nav-link">Home</a>
       <a href="../../pages/historical-data.html" class="nav-link">Historical Data</a>
-      <a href="../../pages/compare-storms.html" class="nav-link">Compare Storms</a>
+      <a href="../../pages/compare-storms.html" class="nav-link">Metrics</a>
       <div class="nav-dropdown" id="education-dropdown">
         <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
           Education
@@ -114,7 +110,6 @@
                 />
               </svg>
             </a>
-            <a href="#go-bag" class="eg-btn eg-btn-ghost">Build a Go-Bag</a>
           </div>
         </div>
 
@@ -258,143 +253,6 @@
         </article>
       </section>
 
-      <!-- Evacuation timeline -->
-      <h2 class="eg-section-title" id="steps">Your Evacuation, Step by Step</h2>
-
-      <section class="eg-steps">
-        <article class="eg-step">
-          <div class="eg-step-num">1</div>
-          <div class="eg-step-body">
-            <h3>Confirm the order and destination</h3>
-            <p>
-              Verify the evacuation advisory through official channels —
-              PAGASA, your barangay, or your LGU's page. Confirm which
-              evacuation center is open; it may differ from the nearest one.
-            </p>
-          </div>
-        </article>
-
-        <article class="eg-step">
-          <div class="eg-step-num">2</div>
-          <div class="eg-step-body">
-            <h3>Secure the house</h3>
-            <p>
-              Unplug appliances, switch off the main breaker, close the LPG
-              tank valve, and move belongings off the floor. Lock windows and
-              doors. Inform a relative outside the area that you are leaving.
-            </p>
-          </div>
-        </article>
-
-        <article class="eg-step">
-          <div class="eg-step-num">3</div>
-          <div class="eg-step-body">
-            <h3>Take the go-bag and leave</h3>
-            <p>
-              One bag per person, packed and by the door in advance. Wear
-              sturdy closed shoes and rain gear. Follow the designated route —
-              never shortcuts through floodwater, underpasses, or riverbanks.
-            </p>
-          </div>
-        </article>
-
-        <article class="eg-step">
-          <div class="eg-step-num">4</div>
-          <div class="eg-step-body">
-            <h3>Check in at the evacuation center</h3>
-            <p>
-              Register every family member with center staff. Note the
-              location of exits, clinics, and water points. Keep children
-              within sight at all times.
-            </p>
-          </div>
-        </article>
-
-        <article class="eg-step">
-          <div class="eg-step-num">5</div>
-          <div class="eg-step-body">
-            <h3>Return only when declared safe</h3>
-            <p>
-              Wait for the official all-clear. Watch for the storm's calm
-              "eye" — winds return suddenly from the opposite direction.
-              At home, check for gas leaks and damaged wires before
-              reconnecting power.
-            </p>
-          </div>
-        </article>
-      </section>
-
-      <!-- Go-bag checklist -->
-      <h2 class="eg-section-title" id="go-bag">The Go-Bag Checklist</h2>
-      <p class="eg-section-sub">
-        Tick items off as you pack — your progress is saved on this device so
-        you can finish packing later or restock after a storm.
-      </p>
-
-      <section class="eg-card eg-checklist-card">
-        <div class="eg-progress-row">
-          <div class="eg-progress-info">
-            <span class="eg-progress-title">Packing progress</span>
-            <span class="eg-progress-count" id="eg-progress-count">0 of 0 items</span>
-          </div>
-          <span class="eg-progress-pct" id="eg-progress-pct">0%</span>
-        </div>
-        <div class="eg-progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="eg-progress-bar">
-          <div class="eg-progress-fill" id="eg-progress-fill"></div>
-        </div>
-
-        <div class="eg-checklist" id="eg-checklist">
-          <!-- categories injected by js/pages/evacuation-guide.js -->
-        </div>
-
-        <div class="eg-checklist-actions">
-          <button type="button" class="eg-btn eg-btn-outline" id="eg-check-all">Check all</button>
-          <button type="button" class="eg-btn eg-btn-outline" id="eg-uncheck-all">Uncheck all</button>
-          <button type="button" class="eg-btn eg-btn-outline" id="eg-reset">Reset saved progress</button>
-        </div>
-      </section>
-
-      <!-- What to bring / leave -->
-      <section class="eg-card">
-        <h2 class="eg-card-title">Bring vs. Leave Behind</h2>
-        <div class="eg-table-wrap">
-          <table class="eg-table">
-            <thead>
-              <tr>
-                <th>Bring</th>
-                <th>Leave Behind / Do Before Leaving</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td>Water (at least 3 L per person per day)</td>
-                <td>Large furniture and appliances</td>
-              </tr>
-              <tr>
-                <td>Ready-to-eat food for 3 days</td>
-                <td>Valuables that can be replaced</td>
-              </tr>
-              <tr>
-                <td>IDs and documents in a waterproof pouch</td>
-                <td>Propane/LPG tanks — close valves instead</td>
-              </tr>
-              <tr>
-                <td>Medicines, first aid, and prescriptions</td>
-                <td>Cars in flood-prone parking — move to higher ground</td>
-              </tr>
-              <tr>
-                <td>Flashlight, radio, and fully charged power banks</td>
-                <td>Never bring: weapons, alcohol, or flammables to a shelter</td>
-              </tr>
-              <tr>
-                <td>Cash in small bills and loose change</td>
-                <td>Do not wait to pack — 10 minutes is enough</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </section>
-
       <!-- Reminders -->
       <section class="eg-card eg-reminders">
         <h2 class="eg-card-title">Critical Reminders</h2>
@@ -481,7 +339,7 @@
       <h4>Explore</h4>
       <a href="../../index.html">Home</a>
       <a href="../../pages/historical-data.html">Historical Data</a>
-      <a href="../../pages/compare-storms.html">Compare Storms</a>
+      <a href="../../pages/compare-storms.html">Metrics</a>
       <a href="../../pages/resources.html">Resources</a>
     </div>
     <div class="footer-col">

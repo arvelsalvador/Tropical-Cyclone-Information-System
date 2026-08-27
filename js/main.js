@@ -6,6 +6,26 @@
   "use strict";
 
   function initNav() {
+    // ── Announcement bar dismiss ────────────────────────────────────────
+    var annBar = document.querySelector(".announcement-bar");
+    var annClose = document.querySelector(".announcement-close");
+    if (annBar && annClose) {
+      var ANN_KEY = "announcement-dismissed";
+      var dismissed = false;
+      try {
+        dismissed = localStorage.getItem(ANN_KEY) === "1";
+      } catch (e) {}
+      if (dismissed) {
+        annBar.classList.add("is-hidden");
+      }
+      annClose.addEventListener("click", function () {
+        annBar.classList.add("is-hidden");
+        try {
+          localStorage.setItem(ANN_KEY, "1");
+        } catch (e) {}
+      });
+    }
+
     // ── Education dropdown (click to open/close) ──────────────────────────────
     var dropdowns = document.querySelectorAll(".nav-dropdown");
     dropdowns.forEach(function (dropdown) {

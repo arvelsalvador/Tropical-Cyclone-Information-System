@@ -2,8 +2,12 @@
    Education hub — hero, topics, resources, fact card, CTA
    ========================================================================== */
 .edu-hero {
-  background: linear-gradient(180deg, #eaf2fd 0%, #dce9fb 100%);
-  padding: 56px 40px 0;
+  position: relative;
+  background:
+    linear-gradient(90deg, rgba(5, 23, 43, 0.82) 0%, rgba(5, 23, 43, 0.58) 46%, rgba(5, 23, 43, 0.2) 100%),
+    url("../../assets/images/education_background.png") center 20% / cover no-repeat;
+  min-height: 430px;
+  padding: 72px 40px;
   overflow: hidden;
 }
 
@@ -17,7 +21,9 @@
 }
 
 .edu-hero-text {
-  padding-bottom: 56px;
+  position: relative;
+  z-index: 1;
+  padding: 48px 0;
   max-width: 480px;
 }
 
@@ -25,20 +31,18 @@
   font-size: 40px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: var(--navy-900);
+  color: #fff;
   margin-bottom: 16px;
 }
 
 .edu-hero-text p {
   font-size: 15.5px;
   line-height: 1.65;
-  color: var(--text-body);
+  color: rgba(255, 255, 255, 0.86);
 }
 
 .edu-hero-art {
-  flex-shrink: 0;
-  width: 520px;
-  max-width: 48%;
+  display: none;
 }
 
 .edu-hero-art svg {
@@ -53,16 +57,16 @@
 .edu-main {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 24px 40px 80px;
+  padding: 8px 16px 80px;
 }
 
 .edu-card {
   background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-card);
-  padding: 24px;
-  margin-top: 24px;
+  border: 1px solid #d9eaff;
+  border-radius: 20px;
+  box-shadow: 0 6px 24px rgba(45, 116, 190, 0.1);
+  padding: 16px 24px;
+  margin-top: 8px;
 }
 
 .edu-main .edu-card:first-child {
@@ -70,10 +74,39 @@
 }
 
 .edu-card-title {
-  font-size: 16px;
-  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 20px;
+  font-weight: 800;
   color: var(--text-dark);
-  margin-bottom: 18px;
+  margin-bottom: 12px;
+}
+
+.section-title-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.section-title-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.section-title-icon-blue {
+  background: var(--blue-600);
+}
+
+.section-title-icon-teal {
+  background: #2cae9e;
 }
 
 /* ==========================================================================
@@ -89,13 +122,31 @@
   display: flex;
   flex-direction: column;
   background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 18px 16px;
+  border: 1px solid #e1eaf5;
+  border-top: 2px solid var(--blue-600);
+  border-radius: 12px;
+  padding: 16px;
+  min-height: 222px;
   transition:
     transform 0.18s ease,
     box-shadow 0.18s ease,
     border-color 0.18s ease;
+}
+
+.topic-card:nth-child(2) {
+  border-top-color: #059669;
+}
+
+.topic-card:nth-child(3) {
+  border-top-color: #f97316;
+}
+
+.topic-card:nth-child(4) {
+  border-top-color: #7c3aed;
+}
+
+.topic-card:nth-child(5) {
+  border-top-color: #0d9488;
 }
 
 .topic-card:hover {
@@ -104,34 +155,42 @@
   box-shadow: var(--shadow-card);
 }
 
+/* Filled circular icon badge — solid color circle with a white glyph inside,
+   matching the friendly/rounded reference style. */
 .topic-icon {
-  width: 44px;
-  height: 44px;
-  border-radius: 12px;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
   margin-bottom: 12px;
 }
 
+.topic-icon svg {
+  width: 26px;
+  height: 26px;
+}
+
 .icon-sky {
-  background: #dbeafe;
+  background: #3b82f6;
 }
 
 .icon-green {
-  background: var(--green-50);
+  background: #22c55e;
 }
 
 .icon-orange {
-  background: var(--orange-50);
+  background: #f97316;
 }
 
 .icon-purple {
-  background: var(--purple-100);
+  background: #8b5cf6;
 }
 
 .icon-teal {
-  background: #ccfbf1;
+  background: #14b8a6;
 }
 
 .topic-card h3 {
@@ -149,8 +208,18 @@
 }
 
 .topic-arrow {
-  margin-top: 12px;
-  font-size: 15px;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  align-self: flex-end;
+  margin-top: 8px;
+  border: 1px solid #e1eaf5;
+  border-radius: 50%;
+  box-shadow: 0 3px 10px rgba(15, 30, 51, 0.1);
+  font-size: 24px;
+  line-height: 1;
   font-weight: 600;
   color: var(--blue-600);
   transition: transform 0.18s ease;
@@ -171,7 +240,7 @@
 }
 
 .edu-mid-grid .edu-card {
-  margin-top: 24px;
+  margin-top: 8px;
   height: 100%;
 }
 
@@ -185,9 +254,9 @@
   display: flex;
   flex-direction: column;
   background: var(--bg-soft);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  padding: 14px;
+  border: 1px solid #e1eaf5;
+  border-radius: 12px;
+  padding: 0;
   transition:
     transform 0.18s ease,
     border-color 0.18s ease,
@@ -202,12 +271,24 @@
 
 .resource-thumb {
   width: 100%;
-  height: 110px;
-  border-radius: 10px;
+  height: 145px;
+  border-radius: 10px 10px 0 0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 12px;
+  overflow: hidden;
+}
+
+.resource-body {
+  padding: 0 14px 14px;
+}
+
+.resource-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
 }
 
 .thumb-blue {
@@ -288,6 +369,7 @@
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
   padding: 18px;
+  min-height: 168px;
   margin-bottom: 18px;
 }
 
@@ -300,6 +382,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.fact-icon svg {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: #16a34a;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .fact-text {
@@ -322,19 +414,20 @@
   gap: 6px;
   font-size: 13px;
   font-weight: 600;
-  color: var(--text-dark);
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  padding: 10px 18px;
+  color: #fff;
+  background: #20a994;
+  border: 1px solid #20a994;
+  border-radius: 8px;
+  padding: 10px 28px;
+  margin: 8px auto 0;
   transition:
     background 0.15s ease,
     border-color 0.15s ease;
 }
 
 .fact-btn:hover {
-  background: var(--bg-soft);
-  border-color: #cfd8e3;
+  background: #168f7d;
+  border-color: #168f7d;
 }
 
 /* ==========================================================================
@@ -368,6 +461,16 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.edu-cta-icon svg {
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: #fff;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
 }
 
 .edu-cta-left h2 {
@@ -415,7 +518,8 @@
 
 @media (max-width: 900px) {
   .edu-hero {
-    padding: 40px 20px 0;
+    min-height: 360px;
+    padding: 40px 20px;
   }
 
   .edu-hero-inner {
@@ -425,12 +529,11 @@
   }
 
   .edu-hero-text {
-    padding-bottom: 0;
+    padding: 28px 0;
   }
 
   .edu-hero-art {
-    max-width: 100%;
-    align-self: center;
+    display: none;
   }
 
   .edu-main {

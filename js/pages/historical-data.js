@@ -1,6 +1,7 @@
 // Tropical Cyclone Information System — Historical Data page
 // Renders the cyclone table, wires filters (year range, category, area),
-// updates stat cards, and handles pagination.
+// name search, stat cards, CSV export, and numbered pagination.
+// Filters apply live; no submit button needed.
 
 (function () {
   "use strict";
@@ -46,46 +47,39 @@
     { name: "Typhoon Basyang (Conson)", year: 2010, category: "Typhoon", date: "Jul 14, 2010", location: "Daet, Camarines Norte", wind: 130, rainfall: 145.6, affected: 35000, damage: "₱160M" },
   ];
 
-  const MUNICIPALITIES = [
-    "Basud",
-    "Capalonga",
-    "Daet",
-    "Jose Panganiban",
-    "Labo",
-    "Mercedes",
-    "Paracale",
-    "San Lorenzo Ruiz",
-    "San Vicente",
-    "Santa Elena",
-    "Talisay",
-    "Vinzons",
-  ];
-
-  const PAGE_SIZE = 5;
+  const PAGE_SIZE = 10;
 
   // ---------------------------------------------------------------------
   // Element references
   // ---------------------------------------------------------------------
   const tbody = document.getElementById("stormTableBody");
+  const tableTitle = document.getElementById("tableTitle");
+  const searchInput = document.getElementById("searchInput");
   const yearMinInput = document.getElementById("yearMinInput");
   const yearMaxInput = document.getElementById("yearMaxInput");
   const yearMinValue = document.getElementById("yearMinValue");
   const yearMaxValue = document.getElementById("yearMaxValue");
   const rangeFill = document.getElementById("rangeFill");
   const categoryList = document.getElementById("categoryList");
-  const areaSelect = document.getElementById("areaSelect");
   const clearBtn = document.getElementById("clearFilters");
-  const applyBtn = document.getElementById("applyFilters");
   const statTotal = document.getElementById("statTotal");
   const statTotalSub = document.getElementById("statTotalSub");
-  const statLandfall = document.getElementById("statLandfall");
+  const statMaxWind = document.getElementById("statMaxWind");
+  const statMaxWindSub = document.getElementById("statMaxWindSub");
   const statAverage = document.getElementById("statAverage");
   const pageInfo = document.getElementById("pageInfo");
+  const pageNumbers = document.getElementById("pageNumbers");
   const prevBtn = document.getElementById("prevPage");
   const nextBtn = document.getElementById("nextPage");
+  const downloadBtn = document.getElementById("downloadCsv");
 
   let currentPage = 1;
   let lastFiltered = STORMS;
+  let searchQuery = "";
+
+  const prefersReducedMotion =
+    window.matchMedia &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const hurricaneSvg =
     '<svg viewBox="0 0 24 24" width="15" height="15" fill="none">' +
@@ -93,6 +87,64 @@
     '<path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="#fff"/>' +
     '<path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="#fff"/>' +
     "</svg>";
+
+  // ---------------------------------------------------------------------
+  // Animations: count-up numbers, scroll reveal
+  // ---------------------------------------------------------------------
+  function animateStat(el, target, decimals) {
+    if (prefersReducedMotion) {
+      el._value = target;
+      el.textContent = target.toFixed(decimals);
+      return;
+    }
+    if (el._raf) cancelAnimationFrame(el._raf);
+    const from = typeof el._value === "number" ? el._value : 0;
+    const duration = 900;
+    const t0 = performance.now();
+
+    function frame(now) {
+      const progress = Math.min(1, (now - t0) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3); /* ease-out cubic */
+      const value = from + (target - from) * eased;
+      el._value = value;
+      el.textContent = value.toFixed(decimals);
+      if (progress < 1) el._raf = requestAnimationFrame(frame);
+    }
+
+    el._raf = requestAnimationFrame(frame);
+  }
+
+  function setupReveal() {
+    const targets = document.querySelectorAll("[data-reveal]");
+
+    /* Stagger siblings inside the same parent (e.g. the stat cards). */
+    targets.forEach((el) => {
+      const siblings = el.parentElement.querySelectorAll(
+        ":scope > [data-reveal]"
+      );
+      const index = Array.prototype.indexOf.call(siblings, el);
+      if (index > 0) el.style.transitionDelay = index * 90 + "ms";
+    });
+
+    if (prefersReducedMotion || !("IntersectionObserver" in window)) {
+      targets.forEach((el) => el.classList.add("is-revealed"));
+      return;
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("is-revealed");
+            observer.unobserve(entry.target);
+          }
+        });
+      },
+      { threshold: 0.12 }
+    );
+
+    targets.forEach((el) => observer.observe(el));
+  }
 
   // ---------------------------------------------------------------------
   // Filter UI setup
@@ -123,15 +175,6 @@
     });
   }
 
-  function buildAreaOptions() {
-    MUNICIPALITIES.forEach((m) => {
-      const option = document.createElement("option");
-      option.value = m;
-      option.textContent = m;
-      areaSelect.appendChild(option);
-    });
-  }
-
   function updateRangeUI() {
     let min = parseInt(yearMinInput.value, 10);
     let max = parseInt(yearMaxInput.value, 10);
@@ -155,24 +198,23 @@
   }
 
   // ---------------------------------------------------------------------
-  // Filtering + rendering
+  // Filtering + sorting
   // ---------------------------------------------------------------------
   function getActiveFilters() {
-    const years = Array.from(
+    const categories = Array.from(
       categoryList.querySelectorAll("input[type=checkbox]:checked")
     ).map((c) => c.value);
 
     return {
       minYear: parseInt(yearMinInput.value, 10),
       maxYear: parseInt(yearMaxInput.value, 10),
-      categories: years,
-      area: areaSelect.value,
+      categories: categories,
     };
   }
 
-  function applyFilters() {
-    const filters = getActiveFilters();
-    const filtered = STORMS.filter((storm) => {
+  function getFiltered(filters) {
+    const q = searchQuery.trim().toLowerCase();
+    return STORMS.filter((storm) => {
       if (storm.year < filters.minYear || storm.year > filters.maxYear)
         return false;
       if (
@@ -180,10 +222,14 @@
         filters.categories.indexOf(storm.category) === -1
       )
         return false;
-      if (filters.area && storm.location.indexOf(filters.area) === -1)
-        return false;
+      if (q && storm.name.toLowerCase().indexOf(q) === -1) return false;
       return true;
     });
+  }
+
+  function runFilters() {
+    const filters = getActiveFilters();
+    const filtered = getFiltered(filters);
 
     updateStats(filtered, filters);
     lastFiltered = filtered;
@@ -195,16 +241,47 @@
     const total = filtered.length;
     const spanYears = filters.maxYear - filters.minYear + 1;
     const average = spanYears > 0 ? total / spanYears : 0;
+    const landfalls = filtered.filter((s) => s.date && s.location).length;
 
-    statTotal.textContent = total;
+    const strongest = filtered.reduce(
+      (best, s) =>
+        s.wind / s.rainfall > (best ? best.wind / best.rainfall : -1)
+          ? s
+          : best,
+      null
+    );
+
+    animateStat(statTotal, total, 0);
     statTotalSub.textContent =
       filters.minYear === 2010 && filters.maxYear === 2020
         ? "2010–2020"
         : filters.minYear + "–" + filters.maxYear;
-    statLandfall.textContent = total; // all recorded storms made landfall
-    statAverage.textContent = average.toFixed(1);
+    if (strongest) {
+      animateStat(statMaxWind, strongest.wind / strongest.rainfall, 2);
+    } else {
+      if (statMaxWind._raf) cancelAnimationFrame(statMaxWind._raf);
+      statMaxWind._value = null;
+      statMaxWind.textContent = "—";
+    }
+    statMaxWindSub.textContent = strongest
+      ? strongest.name.replace(/^Typhoon |^TS |^TD /, "") +
+        " · " +
+        strongest.wind + " km/h · " +
+        strongest.rainfall.toFixed(1) + " mm rain"
+      : "no data in range";
+    animateStat(statAverage, average, 1);
+
+    tableTitle.textContent =
+      "List of Historical Cyclones (" +
+      filters.minYear +
+      "–" +
+      filters.maxYear +
+      ")";
   }
 
+  // ---------------------------------------------------------------------
+  // Table rendering
+  // ---------------------------------------------------------------------
   function renderTable(filtered) {
     tbody.innerHTML = "";
 
@@ -212,7 +289,7 @@
       const emptyRow = document.createElement("tr");
       emptyRow.className = "empty-row";
       emptyRow.innerHTML =
-        '<td colspan="10">No cyclones match the selected filters.</td>';
+        '<td colspan="7">No cyclones match the selected filters.</td>';
       tbody.appendChild(emptyRow);
       updatePagination(filtered);
       return;
@@ -224,13 +301,14 @@
     const start = (currentPage - 1) * PAGE_SIZE;
     const pageRows = filtered.slice(start, start + PAGE_SIZE);
 
-    pageRows.forEach((storm) => {
+    pageRows.forEach((storm, rowIndex) => {
       const meta = CATEGORIES[storm.category] || {
         color: "#64748b",
         bg: "#f1f5f9",
       };
 
       const row = document.createElement("tr");
+      row.style.animationDelay = rowIndex * 45 + "ms";
 
       const nameCell = document.createElement("td");
       const nameWrap = document.createElement("span");
@@ -258,8 +336,6 @@
         storm.location,
         storm.wind,
         storm.rainfall.toFixed(1),
-        storm.affected.toLocaleString(),
-        null, // damage handled separately
       ];
 
       cells.forEach((value) => {
@@ -277,64 +353,19 @@
       badge.style.color = meta.color;
       badgeTd.appendChild(badge);
 
-      // Damage value
-      const damageTd = row.children[8];
-      const damage = document.createElement("span");
-      damage.className = "damage-value";
-      damage.textContent = storm.damage;
-      damageTd.appendChild(damage);
-
-      // Action button
-      const actionTd = document.createElement("td");
-      const actionBtn = document.createElement("button");
-      actionBtn.type = "button";
-      actionBtn.className = "row-action";
-      actionBtn.setAttribute("aria-label", "View details for " + storm.name);
-      actionBtn.innerHTML =
-        '<svg viewBox="0 0 24 24" width="17" height="17" fill="none">' +
-        '<path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="1.8"/>' +
-        '<circle cx="12" cy="12" r="2.8" stroke="currentColor" stroke-width="1.8"/>' +
-        "</svg>";
-      actionBtn.addEventListener("click", () => toggleDetailRow(row, storm));
-      actionTd.appendChild(actionBtn);
-      row.appendChild(actionTd);
-
       tbody.appendChild(row);
     });
 
     updatePagination(filtered);
   }
 
-  function toggleDetailRow(row, storm) {
-    const existing = row.nextElementSibling;
-    if (existing && existing.classList.contains("detail-row")) {
-      existing.remove();
-      return;
-    }
-    tbody.querySelectorAll(".detail-row").forEach((r) => r.remove());
-
-    const detail = document.createElement("tr");
-    detail.className = "detail-row";
-    const cell = document.createElement("td");
-    cell.colSpan = 10;
-    cell.className = "detail-cell";
-    cell.innerHTML =
-      '<div class="detail-inner">' +
-      "<strong>" + storm.name + "</strong> — " + storm.category + " (" + storm.year + "). " +
-      "Made landfall over <strong>" + storm.location + "</strong> on " + storm.date +
-      " with maximum sustained winds of <strong>" + storm.wind + " km/h</strong> and " +
-      "an estimated rainfall of <strong>" + storm.rainfall.toFixed(1) + " mm</strong>. " +
-      "Around <strong>" + storm.affected.toLocaleString() + " persons</strong> were affected, " +
-      "with damages pegged at <strong>" + storm.damage + "</strong>. " +
-      "Source: PAGASA tropical cyclone archives." +
-      "</div>";
-    detail.appendChild(cell);
-    row.after(detail);
-  }
-
+  // ---------------------------------------------------------------------
+  // Pagination
+  // ---------------------------------------------------------------------
   function updatePagination(filtered) {
     const total = filtered.length;
     const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+    if (currentPage > totalPages) currentPage = totalPages;
     const start = total === 0 ? 0 : (currentPage - 1) * PAGE_SIZE + 1;
     const end = Math.min(currentPage * PAGE_SIZE, total);
 
@@ -342,40 +373,95 @@
       total === 0 ? "0 of 0" : start + "–" + end + " of " + total;
     prevBtn.disabled = currentPage <= 1;
     nextBtn.disabled = currentPage >= totalPages;
+
+    pageNumbers.innerHTML = "";
+    for (let p = 1; p <= totalPages; p++) {
+      const pageBtn = document.createElement("button");
+      pageBtn.type = "button";
+      pageBtn.className = "page-num" + (p === currentPage ? " active" : "");
+      pageBtn.textContent = p;
+      pageBtn.setAttribute(
+        "aria-label",
+        "Go to page " + p + (p === currentPage ? " (current page)" : "")
+      );
+      pageBtn.addEventListener("click", () => {
+        currentPage = p;
+        renderTable(lastFiltered);
+      });
+      pageNumbers.appendChild(pageBtn);
+    }
   }
 
+  // ---------------------------------------------------------------------
+  // CSV export
+  // ---------------------------------------------------------------------
+  function downloadCsv() {
+    const header = [
+      "Name", "Year", "PAGASA Category", "Landfall Date",
+      "Landfall Location", "Max Wind (km/h)", "Rainfall (mm)",
+    ];
+    const rows = lastFiltered.map((s) => [
+      s.name, s.year, s.category, s.date, s.location,
+      s.wind, s.rainfall.toFixed(1),
+    ]);
+    const csv = [header].concat(rows)
+      .map((row) =>
+        row.map((v) => '"' + String(v).replace(/"/g, '""') + '"').join(",")
+      )
+      .join("\r\n");
+
+    const blob = new Blob(["\uFEFF" + csv], {
+      type: "text/csv;charset=utf-8",
+    });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "camarines-norte-cyclones-2010-2020.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------------------------------------------------------------------
+  // Clear filters
+  // ---------------------------------------------------------------------
   function clearFilters() {
     yearMinInput.value = 2010;
     yearMaxInput.value = 2020;
-    areaSelect.value = "";
+    searchInput.value = "";
+    searchQuery = "";
     categoryList
       .querySelectorAll("input[type=checkbox]")
       .forEach((c) => (c.checked = false));
     updateRangeUI();
-    applyFilters();
+    runFilters();
   }
 
   // ---------------------------------------------------------------------
   // Wiring
   // ---------------------------------------------------------------------
   function init() {
+    setupReveal();
     buildCategoryList();
-    buildAreaOptions();
     updateRangeUI();
-    applyFilters();
+    runFilters();
 
     yearMinInput.addEventListener("input", () => {
       updateRangeUI();
-      applyFilters();
+      runFilters();
     });
     yearMaxInput.addEventListener("input", () => {
       updateRangeUI();
-      applyFilters();
+      runFilters();
     });
-    categoryList.addEventListener("change", applyFilters);
-    areaSelect.addEventListener("change", applyFilters);
-    applyBtn.addEventListener("click", applyFilters);
+    categoryList.addEventListener("change", runFilters);
     clearBtn.addEventListener("click", clearFilters);
+
+    searchInput.addEventListener("input", () => {
+      searchQuery = searchInput.value;
+      runFilters();
+    });
 
     prevBtn.addEventListener("click", () => {
       if (currentPage > 1) {
@@ -384,12 +470,17 @@
       }
     });
     nextBtn.addEventListener("click", () => {
-      const totalPages = Math.max(1, Math.ceil(lastFiltered.length / PAGE_SIZE));
+      const totalPages = Math.max(
+        1,
+        Math.ceil(lastFiltered.length / PAGE_SIZE)
+      );
       if (currentPage < totalPages) {
         currentPage += 1;
         renderTable(lastFiltered);
       }
     });
+
+    downloadBtn.addEventListener("click", downloadCsv);
   }
 
   if (document.readyState === "loading") {

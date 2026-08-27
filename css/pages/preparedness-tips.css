@@ -597,3 +597,160 @@
     align-items: flex-start;
   }
 }
+
+/* Compact dashboard layout */
+.pt-hero {
+  background: #f4f8fc;
+  padding: 36px 40px 0;
+}
+
+.pt-hero-inner,
+.pt-main {
+  max-width: 1400px;
+}
+
+.pt-hero-text {
+  padding-bottom: 20px;
+  max-width: 700px;
+}
+
+.pt-hero-text h1 {
+  font-size: 34px;
+}
+
+.pt-hero-text p {
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.pt-hero-art {
+  display: none;
+}
+
+.pt-main {
+  padding: 18px 40px 80px;
+}
+
+.pt-card {
+  border-radius: 14px;
+  box-shadow: 0 5px 20px rgba(33, 92, 148, 0.08);
+  padding: 22px 26px;
+  margin-top: 28px;
+}
+
+.pt-principle {
+  align-items: center;
+  background: #e7f1ff;
+  border: 0;
+  box-shadow: none;
+  position: relative;
+}
+
+.pt-principle h2 {
+  font-size: 20px;
+}
+
+.pt-principle p {
+  padding-right: 180px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.pt-plan-link {
+  position: absolute;
+  right: 26px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  background: var(--blue-600);
+  border-radius: 999px;
+  padding: 11px 22px;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.pt-section-title {
+  margin-top: 38px;
+}
+
+.pt-phase-list {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 24px;
+  margin-top: 14px;
+}
+
+.pt-phase {
+  flex-direction: column;
+  border-radius: 14px;
+  box-shadow: 0 4px 14px rgba(33, 92, 148, 0.08);
+}
+
+.pt-phase-badge {
+  width: 100%;
+  min-height: 68px;
+  flex-direction: row;
+  justify-content: flex-start;
+  padding: 16px 20px;
+}
+
+.pt-phase-body {
+  padding: 18px 20px;
+}
+
+.pt-phase-cols {
+  display: block;
+}
+
+.pt-phase-cols > div:last-child {
+  display: none;
+}
+
+.pt-phase-cols li {
+  font-size: 12px;
+}
+
+.pt-checklist-card {
+  margin-top: 20px;
+}
+
+.pt-tips-grid {
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.pt-tip {
+  padding: 14px;
+}
+
+@media (max-width: 900px) {
+  .pt-hero {
+    padding: 30px 20px 0;
+  }
+
+  .pt-main {
+    padding: 20px;
+  }
+
+  .pt-plan-link {
+    position: static;
+    transform: none;
+    margin: 12px 0 0 62px;
+  }
+
+  .pt-principle p {
+    padding-right: 0;
+  }
+
+  .pt-phase-list,
+  .pt-tips-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .pt-phase-cols > div:last-child {
+    display: block;
+  }
+}

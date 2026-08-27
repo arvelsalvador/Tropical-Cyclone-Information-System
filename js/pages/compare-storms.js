@@ -10,6 +10,7 @@
   // ---------------------------------------------------------------------
   const UPCOMING = {
     name: "TY ODIN",
+    year: 2025,
     wind: 185,
     rainfall: 260,
     pressure: 965,
@@ -84,8 +85,24 @@
   const tableBody = document.getElementById("resultsTableBody");
   const colAHead = document.getElementById("colAHead");
   const colBHead = document.getElementById("colBHead");
+  const winnerBanner = document.getElementById("winnerBanner");
+  const winnerBannerLabel = document.getElementById("winnerBannerLabel");
+  const winnerBannerName = document.getElementById("winnerBannerName");
+  const winnerBannerDetail = document.getElementById("winnerBannerDetail");
+  const analogueModal = document.getElementById("analogueModal");
+  const analogueModalTitle = document.getElementById("analogueModalTitle");
+  const analogueModalKicker = document.getElementById("analogueModalKicker");
+  const analogueModalSummary = document.getElementById("analogueModalSummary");
+  const analogueModalStats = document.getElementById("analogueModalStats");
+  const analogueComparisonStorm = document.getElementById("analogueComparisonStorm");
+  const analogueComparisonBody = document.getElementById("analogueComparisonBody");
+  const analogueModalExplanation = document.getElementById("analogueModalExplanation");
 
   let currentMode = "strength";
+  let lastModalTrigger = null;
+  const prefersReducedMotion = window.matchMedia(
+    "(prefers-reduced-motion: reduce)"
+  ).matches;
 
   // ---------------------------------------------------------------------
   // Analogue matching — similarity of each historical storm to the upcoming one
@@ -111,53 +128,168 @@
     );
   }
 
+  function animateMatchScore(el, target) {
+    if (prefersReducedMotion) {
+      el.textContent = target + "%";
+      return;
+    }
+
+    const duration = 1500;
+    const start = performance.now();
+
+    function frame(now) {
+      const progress = Math.min(1, (now - start) / duration);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      el.textContent = Math.round(target * eased) + "%";
+      if (progress < 1) requestAnimationFrame(frame);
+    }
+
+    el.textContent = "0%";
+    requestAnimationFrame(frame);
+  }
+
   function renderAnalogues() {
     analogueList.innerHTML = "";
 
-    STORMS.map((storm) => ({ storm, score: similarity(storm) }))
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 3)
-      .forEach((match, index) => {
-        const style = RANK_STYLES[index];
-        const row = document.createElement("div");
-        row.className =
-          "analogue-row" + (index === 0 ? " best-match" : "");
+    const directionScore = (storm) =>
+      Math.round(100 - directionDelta(storm.direction, UPCOMING.direction) / 3);
 
-        const icon = document.createElement("div");
-        icon.className = "rank-icon";
-        icon.style.background = style.color;
-        icon.innerHTML = awardSvg();
+    const groups = [
+      {
+        label: "Best match · strength",
+        icon: "⇆",
+        matches: STORMS.map((storm) => ({ storm, score: similarity(storm) }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3),
+      },
+      {
+        label: "Best match · direction",
+        icon: "◎",
+        matches: STORMS.map((storm) => ({ storm, score: directionScore(storm) }))
+          .sort((a, b) => b.score - a.score)
+          .slice(0, 3),
+      },
+    ];
+
+    groups.forEach((group) => {
+      const groupEl = document.createElement("section");
+      groupEl.className = "match-group";
+
+      const heading = document.createElement("h3");
+      heading.className = "match-group-title";
+      heading.innerHTML =
+        '<span class="match-group-icon">' + group.icon + "</span>" +
+        group.label + '<span class="match-group-menu" aria-hidden="true">•••</span>';
+      groupEl.appendChild(heading);
+
+      group.matches.forEach((match, index) => {
+        const row = document.createElement("div");
+        row.className = "analogue-row";
+
+        const rank = document.createElement("span");
+        rank.className = "rank-number";
+        rank.textContent = index + 1;
 
         const info = document.createElement("div");
         info.className = "analogue-info";
         info.innerHTML =
-          '<span class="analogue-match-label">' + style.label + "</span>" +
           '<div class="analogue-name">' + match.storm.name + "</div>" +
-          '<div class="analogue-date">' + match.storm.date + "</div>";
+          '<div class="analogue-date">' + match.storm.date + "</div>" +
+          '<div class="match-progress"><span style="width:' + match.score + '%"></span></div>';
 
         const sim = document.createElement("div");
         sim.className = "analogue-similarity";
-        sim.innerHTML =
-          "<strong>" + match.score + "%</strong><small>Similarity</small>";
+        sim.innerHTML = "<strong>0%</strong>";
+        const scoreEl = sim.querySelector("strong");
 
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "analogue-view-btn";
-        btn.textContent = "View Comparison";
+        btn.textContent = "View";
         btn.addEventListener("click", () => {
-          stormA.value = match.storm.name;
-          runCompare();
-          document
-            .getElementById("resultsCard")
-            .scrollIntoView({ behavior: "smooth", block: "start" });
+          openAnalogueDetails(match.storm, group.label, match.score, btn);
         });
 
-        row.appendChild(icon);
+        row.appendChild(rank);
         row.appendChild(info);
         row.appendChild(sim);
         row.appendChild(btn);
-        analogueList.appendChild(row);
+        groupEl.appendChild(row);
+        animateMatchScore(scoreEl, match.score);
       });
+
+      analogueList.appendChild(groupEl);
+    });
+
+    analogueList.querySelectorAll(".analogue-row").forEach((row, index) => {
+      row.style.setProperty("--row-delay", index * 45 + "ms");
+    });
+  }
+
+  function statMarkup(label, value, icon) {
+    return '<div class="analogue-modal-stat"><span class="analogue-stat-icon">' +
+      icon + '</span><div><span>' + label +
+      '</span><strong>' + value + "</strong></div></div>";
+  }
+
+  function comparisonRow(label, historicalValue, upcomingValue) {
+    return "<tr><th scope=\"row\">" + label + "</th><td>" +
+      historicalValue + "</td><td>" + upcomingValue + "</td></tr>";
+  }
+
+  function openAnalogueDetails(storm, matchLabel, score, trigger) {
+    const isDirectionMatch = matchLabel.indexOf("direction") !== -1;
+    const trackDelta = directionDelta(storm.direction, UPCOMING.direction);
+    const windDelta = storm.wind - UPCOMING.wind;
+    const rainfallDelta = storm.rainfall - UPCOMING.rainfall;
+    const pressureDelta = storm.pressure - UPCOMING.pressure;
+    const windScore = Math.round(Math.max(0, 1 - Math.abs(windDelta) / 140) * 100);
+    const rainScore = Math.round(Math.max(0, 1 - Math.abs(rainfallDelta) / 200) * 100);
+    const pressureScore = Math.round(Math.max(0, 1 - Math.abs(pressureDelta) / 95) * 100);
+    const scoreReason = isDirectionMatch
+      ? "Its " + storm.direction + " track is " + trackDelta +
+        "° from TY ODIN's WNW movement, producing a " + score + "% direction match."
+      : "Its wind, rainfall, and pressure are close to TY ODIN's profile, producing a " +
+        score + "% strength match.";
+
+    analogueModalKicker.textContent = matchLabel;
+    analogueModalKicker.innerHTML =
+      '<span class="analogue-kicker-icon">&#9670;</span>' + matchLabel;
+    analogueModalTitle.textContent = storm.name;
+    analogueModalSummary.textContent = storm.date + " · " + storm.category;
+    analogueModalStats.innerHTML =
+      statMarkup("Maximum winds", storm.wind + " km/h", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7c3 0 3-4 0-4M3 12h13c3 0 3-4 0-4M3 16h9c3 0 3-4 0-4M3 20h5"/></svg>') +
+      statMarkup("Rainfall", storm.rainfall.toFixed(1) + " mm", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h12a4 4 0 0 0 .4-8A6 6 0 0 0 6 10a3.5 3.5 0 0 0-1 7Z"/><path d="M8 20v1M12 19v2M16 20v1"/></svg>') +
+      statMarkup("Central pressure", storm.pressure + " hPa", '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m12 12 4-4M12 5v1M19 12h-1M12 19v-1M5 12h1"/></svg>') +
+      statMarkup("Movement", storm.direction, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 16-16M20 4h-7M20 4v7"/></svg>');
+    analogueComparisonStorm.textContent = storm.name;
+    analogueComparisonBody.innerHTML =
+      comparisonRow("Maximum winds", storm.wind + " km/h", UPCOMING.wind + " km/h") +
+      comparisonRow("Rainfall", storm.rainfall.toFixed(1) + " mm", UPCOMING.rainfall.toFixed(1) + " mm") +
+      comparisonRow("Central pressure", storm.pressure + " hPa", UPCOMING.pressure + " hPa") +
+      comparisonRow("Movement", storm.direction, UPCOMING.direction);
+    analogueModalExplanation.innerHTML =
+      "<h3>Why this is a match</h3><p>" + scoreReason +
+      "</p><div class=\"analogue-match-breakdown\"><div class=\"analogue-score-ring\" style=\"--score: " +
+      score + "%\"><strong>" + score + "%</strong><span>" +
+      (isDirectionMatch ? "DIRECTION" : "STRENGTH") + "<br> MATCH</span></div><div class=\"analogue-match-checks\"><span><b>✓</b>Wind closeness: " + windScore +
+      "% (" + (windDelta >= 0 ? "+" : "") + windDelta + " km/h)</span><span><b>✓</b>Rainfall closeness: " +
+      rainScore + "% (" + (rainfallDelta >= 0 ? "+" : "") + rainfallDelta.toFixed(1) +
+      " mm)</span><span><b>✓</b>Pressure closeness: " + pressureScore + "% (" +
+      (pressureDelta >= 0 ? "+" : "") + pressureDelta + " hPa)</span></div></div><p class=\"analogue-landfall\"><span aria-hidden=\"true\">&#9679;</span>Recorded landfall: " +
+      storm.location + ".</p>";
+
+    lastModalTrigger = trigger;
+    analogueModal.hidden = false;
+    document.body.classList.add("modal-open");
+    analogueModal.querySelector(".analogue-modal-close").focus();
+  }
+
+  function closeAnalogueDetails() {
+    if (analogueModal.hidden) return;
+    analogueModal.hidden = true;
+    document.body.classList.remove("modal-open");
+    if (lastModalTrigger) lastModalTrigger.focus();
   }
 
   // ---------------------------------------------------------------------
@@ -178,19 +310,37 @@
     return { text: "Low", color: "#b91c1c", bg: "#fee2e2" };
   }
 
-  function row(label, valueA, valueB, winner) {
+  function metricIcon(label) {
+    if (label.indexOf("Wind") !== -1) return "≋";
+    if (label.indexOf("Rainfall") !== -1) return "⌁";
+    if (label.indexOf("Pressure") !== -1) return "◎";
+    if (label.indexOf("Direction") !== -1) return "◌";
+    if (label.indexOf("Location") !== -1) return "⌖";
+    if (label.indexOf("Date") !== -1) return "□";
+    return "◈";
+  }
+
+  function metricCellHtml(value, colorClass, barValue, winner) {
+    const bar = typeof barValue === "number"
+      ? '<span class="metric-bar"><i style="width:' + Math.min(100, barValue) + '%"></i></span>'
+      : "";
+    const badge = winner
+      ? '<span class="metric-winner"><svg viewBox="0 0 24 24" width="10" height="10" fill="none">' +
+        '<path d="M3 8l4 3 5-7 5 7 4-3-2 10H5L3 8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
+        "</svg>Stronger</span>"
+      : "";
+    return '<div class="metric-value ' + colorClass + '"><div class="metric-value-main"><strong>' +
+      value + "</strong>" + bar + "</div>" + badge + "</div>";
+  }
+
+  function row(label, valueA, valueB, winner, barA, barB) {
     // winner: 0 = none, 1 = A, 2 = B
-    const aHtml =
-      winner === 1
-        ? '<span class="value-winner">' + valueA + "</span>"
-        : valueA;
-    const bHtml =
-      winner === 2
-        ? '<span class="value-winner">' + valueB + "</span>"
-        : valueB;
     return (
-      "<tr><td class=\"metric-col\">" + label + "</td><td>" + aHtml +
-      "</td><td>" + bHtml + "</td></tr>"
+      '<tr><td>' + metricCellHtml(valueA, "metric-blue", barA, winner === 1) +
+      '</td><th scope="row" class="metric-col"><span class="metric-icon">' +
+      metricIcon(label) + '</span><span>' + label + '</span></th><td>' +
+      metricCellHtml(valueB, "metric-green", barB, winner === 2) +
+      "</td></tr>"
     );
   }
 
@@ -199,6 +349,13 @@
       '<span class="value-tag" style="color:' + value.color +
       ";background:" + value.bg + '">' + value.text + "</span>"
     );
+  }
+
+  function updateWinnerBanner(label, storm, detail, tone) {
+    winnerBannerLabel.textContent = label;
+    winnerBannerName.textContent = storm ? storm.name + " · " + storm.year : "No clear winner";
+    winnerBannerDetail.textContent = detail;
+    winnerBanner.classList.toggle("winner-banner-green", tone === "green");
   }
 
   function runCompare() {
@@ -210,14 +367,24 @@
     const b = nameB ? STORMS.find((s) => s.name === nameB) : null;
     if (!a) return;
 
-    colAHead.textContent = a.name;
-    colBHead.textContent = b ? b.name : "TY ODIN (Upcoming)";
+    colAHead.innerHTML =
+      '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + a.name +
+      ' <span class="col-year">· ' + a.year + "</span></span>";
+    colBHead.innerHTML = b
+      ? '<span class="th-flex"><span class="col-badge col-badge-b">B</span>' + b.name +
+        ' <span class="col-year">· ' + b.year + "</span></span>"
+      : '<span class="th-flex"><span class="col-badge col-badge-b">B</span>TY ODIN' +
+        ' <span class="col-year">· Upcoming</span></span>';
 
     if (currentMode === "strength") {
       renderStrength(a, b);
     } else {
       renderDirection(a, b);
     }
+
+    tableBody.querySelectorAll("tr").forEach((resultRow, index) => {
+      resultRow.style.setProperty("--row-delay", index * 55 + "ms");
+    });
   }
 
   function renderStrength(a, b) {
@@ -241,15 +408,30 @@
         " the incoming <strong>TY ODIN</strong>.";
     }
 
+    const strengthWinner = winner || (a.wind >= UPCOMING.wind ? a : UPCOMING);
+    updateWinnerBanner(
+      "Overall Winner",
+      strengthWinner,
+      (b ? "is stronger based on the displayed strength metrics." :
+        (strengthWinner === UPCOMING ? "is stronger than the selected historical storm." :
+          "is stronger than the incoming storm.")) +
+        " Based on PAGASA best track data.",
+      strengthWinner === UPCOMING ? "green" : "blue"
+    );
+
     const windWinner = !b ? (a.wind >= UPCOMING.wind ? 1 : 2) : a.wind > b.wind ? 1 : a.wind < b.wind ? 2 : 0;
     const rainWinner = !b ? (a.rainfall >= UPCOMING.rainfall ? 1 : 2) : a.rainfall > b.rainfall ? 1 : a.rainfall < b.rainfall ? 2 : 0;
     const pressureWinner = !b
       ? a.pressure <= UPCOMING.pressure ? 1 : 2
       : a.pressure < b.pressure ? 1 : a.pressure > b.pressure ? 2 : 0;
 
-    html += row("Maximum Sustained Winds", a.wind + " km/h", b ? b.wind + " km/h" : UPCOMING.wind + " km/h", windWinner);
-    html += row("Rainfall (24-hr Max)", a.rainfall.toFixed(1) + " mm", b ? b.rainfall.toFixed(1) + " mm" : UPCOMING.rainfall.toFixed(1) + " mm", rainWinner);
-    html += row("Central Pressure", a.pressure + " hPa", b ? b.pressure + " hPa" : UPCOMING.pressure + " hPa", pressureWinner);
+    const compareB = b || UPCOMING;
+    html += row("Maximum Sustained Winds", a.wind + " km/h", compareB.wind + " km/h", windWinner,
+      (a.wind / 250) * 100, (compareB.wind / 250) * 100);
+    html += row("Rainfall (24-hr Max)", a.rainfall.toFixed(1) + " mm", compareB.rainfall.toFixed(1) + " mm", rainWinner,
+      (a.rainfall / 400) * 100, (compareB.rainfall / 400) * 100);
+    html += row("Central Pressure", a.pressure + " hPa", compareB.pressure + " hPa", pressureWinner,
+      ((1020 - a.pressure) / 130) * 100, ((1020 - compareB.pressure) / 130) * 100);
 
     const catRank = (x, y) =>
       CATEGORY_RANK[x] > CATEGORY_RANK[y] ? 1 : CATEGORY_RANK[x] < CATEGORY_RANK[y] ? 2 : 0;
@@ -295,6 +477,16 @@
         " TY ODIN's WNW track.";
     }
 
+    const deltaA = directionDelta(a.direction, UPCOMING.direction);
+    const deltaB = b ? directionDelta(b.direction, UPCOMING.direction) : Infinity;
+    const directionWinner = deltaB < deltaA ? b : a;
+    updateWinnerBanner(
+      "Closest Track",
+      directionWinner,
+      directionWinner.name + " follows the track most similar to TY ODIN's WNW movement.",
+      directionWinner === b ? "green" : "blue"
+    );
+
     tableBody.innerHTML = html;
     verdictEl.innerHTML = verdict;
   }
@@ -302,7 +494,15 @@
   function runCompareSafe() {
     if (!stormA.value) {
       verdictEl.textContent = "Select at least one historical storm to compare.";
-      tableBody.innerHTML = "";
+      tableBody.innerHTML =
+        '<tr class="empty-row"><td colspan="3">' +
+        '<div class="empty-state">' +
+        '<svg viewBox="0 0 24 24" width="28" height="28" fill="none">' +
+        '<path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />' +
+        "</svg>" +
+        "<p>Select a historical storm above, then click " +
+        '<strong>Compare Now</strong> to see results here.</p>' +
+        "</div></td></tr>";
       colAHead.textContent = "—";
       colBHead.textContent = "—";
       return;
@@ -320,10 +520,9 @@
     );
     runCompareSafe();
   }
-
   function resetControls() {
-    stormA.value = "Typhoon Carina (Egay)";
-    stormB.value = "Typhoon Rolly (Goni)";
+    stormA.selectedIndex = 0;
+    stormB.selectedIndex = 0;
     currentMode = "strength";
     modeButtons.forEach((btn) =>
       btn.classList.toggle("active", btn.dataset.mode === "strength")
@@ -346,12 +545,10 @@
           storm.name + "  ·  " + storm.year;
         select.appendChild(option);
       });
-      if (select === stormB) {
-        const none = document.createElement("option");
-        none.value = "";
-        none.textContent = "— None (compare with TY ODIN) —";
-        select.insertBefore(none, select.firstChild);
-      }
+            const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "— Select a storm —";
+      select.insertBefore(placeholder, select.firstChild);
     });
   }
 
@@ -359,8 +556,6 @@
     buildSelects();
     renderAnalogues();
 
-    stormA.addEventListener("change", runCompareSafe);
-    stormB.addEventListener("change", runCompareSafe);
     compareBtn.addEventListener("click", runCompareSafe);
     resetBtn.addEventListener("click", resetControls);
     modeButtons.forEach((btn) =>
@@ -369,6 +564,12 @@
     resultsTabs.forEach((tab) =>
       tab.addEventListener("click", () => setMode(tab.dataset.mode))
     );
+    analogueModal.querySelectorAll("[data-modal-close]").forEach((el) =>
+      el.addEventListener("click", closeAnalogueDetails)
+    );
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeAnalogueDetails();
+    });
 
     resetControls();
   }
