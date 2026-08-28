@@ -9,7 +9,8 @@
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 12px 56px;
+  height: 40px;
+  padding: 0 56px;
   font-size: 14px;
   font-weight: 500;
   text-align: center;
@@ -92,10 +93,14 @@
   box-shadow: 0 8px 24px rgba(10, 37, 64, 0.08);
 }
 
+/* 3-zone header: logo (left) | nav (middle) | actions (right).
+   space-between centers the nav between the logo and the right-side
+   actions, matching the design mockup. */
 .header-inner {
-  max-width: 1400px;
-  margin: 0 auto;
-  padding: 16px 40px;
+  max-width: none;
+  margin: 0;
+  height: 72px;
+  padding: 0 32px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -108,12 +113,11 @@
   align-items: center;
   gap: 12px;
   flex-shrink: 0;
-  justify-self: start;
 }
 
 .logo-icon {
-  width: 46px;
-  height: 46px;
+  width: 52px;
+  height: 52px;
   flex-shrink: 0;
   transition: transform var(--dur-med) var(--ease-spring);
 }
@@ -140,35 +144,33 @@
 }
 
 .logo-title {
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 700;
   color: var(--navy-900);
   line-height: 1.2;
   letter-spacing: -0.01em;
-  max-width: 190px;
+  max-width: 220px;
 }
 
 .logo-sub {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted, #7c8aa0);
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--navy-900);
   line-height: 1.15;
   margin-top: 1px;
 }
 
-/* Main Nav */
+/* Main Nav — middle zone; space-between on .header-inner keeps it centered
+   between the logo and the right-side actions */
 .main-nav {
   display: flex;
   align-items: center;
-  justify-content: center;
-  gap: 28px;
-  flex: 1;
+  gap: 32px;
   min-width: 0;
-  margin: 0 24px;
 }
 
 .nav-link {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-dark);
   padding: 6px 2px;
@@ -185,7 +187,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -19px;
+  bottom: -2px;
   height: 2px;
   background: var(--blue-600);
   transform: scaleX(0);
@@ -218,7 +220,7 @@
 
 .dropdown-toggle {
   font-family: inherit;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 500;
   color: var(--text-dark);
   background: none;
@@ -238,7 +240,7 @@
   position: absolute;
   left: 0;
   right: 0;
-  bottom: -19px;
+  bottom: -2px;
   height: 2px;
   background: var(--blue-600);
   transform: scaleX(0);
@@ -331,7 +333,7 @@
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 24px;
   flex-shrink: 0;
 }
 
@@ -390,8 +392,12 @@
   color: #ffffff;
   font-size: 14px;
   font-weight: 600;
-  padding: 9px 18px;
-  border-radius: var(--radius-md, 8px);
+  width: 142px;
+  height: 40px;
+  justify-content: center;
+  flex-shrink: 0;
+  padding: 0;
+  border-radius: 24px;
   white-space: nowrap;
   text-decoration: none;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
@@ -466,6 +472,7 @@
     align-items: stretch;
     width: 100%;
     order: 3;
+    margin: 0;
     gap: 2px;
     background: #fff;
     border-top: 1px solid var(--border-light);
@@ -483,15 +490,23 @@
     display: none;
   }
   .header-inner {
-    padding: 14px 20px;
+    height: auto;
+    padding: 14px 20px 14px 14px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-wrap: wrap;
     gap: 12px;
   }
-  .logo-text {
-    font-size: 15px;
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .logo-title {
+    font-size: 16px;
+  }
+  .logo-sub {
+    font-size: 14px;
   }
   .mobile-menu-toggle {
     display: flex;
@@ -521,7 +536,7 @@
     flex-direction: column;
     align-items: stretch;
     gap: 2px;
-    margin-top: 4px;
+    margin: 4px 0 0;
     padding: 8px 0 0;
     border-top: 1px solid var(--border-light);
   }

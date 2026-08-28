@@ -2,12 +2,64 @@
    Historical Data page — hero banner, filters, stats, cyclone table
    ========================================================================== */
 .hd-hero {
-  background: linear-gradient(100deg, #0a2540 0%, #0f2e4c 60%, #143a5e 100%);
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(10, 37, 64, 0.9) 0%,
+      rgba(15, 46, 76, 0.78) 55%,
+      rgba(20, 58, 94, 0.58) 100%
+    ),
+    url("../../assets/images/Storm_bg.jpg") center / cover;
   color: #fff;
   padding: 15px 40px;
 }
 
+/* Twinkling star field over the storm sky */
+.hd-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.8px 1.8px at 6% 30%, rgba(255, 255, 255, 0.95), transparent),
+    radial-gradient(1.2px 1.2px at 11% 64%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 16% 38%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.1px 1.1px at 22% 76%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(2px 2px at 28% 20%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1.2px 1.2px at 33% 54%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.6px 1.6px at 39% 82%, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1.1px 1.1px at 45% 16%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.4px 1.4px at 51% 46%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.1px 1.1px at 57% 70%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.8px 1.8px at 63% 24%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1.2px 1.2px at 69% 60%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 75% 12%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.2px 1.2px at 81% 44%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.7px 1.7px at 87% 74%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.2px 1.2px at 93% 30%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.4px 1.4px at 97% 58%, rgba(255, 255, 255, 0.7), transparent);
+}
+
+/* Soft moonlit cloud banks drifting over the photo */
+.hd-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(280px 90px at 88% 16%, rgba(255, 255, 255, 0.14), transparent 70%),
+    radial-gradient(380px 130px at 76% 78%, rgba(173, 205, 235, 0.16), transparent 70%),
+    radial-gradient(220px 80px at 58% 38%, rgba(255, 255, 255, 0.08), transparent 70%),
+    radial-gradient(320px 110px at 40% 88%, rgba(140, 178, 216, 0.12), transparent 70%);
+}
+
 .hd-hero-inner {
+  position: relative;
+  z-index: 1;
   max-width: 1400px;
   margin: 0 auto;
   display: flex;

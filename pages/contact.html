@@ -13,6 +13,7 @@
     <link rel="stylesheet" href="../css/components/header.css" />
     <link rel="stylesheet" href="../css/components/buttons.css" />
     <link rel="stylesheet" href="../css/components/footer.css" />
+    <link rel="stylesheet" href="../css/pages/contact.css" />
   </head>
   <body>
     <div id="site-header"><div class="announcement-bar">
@@ -80,20 +81,211 @@
   </div>
 </header></div>
 
-    <main class="page-main">
-      <h1>Contact Us</h1>
-      <p class="page-intro">
-        Questions, feedback, or suggestions about the platform? We would love
-        to hear from you.
-      </p>
+    <!-- Page hero banner -->
+    <section class="ct-hero">
+      <div class="ct-hero-inner">
+        <div class="ct-hero-left">
+          <div class="ct-hero-icon">
+            <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" />
+              <path
+                d="M3 7l9 6 9-6"
+                stroke="#fff"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div>
+            <h1>Contact Us</h1>
+            <p>
+              Questions, feedback, or suggestions about the platform? We would
+              love to hear from you.
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
 
-      <section class="page-section">
-        <h2>Get in touch</h2>
-        <p>
-          Contact details and a feedback form will be added here.
-        </p>
-      </section>
+    <main class="page-main">
+      <div class="ct-grid">
+        <!-- Feedback form -->
+        <section class="ct-form-card">
+          <h2>Send us your feedback</h2>
+          <p class="ct-form-sub">
+            Spotted a data error, found a bug, or have an idea?
+            <br />Your feedback helps make this platform better for everyone.
+          </p>
+
+          <form id="ctForm" novalidate>
+            <div class="ct-field-row">
+              <div class="ct-field">
+                <label for="ctName">Your name</label>
+                <input
+                  type="text"
+                  id="ctName"
+                  name="name"
+                  placeholder="Juan Dela Cruz"
+                  autocomplete="name"
+                  required
+                />
+              </div>
+              <div class="ct-field">
+                <label for="ctEmail">Email address</label>
+                <input
+                  type="email"
+                  id="ctEmail"
+                  name="email"
+                  placeholder="you@example.com"
+                  autocomplete="email"
+                  required
+                />
+              </div>
+            </div>
+            <div class="ct-field">
+              <label for="ctTopic">Topic</label>
+              <select id="ctTopic" name="topic">
+                <option>General question</option>
+                <option>Data correction</option>
+                <option>Bug report</option>
+                <option>Suggestion</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="ct-field">
+              <label for="ctMessage">Message</label>
+              <textarea
+                id="ctMessage"
+                name="message"
+                placeholder="Tell us what's on your mind…"
+                required
+              ></textarea>
+            </div>
+            <button type="submit" class="ct-submit">Send feedback</button>
+            <p class="ct-form-note">
+              Demo form — submissions stay on this device and aren't sent to a
+              server.
+            </p>
+          </form>
+
+          <div class="ct-success" id="ctSuccess" hidden>
+            <div class="ct-success-icon">
+              <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
+                <path
+                  d="M5 13l4 4L19 7"
+                  stroke="#059669"
+                  stroke-width="2.4"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <h3>Thank you!</h3>
+            <p>
+              Your feedback has been recorded in this demo. We appreciate you
+              helping improve the platform.
+            </p>
+            <button type="button" class="ct-again" id="ctAgain">
+              Send another message
+            </button>
+          </div>
+
+        <!-- Quick links -->
+        <aside class="ct-side">
+          <a
+            class="ct-side-card"
+            href="https://www.pagasa.dost.gov.ph/"
+            target="_blank"
+            rel="noopener"
+          >
+            <div class="ct-side-icon ic-blue">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M4 20V10M10 20V4M16 20v-7M22 20H2"
+                  stroke="#1d4ed8"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <h3>Official Weather Data</h3>
+            <p>
+              Forecasts, cyclone bulletins, and warnings come straight from
+              PAGASA.
+            </p>
+            <span class="ct-side-link">Visit pagasa.dost.gov.ph &rarr;</span>
+          </a>
+
+          <a class="ct-side-card" href="resources.html">
+            <div class="ct-side-icon ic-red">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z"
+                  stroke="#dc2626"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </div>
+            <h3>Emergency Hotlines</h3>
+            <p>PAGASA and local emergency numbers, all in one place.</p>
+            <span class="ct-side-link">View hotlines &rarr;</span>
+          </a>
+
+          <a class="ct-side-card" href="education/index.html">
+            <div class="ct-side-icon ic-teal">
+              <svg viewBox="0 0 24 24" fill="none">
+                <path
+                  d="M12 4L2 9l10 5 10-5-10-5z"
+                  stroke="#0d9488"
+                  stroke-width="1.8"
+                  stroke-linejoin="round"
+                />
+                <path
+                  d="M6 11.5V16c0 1.5 2.7 3 6 3s6-1.5 6-3v-4.5"
+                  stroke="#0d9488"
+                  stroke-width="1.8"
+                  stroke-linecap="round"
+                />
+              </svg>
+            </div>
+            <h3>Learn &amp; Prepare</h3>
+            <p>Warning signals, evacuation steps, and family go-bag guides.</p>
+            <span class="ct-side-link">Open Education Hub &rarr;</span>
+          </a>
+
+          <div class="ct-note">
+            <strong>In an emergency?</strong> Call 911 or your local MDRRMO.
+            This platform is educational and not monitored 24/7.
+          </div>
+        </aside>
+      </div>
     </main>
+
+    <script>
+      (function () {
+        var form = document.getElementById("ctForm");
+        var success = document.getElementById("ctSuccess");
+        var again = document.getElementById("ctAgain");
+        if (!form || !success || !again) return;
+        form.addEventListener("submit", function (e) {
+          e.preventDefault();
+          if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
+          }
+          form.hidden = true;
+          success.hidden = false;
+        });
+        again.addEventListener("click", function () {
+          form.reset();
+          form.hidden = false;
+          success.hidden = true;
+        });
+      })();
+    </script>
 
     <div id="site-footer"><footer class="site-footer">
   <div class="footer-inner">

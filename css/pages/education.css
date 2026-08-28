@@ -119,11 +119,14 @@
 }
 
 .topic-card {
+  --accent: var(--blue-600);
+  --wash: rgba(29, 78, 216, 0.08);
+  --wash-hover: rgba(29, 78, 216, 0.14);
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background: linear-gradient(180deg, var(--wash), #fff 45%);
   border: 1px solid #e1eaf5;
-  border-top: 2px solid var(--blue-600);
+  border-top: 4px solid var(--accent);
   border-radius: 12px;
   padding: 16px;
   min-height: 222px;
@@ -134,24 +137,34 @@
 }
 
 .topic-card:nth-child(2) {
-  border-top-color: #059669;
+  --accent: #059669;
+  --wash: rgba(5, 150, 105, 0.08);
+  --wash-hover: rgba(5, 150, 105, 0.14);
 }
 
 .topic-card:nth-child(3) {
-  border-top-color: #f97316;
+  --accent: #f97316;
+  --wash: rgba(249, 115, 22, 0.08);
+  --wash-hover: rgba(249, 115, 22, 0.14);
 }
 
 .topic-card:nth-child(4) {
-  border-top-color: #7c3aed;
+  --accent: #7c3aed;
+  --wash: rgba(124, 58, 237, 0.08);
+  --wash-hover: rgba(124, 58, 237, 0.14);
 }
 
 .topic-card:nth-child(5) {
-  border-top-color: #0d9488;
+  --accent: #0d9488;
+  --wash: rgba(13, 148, 136, 0.08);
+  --wash-hover: rgba(13, 148, 136, 0.14);
 }
 
 .topic-card:hover {
   transform: translateY(-3px);
   border-color: #c7d8f9;
+  border-top-color: var(--accent);
+  background: linear-gradient(180deg, var(--wash-hover), #fff 45%);
   box-shadow: var(--shadow-card);
 }
 
@@ -406,6 +419,58 @@
   line-height: 1.55;
   color: var(--text-muted);
   margin-top: 8px;
+}
+
+/* Extra quick facts that fill out the Did You Know card */
+.did-you-know {
+  display: flex;
+  flex-direction: column;
+}
+
+.fact-mini {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 11px 14px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  margin-bottom: 10px;
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.fact-mini:hover {
+  border-color: #bfe3da;
+  background: #f4fbf9;
+}
+
+.fact-mini:last-of-type {
+  margin-bottom: 18px;
+}
+
+.fact-mini p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-body);
+}
+
+.fact-mini strong {
+  color: var(--text-dark);
+}
+
+.fact-mini-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #10b981;
+  flex-shrink: 0;
+  margin-top: 6px;
+}
+
+.did-you-know .fact-btn {
+  margin-top: auto;
 }
 
 .fact-btn {

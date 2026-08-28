@@ -115,38 +115,79 @@
 
         <div class="eg-hero-art" aria-hidden="true">
           <svg viewBox="0 0 420 300" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <!-- route path -->
+            <defs>
+              <filter id="egCardShadow" x="-30%" y="-30%" width="160%" height="160%">
+                <feDropShadow dx="0" dy="5" stdDeviation="9" flood-color="#0a2540" flood-opacity="0.14" />
+              </filter>
+            </defs>
+
+            <!-- backdrop -->
+            <circle cx="212" cy="150" r="138" fill="#ffffff" opacity="0.5" />
+            <circle cx="212" cy="150" r="138" stroke="#c7d8f9" stroke-dasharray="3 8" stroke-width="2" />
+
+            <!-- rain clouds -->
+            <g opacity="0.9">
+              <circle cx="58" cy="42" r="14" fill="#bfdbfe" />
+              <circle cx="80" cy="36" r="18" fill="#93c5fd" />
+              <circle cx="100" cy="44" r="12" fill="#bfdbfe" />
+              <g stroke="#93c5fd" stroke-width="3.5" stroke-linecap="round">
+                <path d="M56 64l-4 11" />
+                <path d="M76 66l-4 11" />
+                <path d="M96 62l-4 11" />
+              </g>
+            </g>
+
+            <!-- route path (drawn behind the cards) -->
             <path
-              d="M30 250 C 110 250, 120 170, 200 170 S 300 90, 390 60"
-              stroke="#93c5fd"
-              stroke-width="5"
-              stroke-dasharray="2 14"
+              d="M74 176 C 116 150, 152 128, 206 116 C 240 109, 258 102, 272 96"
+              stroke="#1d4ed8"
+              stroke-width="3.5"
+              stroke-dasharray="1 11"
               stroke-linecap="round"
               fill="none"
             />
-            <!-- home start marker -->
-            <path d="M18 258v-26l22-16 22 16v26H18z" fill="#fff" stroke="#0f2e4c" stroke-width="2.5" />
-            <rect x="32" y="242" width="12" height="16" rx="2" fill="#93c5fd" />
-            <!-- walking person -->
-            <circle cx="200" cy="140" r="10" fill="#1d4ed8" />
-            <path d="M200 152v22M200 158l-14 10M200 158l14 8M200 174l-11 18M200 174l11 18"
-              stroke="#1d4ed8" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" fill="none" />
-            <!-- go-bag -->
-            <rect x="238" y="196" width="34" height="42" rx="8" fill="#eab308" />
-            <path d="M247 198v-6a8 8 0 0116 0v6" stroke="#b45309" stroke-width="4" fill="none" />
-            <rect x="248" y="212" width="14" height="10" rx="2" fill="#fde68a" />
-            <!-- shelter end marker -->
-            <path d="M330 96l44-26 44 26v40h-88V96z" fill="#1d4ed8" />
-            <path d="M330 96l44-26 44 26" stroke="#93c5fd" stroke-width="3" fill="none" />
-            <rect x="366" y="112" width="14" height="24" rx="2" fill="#fff" />
-            <text x="374" y="86" text-anchor="middle" font-family="Inter, sans-serif" font-size="13" font-weight="700" fill="#0f2e4c">SHELTER</text>
-            <!-- storm clouds behind -->
-            <circle cx="120" cy="70" r="18" fill="#bfdbfe" />
-            <circle cx="146" cy="62" r="22" fill="#93c5fd" />
-            <circle cx="170" cy="72" r="15" fill="#bfdbfe" />
-            <g stroke="#93c5fd" stroke-width="4" stroke-linecap="round">
-              <path d="M112 92l-4 12M138 94l-4 12M162 90l-4 12" />
+
+            <!-- Card 1 — Your Home -->
+            <g filter="url(#egCardShadow)">
+              <rect x="16" y="166" width="112" height="98" rx="14" fill="#fff" stroke="#e1eaf5" />
             </g>
+            <circle cx="72" cy="202" r="20" fill="#1d4ed8" />
+            <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="M60 202l12-10 12 10" />
+              <path d="M64 200v10h16v-10" />
+            </g>
+            <text x="72" y="241" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" font-weight="700" fill="#0a2540">Your Home</text>
+            <text x="72" y="255" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#64748b">Leave early</text>
+
+            <!-- Card 2 — Evacuation Route -->
+            <g filter="url(#egCardShadow)">
+              <rect x="154" y="102" width="112" height="98" rx="14" fill="#fff" stroke="#e1eaf5" />
+            </g>
+            <circle cx="210" cy="138" r="20" fill="#2563eb" />
+            <path
+              d="M210 125.5c-6.1 0-11 4.9-11 11 0 8.2 11 16.5 11 16.5s11-8.3 11-16.5c0-6.1-4.9-11-11-11z"
+              fill="#fff"
+            />
+            <circle cx="210" cy="136.5" r="3.6" fill="#2563eb" />
+            <text x="210" y="177" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" font-weight="700" fill="#0a2540">Evacuation Route</text>
+            <text x="210" y="191" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#64748b">Follow the signs</text>
+
+            <!-- Card 3 — Safe Shelter -->
+            <g filter="url(#egCardShadow)">
+              <rect x="292" y="40" width="112" height="98" rx="14" fill="#fff" stroke="#e1eaf5" />
+            </g>
+            <circle cx="348" cy="76" r="20" fill="#059669" />
+            <g stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <path d="M348 62l11 4.5v7.5c0 6.5-4.6 10.4-11 12.5-6.4-2.1-11-6-11-12.5v-7.5z" />
+              <path d="M343.5 76l3.2 3.2 6.3-6.4" />
+            </g>
+            <text x="348" y="115" text-anchor="middle" font-family="Inter, sans-serif" font-size="11.5" font-weight="700" fill="#0a2540">Safe Shelter</text>
+            <text x="348" y="129" text-anchor="middle" font-family="Inter, sans-serif" font-size="10" fill="#64748b">Strongest structure</text>
+
+            <!-- arrowhead pointing into the shelter card -->
+            <path d="M0 -7L14 0L0 7z" transform="translate(272,96) rotate(-20)" fill="#1d4ed8" />
+
+            <!-- ground line -->
             <rect x="20" y="286" width="380" height="4" rx="2" fill="#dbe7f7" />
           </svg>
         </div>

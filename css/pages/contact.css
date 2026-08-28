@@ -1,0 +1,389 @@
+/* ==========================================================================
+   Contact — page hero banner (same night-sky treatment as the other pages)
+   ========================================================================== */
+.ct-hero {
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(
+      100deg,
+      rgba(10, 37, 64, 0.9) 0%,
+      rgba(15, 46, 76, 0.78) 55%,
+      rgba(20, 58, 94, 0.58) 100%
+    ),
+    url("../../assets/images/Storm_bg.jpg") center / cover;
+  color: #fff;
+  padding: 15px 40px;
+}
+
+/* Twinkling star field over the storm sky */
+.ct-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(1.8px 1.8px at 6% 30%, rgba(255, 255, 255, 0.95), transparent),
+    radial-gradient(1.2px 1.2px at 11% 64%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 16% 38%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.1px 1.1px at 22% 76%, rgba(255, 255, 255, 0.55), transparent),
+    radial-gradient(2px 2px at 28% 20%, rgba(255, 255, 255, 0.9), transparent),
+    radial-gradient(1.2px 1.2px at 33% 54%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.6px 1.6px at 39% 82%, rgba(255, 255, 255, 0.75), transparent),
+    radial-gradient(1.1px 1.1px at 45% 16%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.4px 1.4px at 51% 46%, rgba(255, 255, 255, 0.7), transparent),
+    radial-gradient(1.1px 1.1px at 57% 70%, rgba(255, 255, 255, 0.5), transparent),
+    radial-gradient(1.8px 1.8px at 63% 24%, rgba(255, 255, 255, 0.85), transparent),
+    radial-gradient(1.2px 1.2px at 69% 60%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.5px 1.5px at 75% 12%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.2px 1.2px at 81% 44%, rgba(255, 255, 255, 0.65), transparent),
+    radial-gradient(1.7px 1.7px at 87% 74%, rgba(255, 255, 255, 0.8), transparent),
+    radial-gradient(1.2px 1.2px at 93% 30%, rgba(255, 255, 255, 0.6), transparent),
+    radial-gradient(1.4px 1.4px at 97% 58%, rgba(255, 255, 255, 0.7), transparent);
+}
+
+/* Soft moonlit cloud banks drifting over the photo */
+.ct-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(280px 90px at 88% 16%, rgba(255, 255, 255, 0.14), transparent 70%),
+    radial-gradient(380px 130px at 76% 78%, rgba(173, 205, 235, 0.16), transparent 70%),
+    radial-gradient(220px 80px at 58% 38%, rgba(255, 255, 255, 0.08), transparent 70%),
+    radial-gradient(320px 110px at 40% 88%, rgba(140, 178, 216, 0.12), transparent 70%);
+}
+
+.ct-hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1400px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 32px;
+}
+
+.ct-hero-left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.ct-hero-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 11px;
+  background: linear-gradient(135deg, #60a5fa, #2563eb);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ct-hero-left h1 {
+  font-size: 20px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  color: #fff;
+}
+
+.ct-hero-left p {
+  font-size: 12.5px;
+  color: rgba(255, 255, 255, 0.72);
+  margin-top: 2px;
+  max-width: 440px;
+}
+
+@media (max-width: 900px) {
+  .ct-hero {
+    padding: 24px 20px;
+  }
+
+  .ct-hero-inner {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Contact — feedback form + quick links
+   ========================================================================== */
+.ct-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+/* Form card */
+.ct-form-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+}
+
+.ct-form-card h2 {
+  font-size: 19px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.ct-form-sub {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 6px 0 22px;
+}
+
+.ct-field {
+  margin-bottom: 16px;
+}
+
+/* Two short fields share one row (collapses on small phones) */
+.ct-field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.ct-field label {
+  display: block;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.ct-field input,
+.ct-field select,
+.ct-field textarea {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--text-dark);
+  padding: 11px 12px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.ct-field input::placeholder,
+.ct-field textarea::placeholder {
+  color: #9aa8ba;
+}
+
+.ct-field input:focus,
+.ct-field select:focus,
+.ct-field textarea:focus {
+  outline: none;
+  border-color: #c7d8f9;
+  box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+.ct-field textarea {
+  min-height: 130px;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.ct-submit {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--blue-600);
+  border: none;
+  border-radius: 10px;
+  padding: 13px 20px;
+  cursor: pointer;
+  transition:
+    background 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.2s ease;
+}
+
+.ct-submit:hover {
+  background: var(--blue-500);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.2);
+}
+
+.ct-submit:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.ct-form-note {
+  font-size: 11.5px;
+  color: var(--text-muted);
+  text-align: center;
+  margin-top: 12px;
+}
+
+/* Success panel */
+.ct-success {
+  text-align: center;
+  padding: 26px 10px;
+}
+
+.ct-success-icon {
+  width: 56px;
+  height: 56px;
+  margin: 0 auto 14px;
+  border-radius: 50%;
+  background: #d1fae5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ct-success h3 {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.ct-success p {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-body);
+  margin: 8px 0 18px;
+}
+
+.ct-again {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-600);
+  background: var(--blue-50);
+  border: 1px solid #c7d8f9;
+  border-radius: 10px;
+  padding: 10px 16px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.ct-again:hover {
+  background: #dbeafe;
+}
+
+/* Quick-link cards */
+.ct-side {
+  position: sticky;
+  top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.ct-side-card {
+  display: block;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  padding: 18px;
+  transition:
+    transform 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.ct-side-card:hover {
+  transform: translateY(-3px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-card);
+}
+
+.ct-side-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 10px;
+}
+
+.ct-side-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.ic-blue {
+  background: var(--blue-50);
+}
+
+.ic-red {
+  background: #fee2e2;
+}
+
+.ic-teal {
+  background: #ccfbf1;
+}
+
+.ct-side-card h3 {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.ct-side-card p {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-muted);
+  margin: 4px 0 10px;
+}
+
+.ct-side-link {
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+/* Emergency note */
+.ct-note {
+  background: #fff7ed;
+  border: 1px solid #fed7aa;
+  border-radius: 12px;
+  padding: 14px 16px;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #9a3412;
+}
+
+.ct-note strong {
+  color: #7c2d12;
+}
+
+@media (max-width: 700px) {
+  .ct-grid {
+    grid-template-columns: 1fr;
+  }
+
+  /* Cards flow two per row, emergency note beside the last card */
+  .ct-side {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .ct-side {
+    grid-template-columns: 1fr;
+  }
+
+  .ct-field-row {
+    grid-template-columns: 1fr;
+  }
+}
