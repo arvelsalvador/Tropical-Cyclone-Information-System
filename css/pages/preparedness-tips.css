@@ -3,8 +3,14 @@
    ========================================================================== */
 .pt-hero {
   background:
-    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
-    url("../../assets/images/preparedness-tips-background.png") center 30% / cover no-repeat;
+    linear-gradient(
+      90deg,
+      rgba(5, 23, 43, 0.72) 0%,
+      rgba(5, 23, 43, 0.45) 46%,
+      rgba(5, 23, 43, 0.12) 100%
+    ),
+    url("../../assets/images/preparedness-tips-background-color.png") center
+      30% / cover no-repeat;
   min-height: 430px;
   display: flex;
   align-items: center;
@@ -606,8 +612,14 @@
 /* Compact dashboard layout */
 .pt-hero {
   background:
-    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
-    url("../../assets/images/preparedness-tips-background.png") center 30% / cover no-repeat;
+    linear-gradient(
+      90deg,
+      rgba(5, 23, 43, 0.72) 0%,
+      rgba(5, 23, 43, 0.45) 46%,
+      rgba(5, 23, 43, 0.12) 100%
+    ),
+    url("../../assets/images/preparedness-tips-background-color.png") center 30% /
+      cover no-repeat;
   min-height: 430px;
   display: flex;
   align-items: center;
@@ -768,5 +780,152 @@
 
   .pt-phase-cols > div:last-child {
     display: block;
+  }
+}
+
+/* ==========================================================================
+   Preparedness Tips — Entrance & hover animation enhancements
+   Cards fade-and-rise in on scroll (js/main.js adds .is-visible) and the
+   most interactive elements get a polished lift / zoom / nudge on hover.
+   These rules come last so they win over the rules above.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance; once revealed, fall back to fast hover transitions */
+.pt-card[data-reveal],
+.pt-section-title[data-reveal],
+.pt-section-sub[data-reveal],
+.pt-phase[data-reveal],
+.pt-tip[data-reveal],
+.pt-cta[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.pt-card[data-reveal].is-visible,
+.pt-section-title[data-reveal].is-visible,
+.pt-section-sub[data-reveal].is-visible,
+.pt-phase[data-reveal].is-visible,
+.pt-tip[data-reveal].is-visible,
+.pt-cta[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) Phase cards — lift + colored glow on hover, badge brightens */
+.pt-phase {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+}
+
+.pt-phase:hover {
+  transform: translateY(-2px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-hover);
+}
+
+.pt-phase-badge {
+  transition: background var(--dur-med) var(--ease-out);
+}
+
+.pt-phase:hover .pt-phase-badge {
+  filter: brightness(1.06);
+}
+
+/* 3) Principle icon pops on hover */
+.pt-principle-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.pt-principle:hover .pt-principle-icon {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+/* 4) Quick tips — lift + tint border + pop the icon */
+.pt-tip {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.pt-tip:hover {
+  transform: translateY(-2px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-card);
+}
+
+.pt-tip-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.pt-tip:hover .pt-tip-icon {
+  transform: scale(1.08);
+}
+
+/* 5) Buttons lift with a raised shadow */
+.pt-btn {
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.pt-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* 6) Bottom CTA icon pops gently on hover */
+.pt-cta-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.pt-cta:hover .pt-cta-icon {
+  transform: scale(1.08);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .pt-card,
+  .pt-section-title,
+  .pt-section-sub,
+  .pt-phase,
+  .pt-tip,
+  .pt-cta,
+  .pt-phase-badge,
+  .pt-principle-icon,
+  .pt-tip-icon,
+  .pt-btn,
+  .pt-cta-icon {
+    transition: none;
+  }
+
+  .pt-phase:hover,
+  .pt-tip:hover,
+  .pt-btn:hover,
+  .pt-cta:hover,
+  .pt-principle:hover {
+    transform: none;
+  }
+
+  .pt-phase:hover .pt-phase-badge {
+    filter: none;
+  }
+
+  .pt-tip:hover .pt-tip-icon,
+  .pt-principle:hover .pt-principle-icon,
+  .pt-cta:hover .pt-cta-icon {
+    transform: none;
   }
 }

@@ -858,8 +858,14 @@
    vertically centered on the left, shoreline/people kept in view */
 .ws-hero {
   background:
-    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
-    url("../../assets/images/warning-signals-background.png") center bottom / cover no-repeat;
+    linear-gradient(
+      90deg,
+      rgba(5, 23, 43, 0.72) 0%,
+      rgba(5, 23, 43, 0.45) 46%,
+      rgba(5, 23, 43, 0.12) 100%
+    ),
+    url("../../assets/images/warning-signals-background-color.png") center
+      bottom / cover no-repeat;
   min-height: 430px;
   display: flex;
   align-items: center;
@@ -1115,5 +1121,128 @@
 
   .ws-signal-lead {
     max-width: 125px;
+  }
+}
+
+/* ==========================================================================
+   Warning Signals — Entrance & hover animation enhancements
+   Cards fade-and-rise in on scroll (js/main.js adds .is-visible) and the
+   most interactive elements get a polished lift / zoom / nudge on hover.
+   These rules come last so they win over the rules above.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance; once revealed, fall back to fast hover transitions */
+.ws-card[data-reveal],
+.ws-reminder[data-reveal],
+.ws-cta[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.ws-card[data-reveal].is-visible,
+.ws-reminder[data-reveal].is-visible,
+.ws-cta[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) "How the signals work" — icon pops on hover */
+.ws-how-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.ws-how:hover .ws-how-icon {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+/* 3) Quick reference table — rows highlight with an accent bar on hover */
+.ws-table tbody tr {
+  transition:
+    background var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+
+.ws-table tbody tr:hover {
+  background: #eef6ff;
+  box-shadow: inset 2px 0 0 var(--blue-600);
+}
+
+/* 4) Reminders — lift + tint border + pop the icon */
+.ws-reminder {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.ws-reminder:hover {
+  transform: translateY(-2px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-card);
+}
+
+.ws-reminder-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.ws-reminder:hover .ws-reminder-icon {
+  transform: scale(1.08);
+}
+
+/* 5) Buttons lift with a raised shadow */
+.ws-btn {
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.ws-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* 6) Bottom CTA icon pops gently on hover */
+.ws-cta-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.ws-cta:hover .ws-cta-icon {
+  transform: scale(1.08);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .ws-card,
+  .ws-reminder,
+  .ws-cta,
+  .ws-how-icon,
+  .ws-table tbody tr,
+  .ws-reminder-icon,
+  .ws-btn,
+  .ws-cta-icon {
+    transition: none;
+  }
+
+  .ws-reminder:hover,
+  .ws-btn:hover,
+  .ws-cta:hover,
+  .ws-how:hover {
+    transform: none;
+  }
+
+  .ws-reminder:hover .ws-reminder-icon,
+  .ws-how:hover .ws-how-icon,
+  .ws-cta:hover .ws-cta-icon {
+    transform: none;
   }
 }

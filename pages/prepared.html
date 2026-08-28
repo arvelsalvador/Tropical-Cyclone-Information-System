@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>You're Prepared — Tropical Cyclone Information System</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../css/components/header.css" />
+    <link rel="stylesheet" href="../css/components/buttons.css" />
+    <link rel="stylesheet" href="../css/components/footer.css" />
+    <link rel="stylesheet" href="../css/pages/prepared.css" />
+  </head>
+  <body>
+    <div id="site-header"><div class="announcement-bar">
+  <span class="announcement-icon">📣</span>
+  <p>Always stay informed. This platform uses official PAGASA data.</p>
+  <button class="announcement-close" type="button" aria-label="Dismiss announcement">
+    &times;
+  </button>
+</div>
+<header class="site-header">
+  <div class="header-inner">
+    <a href="../index.html" class="logo">
+      <span class="logo-icon">
+        <img src="../assets/images/Logo.png" alt="Tropical Cyclone Information System logo" />
+      </span>
+      <span class="logo-text">
+        <span class="logo-title">Tropical Cyclone Information System</span>
+      </span>
+    </a>
+    <nav class="main-nav">
+      <a href="../index.html" class="nav-link">Home</a>
+      <a href="../pages/historical-data.html" class="nav-link">Historical Data</a>
+      <a href="../pages/compare-storms.html" class="nav-link">Metrics</a>
+      <div class="nav-dropdown" id="education-dropdown">
+        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+          Education
+          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16">
+            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+          </svg>
+        </button>
+        <div class="dropdown-menu">
+          <a href="../pages/education/index.html">Education Hub</a>
+          <a href="../pages/education/warning-signals.html">Warning Signals</a>
+          <a href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
+          <a href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
+        </div>
+      </div>
+      <a href="../pages/resources.html" class="nav-link">Resources</a>
+    </nav>
+    <div class="header-actions">
+      <a href="../pages/about.html" class="icon-link">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" />
+          <line x1="12" y1="16" x2="12" y2="12" />
+          <line x1="12" y1="8" x2="12.01" y2="8" />
+        </svg>
+        About
+      </a>
+      <a href="../pages/contact.html" class="icon-link">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+          <polyline points="22,6 12,13 2,6" />
+        </svg>
+        Contact
+      </a>
+      <a href="../pages/prepared.html" class="btn-prepared">
+        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+        Be Prepared
+      </a>
+    </div>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+  </div>
+</header></div>
+
+    <!-- Confirmation -->
+    <main class="prepared-main">
+      <div class="prepared-card">
+        <div class="prepared-icon">
+          <svg viewBox="0 0 24 24" width="44" height="44" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 11-5.93-9.14" />
+            <polyline points="22 4 12 14.01 9 11.01" />
+          </svg>
+        </div>
+        <div class="prepared-badge">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5" />
+          </svg>
+          Prepared status
+        </div>
+        <h1>You're Prepared!</h1>
+        <p class="prepared-sub">
+          You've been marked as prepared for typhoon season. Keep your emergency
+          kit ready and review the safety guides so you and your family stay safe.
+        </p>
+        <ul class="prepared-list">
+          <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg> Emergency kit ready</li>
+          <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg> Hotlines saved</li>
+          <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg> Evacuation plan known</li>
+          <li><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5" /></svg> Warnings understood</li>
+        </ul>
+        <div class="prepared-actions">
+          <a href="../index.html" class="prepared-btn prepared-btn-primary">Back to Home</a>
+          <a href="../pages/education/preparedness-tips.html" class="prepared-btn prepared-btn-ghost">View Preparedness Tips</a>
+        </div>
+      </div>
+    </main>
+
+    <div id="site-footer"><footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <span class="footer-logo-text">Tropical Cyclone<br />Information System</span>
+      <p>An educational platform providing historical typhoon information and disaster preparedness resources for Camarines Norte, built on official PAGASA data.</p>
+    </div>
+    <div class="footer-col">
+      <h4>Explore</h4>
+      <a href="../index.html">Home</a>
+      <a href="../pages/historical-data.html">Historical Data</a>
+      <a href="../pages/compare-storms.html">Metrics</a>
+      <a href="../pages/resources.html">Resources</a>
+    </div>
+    <div class="footer-col">
+      <h4>Info</h4>
+      <a href="../pages/about.html">About</a>
+      <a href="../pages/contact.html">Contact</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Tropical Cyclone Information System · Data courtesy of PAGASA · Built for research and education.</p>
+  </div>
+</footer></div>
+
+    <script src="../js/main.js" data-root="../"></script>
+  </body>
+</html>

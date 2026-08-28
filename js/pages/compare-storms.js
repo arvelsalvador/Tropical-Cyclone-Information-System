@@ -157,14 +157,12 @@
     const groups = [
       {
         label: "Best match · strength",
-        icon: "⇆",
         matches: STORMS.map((storm) => ({ storm, score: similarity(storm) }))
           .sort((a, b) => b.score - a.score)
           .slice(0, 3),
       },
       {
         label: "Best match · direction",
-        icon: "◎",
         matches: STORMS.map((storm) => ({ storm, score: directionScore(storm) }))
           .sort((a, b) => b.score - a.score)
           .slice(0, 3),
@@ -177,9 +175,7 @@
 
       const heading = document.createElement("h3");
       heading.className = "match-group-title";
-      heading.innerHTML =
-        '<span class="match-group-icon">' + group.icon + "</span>" +
-        group.label + '<span class="match-group-menu" aria-hidden="true">•••</span>';
+      heading.textContent = group.label;
       groupEl.appendChild(heading);
 
       group.matches.forEach((match, index) => {

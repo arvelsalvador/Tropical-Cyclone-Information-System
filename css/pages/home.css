@@ -1247,3 +1247,130 @@
     grid-template-columns: 1fr;
   }
 }
+/* ==========================================================================
+   Home — Entrance & hover animation enhancements
+   Cards fade-and-rise in on scroll (js/main.js adds .is-visible) and the
+   most interactive elements get a polished lift / zoom on hover.
+   These rules come last so they win over the earlier duplicated blocks.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance; once revealed, fall back to fast hover transitions */
+.info-card[data-reveal],
+.resource-tile[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.info-card[data-reveal].is-visible,
+.resource-tile[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* The overview stat cards already carry [data-reveal] + a stagger delay, but a
+   duplicated rule above overwrote the fade. Restore opacity + delay so their
+   entrance reads like the rest of the page. */
+.stat-card[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.stat-card[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) The two big info cards are containers — no whole-body hover lift,
+   only the content inside (stats, rows, badges) animates on hover. */
+
+/* 3) Resource tiles: zoom the thumbnail, tint the title, lift the button */
+.resource-thumb img {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.resource-tile:hover .resource-thumb img {
+  transform: scale(1.08);
+}
+
+.resource-body h3 {
+  transition: color var(--dur-fast) ease;
+}
+
+.resource-tile:hover .resource-body h3 {
+  color: var(--blue-600);
+}
+
+.resource-btn {
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+
+.resource-tile:hover .resource-btn {
+  transform: translateY(-1px);
+}
+
+/* 4) Arrow links nudge right on hover */
+.view-all-link span {
+  display: inline-block;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.view-all-link:hover span {
+  transform: translateX(4px);
+}
+
+/* The duplicated home-lower rules dropped transitions — re-add for smooth hover */
+.stat-item {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.storm-row {
+  transition:
+    background var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+
+.link-view-all {
+  transition: color var(--dur-fast) ease;
+}
+
+.link-view-all:hover {
+  color: var(--blue-500);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .resource-tile,
+  .resource-thumb img,
+  .resource-body h3,
+  .resource-btn,
+  .view-all-link span,
+  .stat-item,
+  .storm-row {
+    transition: none;
+  }
+  .resource-tile:hover .resource-thumb img,
+  .resource-tile:hover .resource-body h3,
+  .resource-tile:hover .resource-btn,
+  .resource-tile:hover {
+    transform: none;
+  }
+}

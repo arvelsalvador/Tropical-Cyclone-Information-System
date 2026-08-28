@@ -3,9 +3,7 @@
    ========================================================================== */
 .edu-hero {
   position: relative;
-  background:
-    linear-gradient(90deg, rgba(5, 23, 43, 0.82) 0%, rgba(5, 23, 43, 0.58) 46%, rgba(5, 23, 43, 0.2) 100%),
-    url("../../assets/images/education-hub-background-v3.png") center 30% / cover no-repeat;
+  background: #0a2540;
   min-height: 430px;
   display: flex;
   align-items: center;
@@ -13,7 +11,34 @@
   overflow: hidden;
 }
 
+/* The hub photo sits on its own layer so it can be color-boosted — the
+   scrims the art while keeping it from looking washed out/pale. */
+.edu-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: url("../../assets/images/education-hub-background-v3-color.png")
+    center 30% / cover no-repeat;
+  filter: saturate(1.32) contrast(1.07) brightness(1.02);
+}
+
+.edu-hero::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    90deg,
+    rgba(5, 23, 43, 0.86) 0%,
+    rgba(5, 23, 43, 0.6) 46%,
+    rgba(5, 23, 43, 0.26) 100%
+  );
+}
+
 .edu-hero-inner {
+  position: relative;
+  z-index: 2;
   max-width: none;
   margin: 0;
   width: 100%;
@@ -660,6 +685,164 @@
   .edu-cta {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Education — Entrance & hover animation enhancements
+   Cards fade-and-rise in on scroll (js/main.js adds .is-visible) and the
+   most interactive elements get a polished lift / zoom / nudge on hover.
+   These rules come last so they win over the rules above.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance; once revealed, fall back to fast hover transitions */
+.topic-card[data-reveal],
+.resource-tile[data-reveal],
+.edu-card[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.topic-card[data-reveal].is-visible,
+.resource-tile[data-reveal].is-visible,
+.edu-card[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) Topic cards: the circular icon pops on card hover */
+.topic-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.topic-card:hover .topic-icon {
+  transform: scale(1.12) rotate(-6deg);
+}
+
+/* 3) Resource tiles: zoom the thumbnail, tint the title, lift the button */
+.resource-thumb img {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.resource-tile:hover .resource-thumb img {
+  transform: scale(1.08);
+}
+
+.resource-body h3 {
+  transition: color var(--dur-fast) ease;
+}
+
+.resource-tile:hover .resource-body h3 {
+  color: var(--blue-600);
+}
+
+.resource-btn {
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+
+.resource-tile:hover .resource-btn {
+  transform: translateY(-1px);
+}
+
+/* 4) Arrow links nudge right on hover */
+.view-all-link span,
+.fact-btn span {
+  display: inline-block;
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.view-all-link:hover span,
+.fact-btn:hover span {
+  transform: translateX(4px);
+}
+
+/* 5) Fact button + bottom CTA button lift on hover */
+.fact-btn {
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.fact-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.edu-cta-btn {
+  transition:
+    background var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.edu-cta-btn svg {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.edu-cta-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+.edu-cta-btn:hover svg {
+  transform: translateX(3px);
+}
+
+/* 6) Mini fact rows nudge subtly on hover */
+.fact-mini {
+  transition:
+    border-color var(--dur-fast) ease,
+    background var(--dur-fast) ease,
+    transform var(--dur-fast) ease;
+}
+
+.fact-mini:hover {
+  transform: translateX(3px);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .topic-card,
+  .resource-tile,
+  .edu-card,
+  .topic-icon,
+  .resource-thumb img,
+  .resource-body h3,
+  .resource-btn,
+  .view-all-link span,
+  .fact-btn,
+  .fact-btn span,
+  .edu-cta-btn,
+  .edu-cta-btn svg,
+  .fact-mini {
+    transition: none;
+  }
+
+  .topic-card:hover,
+  .resource-tile:hover,
+  .fact-btn:hover,
+  .edu-cta-btn:hover,
+  .fact-mini:hover {
+    transform: none;
+  }
+
+  .topic-card:hover .topic-icon,
+  .resource-tile:hover .resource-thumb img,
+  .resource-tile:hover .resource-body h3,
+  .resource-tile:hover .resource-btn {
+    transform: none;
   }
 }
 

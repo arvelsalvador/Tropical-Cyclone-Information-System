@@ -479,19 +479,6 @@
   text-transform: capitalize;
 }
 
-.match-group-icon {
-  color: var(--blue-600);
-  font-size: 18px;
-  line-height: 1;
-}
-
-.match-group-menu {
-  margin-left: auto;
-  color: var(--text-muted);
-  letter-spacing: 2px;
-  font-size: 12px;
-}
-
 .analogue-row {
   display: flex;
   align-items: center;

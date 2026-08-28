@@ -3,8 +3,14 @@
    ========================================================================== */
 .eg-hero {
   background:
-    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
-    url("../../assets/images/evacuation-guide-background.png") center bottom / cover no-repeat;
+    linear-gradient(
+      90deg,
+      rgba(5, 23, 43, 0.72) 0%,
+      rgba(5, 23, 43, 0.45) 46%,
+      rgba(5, 23, 43, 0.12) 100%
+    ),
+    url("../../assets/images/evacuation-guide-background-color.png") center
+      bottom / cover no-repeat;
   min-height: 430px;
   display: flex;
   align-items: center;
@@ -730,5 +736,152 @@
   .eg-cta {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+/* ==========================================================================
+   Evacuation Guide — Entrance & hover animation enhancements
+   Cards fade-and-rise in on scroll (js/main.js adds .is-visible) and the
+   most interactive elements get a polished lift / zoom / nudge on hover.
+   These rules come last so they win over the rules above.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance; once revealed, fall back to fast hover transitions */
+.eg-card[data-reveal],
+.eg-section-title[data-reveal],
+.eg-section-sub[data-reveal],
+.eg-decision[data-reveal],
+.eg-reminder[data-reveal],
+.eg-cta[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.eg-card[data-reveal].is-visible,
+.eg-section-title[data-reveal].is-visible,
+.eg-section-sub[data-reveal].is-visible,
+.eg-decision[data-reveal].is-visible,
+.eg-reminder[data-reveal].is-visible,
+.eg-cta[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) Decision cards — lift + colored glow on hover, badge icon pops */
+.eg-decision {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out);
+}
+
+.eg-decision:hover {
+  transform: translateY(-2px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-hover);
+}
+
+.eg-decision-badge {
+  transition: background var(--dur-med) var(--ease-out);
+}
+
+.eg-decision:hover .eg-decision-badge {
+  filter: brightness(1.06);
+}
+
+/* 3) Principle icon pops on hover */
+.eg-principle-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.eg-principle:hover .eg-principle-icon {
+  transform: scale(1.1) rotate(-6deg);
+}
+
+/* 4) Reminders — lift + tint border + pop the icon */
+.eg-reminder {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.eg-reminder:hover {
+  transform: translateY(-2px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-card);
+}
+
+.eg-reminder-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.eg-reminder:hover .eg-reminder-icon {
+  transform: scale(1.08);
+}
+
+/* 5) Buttons lift with a raised shadow */
+.eg-btn {
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.eg-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-hover);
+}
+
+/* 6) Bottom CTA icon pops gently on hover */
+.eg-cta-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.eg-cta:hover .eg-cta-icon {
+  transform: scale(1.08);
+}
+
+/* Respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .eg-card,
+  .eg-section-title,
+  .eg-section-sub,
+  .eg-decision,
+  .eg-reminder,
+  .eg-cta,
+  .eg-decision-badge,
+  .eg-principle-icon,
+  .eg-reminder-icon,
+  .eg-btn,
+  .eg-cta-icon {
+    transition: none;
+  }
+
+  .eg-decision:hover,
+  .eg-reminder:hover,
+  .eg-btn:hover,
+  .eg-cta:hover,
+  .eg-principle:hover {
+    transform: none;
+  }
+
+  .eg-decision:hover .eg-decision-badge {
+    filter: none;
+  }
+
+  .eg-reminder:hover .eg-reminder-icon,
+  .eg-principle:hover .eg-principle-icon,
+  .eg-cta:hover .eg-cta-icon {
+    transform: none;
   }
 }
