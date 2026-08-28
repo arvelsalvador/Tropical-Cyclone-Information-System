@@ -2,55 +2,62 @@
    Preparedness Tips — hero, phase cards, checklists, tips grid, CTA
    ========================================================================== */
 .pt-hero {
-  background: linear-gradient(180deg, #eaf2fd 0%, #dce9fb 100%);
-  padding: 48px 40px 0;
+  background:
+    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
+    url("../../assets/images/preparedness-tips-background.png") center 30% / cover no-repeat;
+  min-height: 430px;
+  display: flex;
+  align-items: center;
+  padding: 48px 40px;
   overflow: hidden;
 }
 
 .pt-hero-inner {
-  max-width: 1100px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
+  width: 100%;
   display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
+  align-items: center;
+  justify-content: flex-start;
   gap: 40px;
 }
 
 .pt-hero-text {
-  padding-bottom: 48px;
-  max-width: 560px;
+  padding-bottom: 0;
+  max-width: 640px;
 }
 
 .pt-breadcrumb {
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 600;
-  color: var(--text-muted);
+  color: rgba(255, 255, 255, 0.78);
   margin-bottom: 14px;
 }
 
 .pt-breadcrumb a {
-  color: var(--blue-600);
+  color: #8fbaf5;
 }
 
 .pt-breadcrumb a:hover {
+  color: #fff;
   text-decoration: underline;
 }
 
 .pt-hero-text h1 {
-  font-size: 40px;
+  font-size: 44px;
   font-weight: 800;
   letter-spacing: -0.01em;
-  color: var(--navy-900);
+  color: #fff;
   margin-bottom: 16px;
 }
 
 .pt-hero-text p {
-  font-size: 15.5px;
-  line-height: 1.65;
-  color: var(--text-body);
+  font-size: 17px;
+  line-height: 1.7;
+  color: rgba(255, 255, 255, 0.88);
 }
 
 .pt-hero-actions {
@@ -123,9 +130,7 @@
 }
 
 .pt-hero-art {
-  flex-shrink: 0;
-  width: 420px;
-  max-width: 44%;
+  display: none;
 }
 
 .pt-hero-art svg {
@@ -600,27 +605,37 @@
 
 /* Compact dashboard layout */
 .pt-hero {
-  background: #f4f8fc;
-  padding: 36px 40px 0;
+  background:
+    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
+    url("../../assets/images/preparedness-tips-background.png") center 30% / cover no-repeat;
+  min-height: 430px;
+  display: flex;
+  align-items: center;
+  padding: 48px 40px;
 }
 
-.pt-hero-inner,
+.pt-hero-inner {
+  max-width: none;
+  margin: 0;
+  width: 100%;
+}
+
 .pt-main {
   max-width: 1400px;
 }
 
 .pt-hero-text {
-  padding-bottom: 20px;
-  max-width: 700px;
+  padding-bottom: 0;
+  max-width: 640px;
 }
 
 .pt-hero-text h1 {
-  font-size: 34px;
+  font-size: 44px;
 }
 
 .pt-hero-text p {
-  font-size: 14px;
-  line-height: 1.5;
+  font-size: 17px;
+  line-height: 1.7;
 }
 
 .pt-hero-art {
@@ -728,7 +743,8 @@
 
 @media (max-width: 900px) {
   .pt-hero {
-    padding: 30px 20px 0;
+    min-height: 360px;
+    padding: 32px 20px;
   }
 
   .pt-main {

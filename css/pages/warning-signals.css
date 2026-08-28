@@ -8,11 +8,12 @@
 }
 
 .ws-hero-inner {
-  max-width: 1100px;
-  margin: 0 auto;
+  max-width: none;
+  margin: 0;
+  width: 100%;
   display: flex;
   align-items: flex-end;
-  justify-content: space-between;
+  justify-content: flex-start;
   gap: 40px;
 }
 
@@ -614,58 +615,11 @@
 /* ==========================================================================
    Warning Signals refresh — compact signal dashboard
    ========================================================================== */
+/* Hero background and padding are set in the "Compact reference layout"
+   section at the bottom of this file (warning-signals photo treatment). */
 .ws-hero {
   position: relative;
-  background:
-    linear-gradient(
-      100deg,
-      rgba(7, 35, 65, 0.92) 0%,
-      rgba(7, 35, 65, 0.8) 45%,
-      rgba(18, 74, 119, 0.55) 100%
-    ),
-    url("../../assets/images/Storm_bg.jpg") center / cover;
   padding: 40px 40px 0;
-}
-
-/* Twinkling star field over the storm sky */
-.ws-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background-image:
-    radial-gradient(1.8px 1.8px at 6% 30%, rgba(255, 255, 255, 0.95), transparent),
-    radial-gradient(1.2px 1.2px at 11% 64%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.5px 1.5px at 16% 38%, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1.1px 1.1px at 22% 76%, rgba(255, 255, 255, 0.55), transparent),
-    radial-gradient(2px 2px at 28% 20%, rgba(255, 255, 255, 0.9), transparent),
-    radial-gradient(1.2px 1.2px at 33% 54%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.6px 1.6px at 39% 82%, rgba(255, 255, 255, 0.75), transparent),
-    radial-gradient(1.1px 1.1px at 45% 16%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.4px 1.4px at 51% 46%, rgba(255, 255, 255, 0.7), transparent),
-    radial-gradient(1.1px 1.1px at 57% 70%, rgba(255, 255, 255, 0.5), transparent),
-    radial-gradient(1.8px 1.8px at 63% 24%, rgba(255, 255, 255, 0.85), transparent),
-    radial-gradient(1.2px 1.2px at 69% 60%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.5px 1.5px at 75% 12%, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1.2px 1.2px at 81% 44%, rgba(255, 255, 255, 0.65), transparent),
-    radial-gradient(1.7px 1.7px at 87% 74%, rgba(255, 255, 255, 0.8), transparent),
-    radial-gradient(1.2px 1.2px at 93% 30%, rgba(255, 255, 255, 0.6), transparent),
-    radial-gradient(1.4px 1.4px at 97% 58%, rgba(255, 255, 255, 0.7), transparent);
-}
-
-/* Soft moonlit cloud banks drifting over the photo */
-.ws-hero::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background:
-    radial-gradient(280px 90px at 88% 16%, rgba(255, 255, 255, 0.14), transparent 70%),
-    radial-gradient(380px 130px at 76% 78%, rgba(173, 205, 235, 0.16), transparent 70%),
-    radial-gradient(220px 80px at 58% 38%, rgba(255, 255, 255, 0.08), transparent 70%),
-    radial-gradient(320px 110px at 40% 88%, rgba(140, 178, 216, 0.12), transparent 70%);
 }
 
 .ws-hero-inner {
@@ -890,20 +844,40 @@
 }
 
 .ws-hero-inner {
-  max-width: 1180px;
+  max-width: none;
+  margin: 0;
+  width: 100%;
 }
 
 .ws-main {
   max-width: 1400px;
 }
 
+/* Hero uses the warning-signals photo with the same treatment as the
+   education hub: full-bleed image, dark left-to-right scrim, text
+   vertically centered on the left, shoreline/people kept in view */
 .ws-hero {
-  padding: 24px 20px 0;
+  background:
+    linear-gradient(90deg, rgba(5, 23, 43, 0.72) 0%, rgba(5, 23, 43, 0.45) 46%, rgba(5, 23, 43, 0.12) 100%),
+    url("../../assets/images/warning-signals-background.png") center bottom / cover no-repeat;
+  min-height: 430px;
+  display: flex;
+  align-items: center;
+  padding: 48px 40px;
 }
 
 .ws-hero-text {
-  padding-bottom: 24px;
-  max-width: 100%;
+  padding: 0;
+  max-width: 640px;
+}
+
+.ws-hero-text h1 {
+  font-size: 44px;
+}
+
+.ws-hero-text p {
+  font-size: 17px;
+  line-height: 1.7;
 }
 
 .ws-hero-art {
@@ -912,6 +886,21 @@
 
 .ws-main {
   padding: 24px 24px 80px;
+}
+
+@media (max-width: 900px) {
+  .ws-hero {
+    min-height: 360px;
+    padding: 32px 20px;
+  }
+
+  .ws-hero-text h1 {
+    font-size: 32px;
+  }
+
+  .ws-hero-text p {
+    font-size: 15.5px;
+  }
 }
 
 .ws-how {

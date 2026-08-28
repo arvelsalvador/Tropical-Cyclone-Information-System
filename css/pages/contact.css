@@ -13,7 +13,7 @@
     ),
     url("../../assets/images/Storm_bg.jpg") center / cover;
   color: #fff;
-  padding: 15px 40px;
+  padding: 40px 40px;
 }
 
 /* Twinkling star field over the storm sky */
@@ -57,27 +57,35 @@
     radial-gradient(320px 110px at 40% 88%, rgba(140, 178, 216, 0.12), transparent 70%);
 }
 
+/* --------------------------------------------------------------------------
+   Hero inner is now a 2-row grid:
+   Row 1: icon + title (left)         |  callout card (right)
+   Row 2: first half of intro text    |  second half of intro text
+   -------------------------------------------------------------------------- */
 .ct-hero-inner {
   position: relative;
   z-index: 1;
   max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 32px;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 32px;
+  row-gap: 18px;
 }
 
 .ct-hero-left {
+  grid-column: 1;
+  grid-row: 1;
   display: flex;
   align-items: center;
   gap: 20px;
 }
 
 .ct-hero-icon {
-  width: 50px;
-  height: 50px;
-  border-radius: 11px;
+  width: 56px;
+  height: 56px;
+  border-radius: 13px;
   background: linear-gradient(135deg, #60a5fa, #2563eb);
   display: flex;
   align-items: center;
@@ -85,38 +93,114 @@
   flex-shrink: 0;
 }
 
+.ct-hero-icon svg {
+  width: 28px;
+  height: 28px;
+}
+
 .ct-hero-left h1 {
-  font-size: 20px;
+  font-size: 36px;
   font-weight: 800;
   letter-spacing: -0.01em;
   color: #fff;
 }
 
-.ct-hero-left p {
-  font-size: 12.5px;
-  color: rgba(255, 255, 255, 0.72);
-  margin-top: 2px;
-  max-width: 440px;
+/* Right-side callout — now sits top-right, same row as title */
+.ct-hero-note {
+  grid-column: 2;
+  grid-row: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  padding: 16px 20px;
+  justify-self: end;
+  max-width: 360px;
+  width: 100%;
+}
+
+.ct-hero-note-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.ct-hero-note strong {
+  display: block;
+  font-size: 14.5px;
+  font-weight: 700;
+}
+
+.ct-hero-note p {
+  font-size: 13px;
+  line-height: 1.55;
+  color: rgba(255, 255, 255, 0.7);
+  margin-top: 3px;
+}
+
+/* Intro text, split into two halves that sit side by side on row 2 */
+.ct-hero-text-left {
+  grid-column: 1;
+  grid-row: 2;
+}
+
+.ct-hero-text-right {
+  grid-column: 2;
+  grid-row: 2;
+}
+
+.ct-hero-text-left p,
+.ct-hero-text-right p {
+  font-size: 15.5px;
+  line-height: 1.65;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 @media (max-width: 900px) {
   .ct-hero {
-    padding: 24px 20px;
+    padding: 32px 20px;
+  }
+
+  .ct-hero-left h1 {
+    font-size: 30px;
   }
 
   .ct-hero-inner {
-    flex-direction: column;
-    align-items: flex-start;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto;
+  }
+
+  .ct-hero-note {
+    grid-column: 1;
+    grid-row: 2;
+    justify-self: start;
+    max-width: none;
+  }
+
+  .ct-hero-text-left {
+    grid-column: 1;
+    grid-row: 3;
+  }
+
+  .ct-hero-text-right {
+    grid-column: 1;
+    grid-row: 4;
   }
 }
 
 /* ==========================================================================
-   Contact — feedback form + quick links
+   Contact — feedback form
    ========================================================================== */
 .ct-grid {
   display: grid;
-  grid-template-columns: minmax(0, 1.6fr) minmax(260px, 1fr);
-  gap: 24px;
+  grid-template-columns: 1fr;
   align-items: start;
 }
 
@@ -197,21 +281,46 @@
   line-height: 1.55;
 }
 
+.ct-actions {
+  display: flex;
+  gap: 12px;
+}
+
+.ct-clear,
 .ct-submit {
-  width: 100%;
+  flex: 1;
   font-family: inherit;
   font-size: 14.5px;
   font-weight: 700;
-  color: #fff;
-  background: var(--blue-600);
-  border: none;
   border-radius: 10px;
   padding: 13px 20px;
   cursor: pointer;
   transition:
     background 0.15s ease,
+    color 0.15s ease,
     transform 0.15s ease,
     box-shadow 0.2s ease;
+}
+
+.ct-clear {
+  color: var(--text-muted);
+  background: #fff;
+  border: 1px solid var(--border-light);
+}
+
+.ct-clear:hover {
+  color: var(--text-dark);
+  background: var(--bg-soft);
+}
+
+.ct-clear:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.ct-submit {
+  color: #fff;
+  background: var(--blue-600);
+  border: none;
 }
 
 .ct-submit:hover {
@@ -278,111 +387,7 @@
   background: #dbeafe;
 }
 
-/* Quick-link cards */
-.ct-side {
-  position: sticky;
-  top: 20px;
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-}
-
-.ct-side-card {
-  display: block;
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: 14px;
-  padding: 18px;
-  transition:
-    transform 0.18s ease,
-    border-color 0.18s ease,
-    box-shadow 0.18s ease;
-}
-
-.ct-side-card:hover {
-  transform: translateY(-3px);
-  border-color: #c7d8f9;
-  box-shadow: var(--shadow-card);
-}
-
-.ct-side-icon {
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 10px;
-}
-
-.ct-side-icon svg {
-  width: 20px;
-  height: 20px;
-}
-
-.ic-blue {
-  background: var(--blue-50);
-}
-
-.ic-red {
-  background: #fee2e2;
-}
-
-.ic-teal {
-  background: #ccfbf1;
-}
-
-.ct-side-card h3 {
-  font-size: 14px;
-  font-weight: 700;
-  color: var(--text-dark);
-}
-
-.ct-side-card p {
-  font-size: 12.5px;
-  line-height: 1.55;
-  color: var(--text-muted);
-  margin: 4px 0 10px;
-}
-
-.ct-side-link {
-  font-size: 12.5px;
-  font-weight: 700;
-  color: var(--blue-600);
-}
-
-/* Emergency note */
-.ct-note {
-  background: #fff7ed;
-  border: 1px solid #fed7aa;
-  border-radius: 12px;
-  padding: 14px 16px;
-  font-size: 12.5px;
-  line-height: 1.6;
-  color: #9a3412;
-}
-
-.ct-note strong {
-  color: #7c2d12;
-}
-
-@media (max-width: 700px) {
-  .ct-grid {
-    grid-template-columns: 1fr;
-  }
-
-  /* Cards flow two per row, emergency note beside the last card */
-  .ct-side {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
 @media (max-width: 480px) {
-  .ct-side {
-    grid-template-columns: 1fr;
-  }
-
   .ct-field-row {
     grid-template-columns: 1fr;
   }

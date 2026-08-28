@@ -108,22 +108,32 @@
       .replace(/\/+$/, "");
     if (!currentPath) currentPath = "/";
 
-    document.querySelectorAll(".main-nav a[href]").forEach(function (link) {
-      try {
-        var linkPath = new URL(link.href).pathname
-          .replace(/\\/g, "/")
-          .replace(/\/index\.html$/i, "/")
-          .replace(/\/+$/, "");
-        if (linkPath === currentPath) {
-          link.classList.add("active");
-        }
-      } catch (e) {}
-    });
+    // Main nav links (Home, Historical Data, Metrics, Resources, dropdown)
+    // plus the About/Contact icon links in .header-actions.
+    document
+      .querySelectorAll(".main-nav a[href], .header-actions a.icon-link[href]")
+      .forEach(function (link) {
+        try {
+          var linkPath = new URL(link.href).pathname
+            .replace(/\\/g, "/")
+            .replace(/\/index\.html$/i, "/")
+            .replace(/\/+$/, "");
+          // A root link ("index.html") normalizes to "" — treat it as "/"
+          if (!linkPath) linkPath = "/";
+          if (linkPath === currentPath) {
+            link.classList.add("active");
+            link.setAttribute("aria-current", "page");
+          }
+        } catch (e) {}
+      });
 
     // Mark education button active if we're in any education page
     if (currentPath.indexOf("/pages/education") !== -1) {
       var eduBtn = document.querySelector(".dropdown-toggle");
-      if (eduBtn) eduBtn.classList.add("active");
+      if (eduBtn) {
+        eduBtn.classList.add("active");
+        eduBtn.setAttribute("aria-current", "true");
+      }
     }
   }
 

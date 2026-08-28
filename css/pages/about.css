@@ -11,7 +11,7 @@
     ),
     url("../../assets/images/Storm_bg.jpg") center / cover;
   color: #fff;
-  padding: 48px 40px 0;
+  padding: 40px 40px;
   overflow: hidden;
   position: relative;
 }
@@ -60,21 +60,21 @@
 .ab-hero-inner {
   position: relative;
   z-index: 1;
-  max-width: 1100px;
+  max-width: 1400px;
   margin: 0 auto;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
-  gap: 40px;
+  gap: 32px;
 }
 
 .ab-hero-text {
-  padding-bottom: 56px;
-  max-width: 520px;
+  padding-bottom: 0;
+  max-width: 560px;
 }
 
 .ab-hero-text h1 {
-  font-size: 38px;
+  font-size: 36px;
   font-weight: 800;
   letter-spacing: -0.01em;
   line-height: 1.2;
@@ -85,20 +85,7 @@
 .ab-hero-text p {
   font-size: 15.5px;
   line-height: 1.65;
-  color: rgba(255, 255, 255, 0.72);
-}
-
-.ab-hero-art {
-  flex-shrink: 0;
-  width: 480px;
-  max-width: 46%;
-  position: relative;
-}
-
-.ab-hero-art svg {
-  width: 100%;
-  height: auto;
-  display: block;
+  color: rgba(255, 255, 255, 0.78);
 }
 
 /* ==========================================================================
@@ -264,7 +251,7 @@
    ========================================================================== */
 @media (max-width: 900px) {
   .ab-hero {
-    padding: 36px 20px 0;
+    padding: 32px 20px;
   }
 
   .ab-hero-inner {
@@ -273,17 +260,8 @@
     gap: 24px;
   }
 
-  .ab-hero-text {
-    padding-bottom: 0;
-  }
-
   .ab-hero-text h1 {
-    font-size: 28px;
-  }
-
-  .ab-hero-art {
-    max-width: 100%;
-    align-self: center;
+    font-size: 30px;
   }
 
   .ab-main {
