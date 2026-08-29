@@ -392,3 +392,130 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   Contact — Entrance & hover animation enhancements
+   The form card fades-and-rises in on scroll (js/main.js adds .is-visible)
+   and the interactive elements get polished tints / lifts / pops on hover.
+   These rules come last so they win over the rules above.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance for the form card and the success panel */
+.ct-form-card[data-reveal],
+.ct-success[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.ct-form-card[data-reveal].is-visible,
+.ct-success[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) Form fields tint before focus so hover feels responsive */
+.ct-field input:hover:not(:focus),
+.ct-field select:hover:not(:focus),
+.ct-field textarea:hover:not(:focus) {
+  border-color: #c7d8f9;
+}
+
+/* 3) Buttons: clear nudges up, submit lifts higher, "send another" pops */
+.ct-clear:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 10px rgba(15, 30, 51, 0.08);
+}
+
+.ct-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px rgba(29, 78, 216, 0.28);
+}
+
+.ct-again {
+  transition:
+    background var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.ct-again:hover {
+  background: #dbeafe;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.15);
+}
+
+/* 4) Success icon springs in when the thank-you panel is shown */
+.ct-success[data-reveal].is-visible .ct-success-icon {
+  animation: ct-icon-pop 0.55s var(--ease-spring) 0.15s both;
+}
+
+@keyframes ct-icon-pop {
+  from {
+    transform: scale(0.4);
+  }
+  to {
+    transform: scale(1);
+  }
+}
+
+/* 5) Hero ambience — twinkling stars, drifting clouds, floating badge */
+.ct-hero::before {
+  animation: ct-twinkle 7s ease-in-out infinite alternate;
+}
+
+.ct-hero::after {
+  animation: ct-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes ct-twinkle {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ct-drift {
+  from {
+    transform: translate3d(-14px, 2px, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(14px, -4px, 0) scale(1.06);
+  }
+}
+
+.ct-hero-icon {
+  animation:
+    ct-float 4s ease-in-out infinite,
+    ct-glow 2.8s ease-out infinite;
+}
+
+@keyframes ct-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ct-glow {
+  0% {
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.5);
+  }
+  70% {
+    box-shadow: 0 0 0 14px rgba(96, 165, 250, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(96, 165, 250, 0);
+  }
+}

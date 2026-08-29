@@ -278,3 +278,119 @@
     align-items: flex-start;
   }
 }
+
+/* ==========================================================================
+   About — Entrance & hover animation enhancements
+   Cards fade-and-rise in on scroll (js/main.js adds .is-visible) and the
+   most interactive elements get a polished lift / pop on hover.
+   These rules come last so they win over the rules above.
+   ========================================================================== */
+
+/* 1) Fade + rise entrance; once revealed, fall back to fast hover transitions */
+.ab-mv-card[data-reveal],
+.ab-wwa-card[data-reveal],
+.ab-cta[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+  transition-delay: var(--reveal-delay, 0s);
+}
+
+.ab-mv-card[data-reveal].is-visible,
+.ab-wwa-card[data-reveal].is-visible,
+.ab-cta[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+  transition-delay: 0s;
+}
+
+/* 2) Mission / Vision / Who We Are cards lift; their icons pop and tint */
+.ab-mv-card:hover,
+.ab-wwa-card:hover {
+  transform: translateY(-4px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-hover);
+}
+
+.ab-mv-icon,
+.ab-wwa-icon {
+  transition:
+    transform var(--dur-med) var(--ease-spring),
+    background var(--dur-fast) ease;
+}
+
+.ab-mv-card:hover .ab-mv-icon,
+.ab-wwa-card:hover .ab-wwa-icon {
+  transform: translateY(-2px) scale(1.1);
+  background: #dbeafe;
+}
+
+/* 3) CTA banner rises gently; its icon tilts and the button lifts */
+.ab-cta:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-elevated);
+}
+
+.ab-cta-icon {
+  transition: transform var(--dur-med) var(--ease-spring);
+}
+
+.ab-cta:hover .ab-cta-icon {
+  transform: scale(1.12) rotate(-4deg);
+}
+
+.ab-cta-btn {
+  transition:
+    background var(--dur-fast) ease,
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.ab-cta-btn:hover {
+  background: var(--blue-500);
+  transform: translateY(-2px);
+  box-shadow: 0 10px 24px rgba(29, 78, 216, 0.35);
+}
+
+.ab-cta-btn:active {
+  transform: translateY(0) scale(0.98);
+}
+
+.ab-cta-btn svg {
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.ab-cta-btn:hover svg {
+  transform: scale(1.12);
+}
+
+/* 4) Hero ambience — twinkling stars and drifting cloud banks */
+.ab-hero::before {
+  animation: ab-twinkle 7s ease-in-out infinite alternate;
+}
+
+.ab-hero::after {
+  animation: ab-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes ab-twinkle {
+  from {
+    opacity: 0.55;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes ab-drift {
+  from {
+    transform: translate3d(-14px, 2px, 0) scale(1.06);
+  }
+  to {
+    transform: translate3d(14px, -4px, 0) scale(1.06);
+  }
+}

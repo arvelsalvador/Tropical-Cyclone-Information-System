@@ -21,3 +21,57 @@
   background: #1741b8;
   transform: translateY(-1px);
 }
+
+/* Click feedback: a quick pop + blue→green flash, then the browser navigates.
+   js/main.js adds .is-clicked on click and holds navigation briefly so the
+   animation is visible before the prepared page loads. */
+.btn-prepared.is-clicked,
+.btn-prepared.is-clicked:hover {
+  background: #059669;
+  animation: prepared-click-pop 0.55s ease both;
+}
+
+.btn-prepared.is-clicked svg {
+  animation: prepared-click-shield 0.55s var(--ease-spring);
+}
+
+@keyframes prepared-click-pop {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.45);
+  }
+  35% {
+    transform: scale(0.92);
+  }
+  70% {
+    transform: scale(1.06);
+    box-shadow: 0 0 0 14px rgba(5, 150, 105, 0);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 rgba(5, 150, 105, 0);
+  }
+}
+
+@keyframes prepared-click-shield {
+  0% {
+    transform: scale(1) rotate(0deg);
+  }
+  40% {
+    transform: scale(0.65) rotate(-15deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+/* Remembered state: the button stays green after a click and resets to blue
+   on a page refresh. js/main.js re-applies this class on load and clears it
+   whenever the page was loaded as a reload. */
+.btn-prepared.is-green {
+  background: #059669;
+}
+
+.btn-prepared.is-green:hover {
+  background: #047857;
+}
