@@ -200,7 +200,8 @@
    ========================================================================== */
 .ct-grid {
   display: grid;
-  grid-template-columns: 1fr;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 24px;
   align-items: start;
 }
 
@@ -340,6 +341,142 @@
   margin-top: 12px;
 }
 
+/* ==========================================================================
+   Contact — sidebar (quick answers, sources, about)
+   ========================================================================== */
+.ct-side {
+  display: grid;
+  gap: 20px;
+}
+
+.ct-side-card {
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 16px;
+  box-shadow: var(--shadow-card);
+  padding: 22px 24px;
+}
+
+.ct-side-card h3 {
+  font-size: 15.5px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.ct-side-card > p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-muted);
+  margin: 6px 0 14px;
+}
+
+.ct-side-links {
+  display: grid;
+  gap: 8px;
+}
+
+.ct-side-links a {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--text-dark);
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 10px 12px;
+  transition:
+    background var(--dur-fast) ease,
+    border-color var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+
+.ct-side-links a:hover {
+  background: var(--blue-50);
+  border-color: #c7d8f9;
+  color: var(--blue-600);
+}
+
+.ct-side-arrow {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  transition:
+    transform var(--dur-fast) ease,
+    color var(--dur-fast) ease;
+}
+
+.ct-side-links a:hover .ct-side-arrow {
+  transform: translateX(3px);
+  color: var(--blue-600);
+}
+
+.ct-side-source {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+.ct-side-source:hover {
+  text-decoration: underline;
+}
+
+/* Dark "New here?" card anchors the bottom of the sidebar */
+.ct-side-about {
+  background: linear-gradient(135deg, #0a2540 0%, #1e3a5f 100%);
+  border: none;
+}
+
+.ct-side-about h3 {
+  color: #fff;
+}
+
+.ct-side-about > p {
+  color: #b9c9de;
+}
+
+.ct-side-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #fff;
+  background: var(--blue-600);
+  border-radius: 10px;
+  padding: 11px 16px;
+  transition:
+    background var(--dur-fast) ease,
+    transform var(--dur-fast) ease,
+    box-shadow var(--dur-fast) ease;
+}
+
+.ct-side-btn:hover {
+  background: var(--blue-500);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.25);
+}
+
+@media (min-width: 901px) {
+  /* Sidebar follows the reader while they fill in the form */
+  .ct-side {
+    position: sticky;
+    top: 110px; /* clears the sticky site header */
+  }
+}
+
+@media (max-width: 900px) {
+  .ct-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Success panel */
 .ct-success {
   text-align: center;
@@ -400,8 +537,9 @@
    These rules come last so they win over the rules above.
    ========================================================================== */
 
-/* 1) Fade + rise entrance for the form card and the success panel */
+/* 1) Fade + rise entrance for the form card, sidebar cards and success panel */
 .ct-form-card[data-reveal],
+.ct-side-card[data-reveal],
 .ct-success[data-reveal] {
   transition:
     opacity var(--dur-slow) var(--ease-out),
@@ -412,12 +550,24 @@
 }
 
 .ct-form-card[data-reveal].is-visible,
+.ct-side-card[data-reveal].is-visible,
 .ct-success[data-reveal].is-visible {
   transition:
     transform var(--dur-med) var(--ease-out),
     border-color var(--dur-med) var(--ease-out),
     box-shadow var(--dur-med) var(--ease-out);
   transition-delay: 0s;
+}
+
+/* Sidebar cards lift gently once revealed */
+.ct-side-card.is-visible:hover {
+  transform: translateY(-3px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-hover);
+}
+
+.ct-side-about:hover {
+  border-color: transparent !important;
 }
 
 /* 2) Form fields tint before focus so hover feels responsive */

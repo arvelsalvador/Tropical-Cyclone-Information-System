@@ -4,8 +4,8 @@
 .hero {
   position: relative;
   /* Match the header's 32px gutters so the hero/feature cards align with the nav */
-  padding: 90px 32px 0;
-  min-height: 480px;
+  padding: 72px 32px 0;
+  min-height: 420px;
   display: flex;
   flex-direction: column;
   overflow: visible;
@@ -34,11 +34,11 @@
 }
 
 .hero-title {
-  font-size: 52px;
+  font-size: 44px;
   font-weight: 800;
   line-height: 1.15;
   color: #fff;
-  margin-bottom: 24px;
+  margin-bottom: 16px;
   letter-spacing: -0.01em;
   text-shadow:
     0 2px 18px rgba(0, 0, 0, 0.55),
@@ -61,15 +61,15 @@
   position: relative;
   z-index: 3;
   max-width: none;
-  margin: auto auto -140px;
+  margin: auto auto -120px;
   width: 100%;
   background: #fff;
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-elevated);
-  padding: 28px 40px;
+  padding: 20px 32px;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 32px;
+  gap: 28px;
   transition: box-shadow var(--dur-med) var(--ease-out);
 }
 
@@ -108,8 +108,8 @@
 }
 
 .feature-icon {
-  width: 48px;
-  height: 48px;
+  width: 44px;
+  height: 44px;
   border-radius: 12px;
   display: flex;
   align-items: center;
@@ -235,7 +235,7 @@
   .feature-cards {
     grid-template-columns: 1fr;
     padding: 24px;
-    margin: 48px auto -50px;
+    margin: 40px auto -50px;
     width: 100%;
   }
   .feature-card {
@@ -258,8 +258,9 @@
    ========================================================================== */
 .home-lower {
   background: var(--bg-soft);
-  /* Match the header's 32px gutters so the cards align with the nav bar */
-  padding: 160px 32px 20px;
+  /* Match the header's 32px gutters so the cards align with the nav bar.
+     140px top = the feature bar's -120px overlap + a 20px gap below it */
+  padding: 140px 32px 24px;
 }
 
 .home-lower-inner {
@@ -267,28 +268,28 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  gap: 24px;
 }
 
 .info-card {
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 32px;
+  padding: 22px 26px;
   box-shadow: var(--shadow-card);
 }
 
 .info-card h2 {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--navy-900);
 }
 
 .card-subtitle {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 24px;
+  margin-top: 3px;
+  margin-bottom: 16px;
 }
 
 /* Stat grid */
@@ -509,28 +510,28 @@
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 28px;
+  gap: 24px;
 }
 
 .info-card {
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
-  padding: 32px;
+  padding: 22px 26px;
   box-shadow: var(--shadow-card);
 }
 
 .info-card h2 {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 700;
   color: var(--navy-900);
 }
 
 .card-subtitle {
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--text-muted);
-  margin-top: 4px;
-  margin-bottom: 24px;
+  margin-top: 3px;
+  margin-bottom: 16px;
 }
 
 /* Stat grid */
@@ -693,7 +694,8 @@
 
 @media (max-width: 900px) {
   .home-lower {
-    padding: 160px 20px 20px;
+    /* 70px top = the feature bar's -50px overlap + a 20px gap below it */
+    padding: 70px 20px 20px;
   }
   .home-lower-inner {
     grid-template-columns: 1fr;
@@ -708,10 +710,10 @@
     font-size: 30px;
   }
   .home-lower {
-    padding: 160px 20px 20px;
+    padding: 70px 20px 20px;
   }
   .info-card {
-    padding: 24px;
+    padding: 18px 20px;
   }
   .storm-row {
     padding: 12px 8px;
@@ -726,7 +728,7 @@
 .home-learning {
   background: var(--bg-soft);
   /* Match the header's 32px gutters so this section aligns with the cards above */
-  padding: 0 32px 64px;
+  padding: 0 32px 48px;
 }
 
 .home-learning-inner {
@@ -894,7 +896,7 @@
 
 @media (max-width: 900px) {
   .home-learning {
-    padding: 0 20px 48px;
+    padding: 0 20px 40px;
   }
   .resources-grid {
     grid-template-columns: 1fr;
@@ -905,13 +907,15 @@
    Home — Overview stat cards (mirrors pages/historical-data.html)
    ========================================================================== */
 .stat-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
+  /* Flex-wrap keeps all three cards on one line on wide screens and reflows
+     them evenly on narrow ones — never leaving an empty grid slot */
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 14px;
 }
 
 .overview-card .stat-cards {
-  margin-bottom: 24px;
+  margin-bottom: 14px;
 }
 
 /* Compact fact strip that fills the space below the stat cards */
@@ -924,27 +928,24 @@
   margin-top: auto;
 }
 
-/* Only three stat cards live here — let the last one span the whole final
-   row so two-column widths never show an empty slot beside it */
-.overview-card .stat-cards .stat-card:last-child {
-  grid-column: 1 / -1;
-}
-
 .overview-highlights {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 12px;
-  margin-bottom: 20px;
+  gap: 10px;
+  /* Auto margins split any leftover card height between this strip and the
+     button below, so the overview card always looks evenly filled */
+  margin-top: auto;
+  margin-bottom: 14px;
 }
 
 .highlight-item {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 2px;
   background: var(--bg-soft);
   border: 1px solid var(--border-light);
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   transition:
     border-color var(--dur-med) var(--ease-out),
     background var(--dur-med) var(--ease-out);
@@ -978,12 +979,14 @@
 .stat-card {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
+  flex: 1 1 165px;
+  min-width: 0;
   background: #fff;
   border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
-  padding: 22px 24px;
+  padding: 12px 16px;
   transition:
     transform var(--dur-med) var(--ease-out),
     box-shadow var(--dur-med) var(--ease-out),
@@ -997,9 +1000,9 @@
 }
 
 .stat-card-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1026,7 +1029,7 @@
 
 .stat-card-number {
   display: block;
-  font-size: 26px;
+  font-size: 22px;
   font-weight: 800;
   color: var(--blue-600);
   line-height: 1.15;
@@ -1034,7 +1037,7 @@
 
 .stat-card-label {
   display: block;
-  font-size: 14.5px;
+  font-size: 13.5px;
   font-weight: 600;
   color: var(--text-dark);
   margin-top: 2px;
@@ -1042,7 +1045,7 @@
 
 .stat-card-sub {
   display: block;
-  font-size: 12.5px;
+  font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
 }
@@ -1075,9 +1078,9 @@
 
 /* Match the neighboring overview card's title size/color on the home page */
 .storms-card .cs-card-title {
-  font-size: 19px;
+  font-size: 18px;
   color: var(--navy-900);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .step-badge {
@@ -1097,10 +1100,10 @@
 .profile-head {
   display: flex;
   align-items: center;
-  gap: 14px;
-  padding-bottom: 14px;
+  gap: 12px;
+  padding-bottom: 12px;
   border-bottom: 1px solid var(--border-light);
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
 .profile-storm-icon {
@@ -1217,8 +1220,9 @@
   text-decoration: none;
 }
 
-/* Stretch the profile content so this card fills its column height and no
-   longer leaves a large empty area below the details link */
+/* Keep this card filling its column height, but let any spare space become
+   even breathing room between the stat rows instead of stretching the tiles
+   into tall, empty boxes */
 .storms-card {
   display: flex;
   flex-direction: column;
@@ -1226,22 +1230,9 @@
 
 .storms-card .profile-stats {
   flex: 1;
-  grid-auto-rows: 1fr;
-  gap: 12px 14px;
-}
-
-/* Tiles grow taller, so center their content and give them a bit more room */
-.storms-card .profile-stat {
-  justify-content: center;
-  padding: 12px 14px;
-}
-
-.storms-card .profile-stat-label {
-  font-size: 11.5px;
-}
-
-.storms-card .profile-stat strong {
-  font-size: 15px;
+  grid-auto-rows: min-content;
+  align-content: space-evenly;
+  margin-bottom: 14px;
 }
 
 .profile-advisory {

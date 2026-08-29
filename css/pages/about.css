@@ -70,7 +70,7 @@
 
 .ab-hero-text {
   padding-bottom: 0;
-  max-width: 560px;
+  max-width: 640px;
 }
 
 .ab-hero-text h1 {
@@ -86,6 +86,47 @@
   font-size: 15.5px;
   line-height: 1.65;
   color: rgba(255, 255, 255, 0.78);
+}
+
+/* Eyebrow badge above the title */
+.ab-hero-badge {
+  display: inline-block;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #cfe0f5;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: var(--radius-full);
+  padding: 6px 14px;
+  margin-bottom: 16px;
+}
+
+/* Quick-fact chips under the intro */
+.ab-hero-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.ab-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.92);
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-full);
+  padding: 7px 13px;
+}
+
+.ab-chip svg {
+  flex-shrink: 0;
+  opacity: 0.85;
 }
 
 /* ==========================================================================
@@ -121,14 +162,22 @@
 }
 
 .ab-mv-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--blue-50);
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #60a5fa, #1d4ed8);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.25);
+}
+
+/* Vision card gets its own green identity */
+.ab-mv-card:last-child .ab-mv-icon {
+  background: linear-gradient(135deg, #34d399, #059669);
+  box-shadow: 0 6px 14px rgba(5, 150, 105, 0.25);
 }
 
 .ab-mv-card h2 {
@@ -160,14 +209,16 @@
 }
 
 .ab-wwa-icon {
-  width: 52px;
-  height: 52px;
-  border-radius: 14px;
-  background: var(--blue-50);
+  width: 48px;
+  height: 48px;
+  border-radius: 13px;
+  background: linear-gradient(135deg, #2dd4bf, #0d9488);
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 6px 14px rgba(13, 148, 136, 0.25);
 }
 
 .ab-wwa-card h2 {
@@ -181,6 +232,84 @@
   font-size: 14px;
   line-height: 1.65;
   color: var(--text-body);
+}
+
+/* ==========================================================================
+   What you'll find — quick links to the main sections
+   ========================================================================== */
+.ab-explore {
+  margin-top: 20px;
+}
+
+.ab-explore-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text-dark);
+  margin-bottom: 14px;
+}
+
+.ab-explore-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.ab-explore-card {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+}
+
+.ab-explore-icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  flex-shrink: 0;
+  margin-bottom: 2px;
+}
+
+.ab-explore-icon.icon-blue {
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+}
+.ab-explore-icon.icon-green {
+  background: linear-gradient(135deg, #34d399, #059669);
+}
+.ab-explore-icon.icon-teal {
+  background: linear-gradient(135deg, #2dd4bf, #0d9488);
+}
+
+.ab-explore-card h3 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.ab-explore-card p {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text-body);
+}
+
+.ab-explore-link {
+  margin-top: auto;
+  padding-top: 6px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+.ab-explore-link span {
+  display: inline-block;
+  transition: transform var(--dur-med) var(--ease-out);
 }
 
 /* ==========================================================================
@@ -273,9 +402,19 @@
     margin-top: -16px;
   }
 
+  .ab-explore-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
   .ab-cta {
     flex-direction: column;
     align-items: flex-start;
+  }
+}
+
+@media (max-width: 560px) {
+  .ab-explore-grid {
+    grid-template-columns: 1fr;
   }
 }
 
@@ -320,13 +459,46 @@
 .ab-wwa-icon {
   transition:
     transform var(--dur-med) var(--ease-spring),
-    background var(--dur-fast) ease;
+    box-shadow var(--dur-med) var(--ease-out);
 }
 
 .ab-mv-card:hover .ab-mv-icon,
 .ab-wwa-card:hover .ab-wwa-icon {
   transform: translateY(-2px) scale(1.1);
-  background: #dbeafe;
+}
+
+/* Explore cards lift, tint their title, and nudge the arrow */
+.ab-explore-card[data-reveal] {
+  transition:
+    opacity var(--dur-slow) var(--ease-out),
+    transform var(--dur-slow) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.ab-explore-card[data-reveal].is-visible {
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    border-color var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.ab-explore-card.is-visible:hover {
+  transform: translateY(-4px);
+  border-color: #c7d8f9;
+  box-shadow: var(--shadow-hover);
+}
+
+.ab-explore-card h3 {
+  transition: color var(--dur-fast) ease;
+}
+
+.ab-explore-card:hover h3 {
+  color: var(--blue-600);
+}
+
+.ab-explore-card:hover .ab-explore-link span {
+  transform: translateX(4px);
 }
 
 /* 3) CTA banner rises gently; its icon tilts and the button lifts */
