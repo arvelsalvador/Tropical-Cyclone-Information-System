@@ -1,0 +1,5 @@
+# Composer dependencies (installed locally, not part of the source)
+vendor/
+
+# Local scratch scripts
+tmp_data_scan.ps1

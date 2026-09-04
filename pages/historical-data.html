@@ -70,11 +70,11 @@
           </svg>
           Contact
         </a>
-        <a href="../pages/prepared.html" class="btn-prepared">
+        <a href="../admin/login.php" class="btn-prepared">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
           </svg>
-          Be Prepared
+          Log-in
         </a>
     </div>
     <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
@@ -294,15 +294,14 @@
               <table class="storm-table">
                 <caption class="sr-only">
                   Historical tropical cyclones affecting Camarines Norte, 2010
-                  to 2020, with landfall details and impacts
+                  to 2020, with inclusive dates, maximum winds, and impacts
                 </caption>
                 <thead>
                   <tr>
                     <th>Name</th>
                     <th>Year</th>
                     <th>PAGASA Category</th>
-                    <th>Landfall Date</th>
-                    <th>Landfall Location</th>
+                    <th>Inclusive Date</th>
                     <th>Max Wind (km/h)</th>
                     <th>Rainfall (mm)</th>
                   </tr>
@@ -402,6 +401,6 @@
 </footer></div>
 
     <script src="../js/main.js" data-root="../"></script>
-    <script src="../js/pages/historical-data.js" defer></script>
+    <script src="../js/pages/historical-data.js?v=2" defer></script>
   </body>
 </html>

@@ -1,4 +1,4 @@
-﻿<!doctype html>
+<!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -120,7 +120,7 @@
               Contact
             </a>
             <a
-              href="pages/prepared.html"
+              href="admin/login.php"
               class="btn-prepared"
             >
               <svg
@@ -133,9 +133,11 @@
                 stroke-linecap="round"
                 stroke-linejoin="round"
               >
-                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" />
+                <polyline points="10 17 15 12 10 7" />
+                <line x1="15" y1="12" x2="3" y2="12" />
               </svg>
-              Be Prepared
+              Log-in
             </a>
           </div>
           <button class="mobile-menu-toggle" aria-label="Toggle menu">
@@ -154,7 +156,7 @@
             muted
             loop
             playsinline
-            src="assets/Video/background_video.mp4"
+            src="assets/video/background_video.mp4"
             poster="assets/images/Storm_bg.jpg"
           ></video>
         </div>
@@ -373,6 +375,7 @@
               <span class="step-badge">1</span> Upcoming Storm Profile
             </h2>
 
+            <div id="upcomingStormSection" class="upcoming-hidden">
             <div class="profile-head">
               <div class="profile-storm-icon">
                 <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
@@ -389,11 +392,11 @@
               </div>
               <div>
                 <div class="profile-name-row">
-                  <h3>TY ODIN</h3>
-                  <span class="badge-approaching">Approaching</span>
+                  <h3 data-us="storm_name">TY ODIN</h3>
+                  <span class="badge-approaching" data-us="status">Approaching</span>
                 </div>
                 <p class="profile-meta">
-                  May 24, 2025 &nbsp;·&nbsp; 8:00 AM PHT
+                  &nbsp;
                 </p>
               </div>
             </div>
@@ -412,8 +415,8 @@
                   </svg>
                   Max Winds
                 </span>
-                <strong>185 km/h</strong>
-                <small>Cat 3 (Severe Typhoon)</small>
+                <strong data-us="wind">185 km/h</strong>
+                <small data-us="category">Cat 3 (Severe Typhoon)</small>
               </div>
               <div class="profile-stat">
                 <span class="profile-stat-label">
@@ -428,8 +431,8 @@
                   </svg>
                   Movement
                 </span>
-                <strong>18 km/h</strong>
-                <small>WNW</small>
+                <strong data-us="movement_speed">18 km/h</strong>
+                <small data-us="movement_direction">WNW</small>
               </div>
               <div class="profile-stat">
                 <span class="profile-stat-label">
@@ -450,8 +453,8 @@
                   </svg>
                   PAGASA Signal
                 </span>
-                <strong>Signal #2</strong>
-                <small>Camarines Norte</small>
+                <strong data-us="pagasa_signal">Signal #2</strong>
+                <small>&nbsp;</small>
               </div>
               <div class="profile-stat">
                 <span class="profile-stat-label">
@@ -472,7 +475,7 @@
                   </svg>
                   Central Pressure
                 </span>
-                <strong>965 hPa</strong>
+                <strong data-us="pressure">965 hPa</strong>
                 <small>&nbsp;</small>
               </div>
               <div class="profile-stat">
@@ -496,8 +499,8 @@
                   </svg>
                   Forecast Landfall
                 </span>
-                <strong>May 26, 2025</strong>
-                <small>Mon Evening</small>
+                <strong data-us="landfall">May 26, 2025</strong>
+                <small data-us="forecast_landfall_note">Mon Evening</small>
               </div>
               <div class="profile-stat">
                 <span class="profile-stat-label">
@@ -518,7 +521,7 @@
                   </svg>
                   Location
                 </span>
-                <strong>420 km E of Catanduanes</strong>
+                <strong data-us="location_note">420 km E of Catanduanes</strong>
                 <small>&nbsp;</small>
               </div>
             </div>
@@ -533,6 +536,12 @@
             </a>
 
             <!-- Advisory notes trimmed so this card matches the overview card's height -->
+            </div>
+
+            <div class="upcoming-empty upcoming-hidden" id="upcomingEmpty">
+              <div class="upcoming-empty-title">No active tropical cyclone</div>
+              <p class="upcoming-empty-sub">No tropical cyclone is currently being monitored in the Philippine Area of Responsibility. Check back later for updates.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -683,5 +692,6 @@
     </div>
 
     <script src="js/main.js" data-root=""></script>
+    <script src="js/upcoming-storm.js" defer></script>
   </body>
 </html>

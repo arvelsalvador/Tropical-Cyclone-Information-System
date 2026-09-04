@@ -265,6 +265,32 @@
   border-bottom-color: var(--border-light);
 }
 
+/* None-mode empty state: JS toggles these when the admin sets the
+   upcoming storm to "NONE" (no active storm right now) */
+.upcoming-hidden {
+  display: none !important;
+}
+
+.upcoming-empty {
+  padding: 42px 24px 32px;
+  text-align: center;
+}
+
+.upcoming-empty-title {
+  font-size: 17px;
+  font-weight: 800;
+  color: var(--text-dark);
+  margin-bottom: 6px;
+}
+
+.upcoming-empty-sub {
+  font-size: 13.5px;
+  color: var(--text-muted);
+  max-width: 420px;
+  margin: 0 auto;
+  line-height: 1.5;
+}
+
 .profile-storm-icon {
   width: 48px;
   height: 48px;

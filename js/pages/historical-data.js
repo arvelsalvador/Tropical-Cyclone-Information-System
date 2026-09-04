@@ -2,13 +2,18 @@
 // Renders the cyclone table, wires filters (year range, category, area),
 // name search, stat cards, CSV export, and numbered pagination.
 // Filters apply live; no submit button needed.
+//
+// UPDATED: data now comes live from MySQL via get_cyclones.php instead of
+// a hardcoded array.
 
 (function () {
   "use strict";
 
   // ---------------------------------------------------------------------
-  // Data — based on PAGASA historical records for Camarines Norte
+  // Config
   // ---------------------------------------------------------------------
+  const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
+
   const CATEGORIES = {
     "Super Typhoon": { color: "#7c3aed", bg: "#ede9fe" },
     Typhoon: { color: "#dc2626", bg: "#fee2e2" },
@@ -18,36 +23,21 @@
     "Low Pressure Area": { color: "#64748b", bg: "#f1f5f9" },
   };
 
-  const STORMS = [
-    { name: "Typhoon Rolly (Goni)", year: 2020, category: "Super Typhoon", date: "Nov 1, 2020", location: "Mercedes, Camarines Norte", wind: 225, rainfall: 350.2, affected: 126000, damage: "₱1.2B" },
-    { name: "Typhoon Ulysses (Vamco)", year: 2020, category: "Typhoon", date: "Nov 11, 2020", location: "Daet, Camarines Norte", wind: 155, rainfall: 240.0, affected: 88000, damage: "₱520M" },
-    { name: "Typhoon Quinta (Molave)", year: 2020, category: "Typhoon", date: "Oct 25, 2020", location: "Paracale, Camarines Norte", wind: 185, rainfall: 290.5, affected: 98000, damage: "₱763M" },
-    { name: "Typhoon Ambo (Vongfong)", year: 2020, category: "Typhoon", date: "May 14, 2020", location: "San Vicente, Camarines Norte", wind: 155, rainfall: 210.0, affected: 74000, damage: "₱510M" },
-    { name: "Typhoon Tisoy (Kammuri)", year: 2019, category: "Typhoon", date: "Dec 3, 2019", location: "Daet, Camarines Norte", wind: 175, rainfall: 265.0, affected: 88000, damage: "₱640M" },
-    { name: "Typhoon Ursula (Phanfone)", year: 2019, category: "Typhoon", date: "Dec 25, 2019", location: "Vinzons, Camarines Norte", wind: 150, rainfall: 180.4, affected: 52000, damage: "₱320M" },
-    { name: "Typhoon Rosita (Yutu)", year: 2018, category: "Typhoon", date: "Oct 30, 2018", location: "Santa Elena, Camarines Norte", wind: 160, rainfall: 195.6, affected: 61000, damage: "₱410M" },
-    { name: "Typhoon Ompong (Mangkhut)", year: 2018, category: "Typhoon", date: "Sept 15, 2018", location: "Bagasbas, Daet", wind: 195, rainfall: 274.1, affected: 82000, damage: "₱542M" },
-    { name: "TD Usman", year: 2018, category: "Tropical Depression", date: "Dec 29, 2018", location: "Labo, Camarines Norte", wind: 55, rainfall: 320.8, affected: 95000, damage: "₱280M" },
-    { name: "TS Urduja (Kai-tak)", year: 2017, category: "Severe Tropical Storm", date: "Dec 14, 2017", location: "Basud, Camarines Norte", wind: 95, rainfall: 156.0, affected: 32000, damage: "₱186M" },
-    { name: "Typhoon Nina (Nock-ten)", year: 2016, category: "Typhoon", date: "Dec 26, 2016", location: "Talisay, Camarines Norte", wind: 205, rainfall: 310.3, affected: 132000, damage: "₱980M" },
-    { name: "Typhoon Karen (Sarika)", year: 2016, category: "Typhoon", date: "Oct 16, 2016", location: "San Vicente, Camarines Norte", wind: 165, rainfall: 240.7, affected: 76000, damage: "₱450M" },
-    { name: "Typhoon Lawin (Haima)", year: 2016, category: "Typhoon", date: "Oct 20, 2016", location: "Mercedes, Camarines Norte", wind: 175, rainfall: 150.0, affected: 28000, damage: "₱120M" },
-    { name: "Typhoon Lando (Koppu)", year: 2015, category: "Typhoon", date: "Oct 18, 2015", location: "Santa Elena, Camarines Norte", wind: 170, rainfall: 230.9, affected: 67000, damage: "₱480M" },
-    { name: "Typhoon Nona (Melor)", year: 2015, category: "Typhoon", date: "Dec 14, 2015", location: "Mercedes, Camarines Norte", wind: 175, rainfall: 250.6, affected: 84000, damage: "₱620M" },
-    { name: "TS Amang (Mekkhala)", year: 2015, category: "Tropical Storm", date: "Jan 18, 2015", location: "Basud, Camarines Norte", wind: 85, rainfall: 130.2, affected: 22000, damage: "₱75M" },
-    { name: "Typhoon Glenda (Rammasun)", year: 2014, category: "Typhoon", date: "Jul 16, 2014", location: "Daet, Camarines Norte", wind: 185, rainfall: 220.5, affected: 91000, damage: "₱570M" },
-    { name: "TS Mario (Fung-wong)", year: 2014, category: "Tropical Storm", date: "Sep 19, 2014", location: "Vinzons, Camarines Norte", wind: 85, rainfall: 160.4, affected: 26000, damage: "₱95M" },
-    { name: "TS Maring (Trami)", year: 2013, category: "Tropical Storm", date: "Aug 19, 2013", location: "Labo, Camarines Norte", wind: 85, rainfall: 185.0, affected: 24000, damage: "₱88M" },
-    { name: "TS Salome", year: 2013, category: "Tropical Storm", date: "Jul 17, 2013", location: "Paracale, Camarines Norte", wind: 85, rainfall: 142.3, affected: 18000, damage: "₱98M" },
-    { name: "Typhoon Labuyo (Utor)", year: 2013, category: "Typhoon", date: "Aug 12, 2013", location: "Santa Elena, Camarines Norte", wind: 165, rainfall: 175.2, affected: 42000, damage: "₱230M" },
-    { name: "Typhoon Santi (Nari)", year: 2013, category: "Typhoon", date: "Oct 12, 2013", location: "Capalonga, Camarines Norte", wind: 150, rainfall: 205.8, affected: 58000, damage: "₱310M" },
-    { name: "Typhoon Pedring (Nesat)", year: 2011, category: "Typhoon", date: "Sep 27, 2011", location: "Mercedes, Camarines Norte", wind: 175, rainfall: 210.7, affected: 72000, damage: "₱390M" },
-    { name: "Typhoon Quiel (Nalgae)", year: 2011, category: "Typhoon", date: "Oct 1, 2011", location: "Labo, Camarines Norte", wind: 160, rainfall: 185.4, affected: 55000, damage: "₱270M" },
-    { name: "Typhoon Juan (Megi)", year: 2010, category: "Super Typhoon", date: "Oct 18, 2010", location: "Vinzons, Camarines Norte", wind: 225, rainfall: 190.3, affected: 30000, damage: "₱140M" },
-    { name: "Typhoon Basyang (Conson)", year: 2010, category: "Typhoon", date: "Jul 14, 2010", location: "Daet, Camarines Norte", wind: 130, rainfall: 145.6, affected: 35000, damage: "₱160M" },
-  ];
+  // Maps the abbreviations stored in the database to full display names.
+  const CATEGORY_MAP = {
+    TD: "Tropical Depression",
+    TS: "Tropical Storm",
+    STS: "Severe Tropical Storm",
+    TY: "Typhoon",
+    STY: "Super Typhoon",
+  };
 
   const PAGE_SIZE = 10;
+
+  // Populated by loadData() on startup — replaces the old static STORMS array.
+  let STORMS = [];
+  let YEAR_MIN = 2022;
+  let YEAR_MAX = 2025;
 
   // ---------------------------------------------------------------------
   // Element references
@@ -74,7 +64,7 @@
   const downloadBtn = document.getElementById("downloadCsv");
 
   let currentPage = 1;
-  let lastFiltered = STORMS;
+  let lastFiltered = [];
   let searchQuery = "";
 
   const prefersReducedMotion =
@@ -87,6 +77,66 @@
     '<path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="#fff"/>' +
     '<path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="#fff"/>' +
     "</svg>";
+
+  // ---------------------------------------------------------------------
+  // Data loading + mapping (NEW)
+  // ---------------------------------------------------------------------
+  function formatDateRange(startStr, endStr) {
+    if (!startStr) return "—";
+    const opts = { month: "short", day: "numeric" };
+    const start = new Date(startStr + "T00:00:00");
+    const startText = start.toLocaleDateString("en-US", opts);
+    if (!endStr) {
+      return startText;
+    }
+    const end = new Date(endStr + "T00:00:00");
+    const endText = end.toLocaleDateString("en-US", opts);
+    // Single-day cyclones (end date same as start) keep the inclusive
+    // range format, e.g. "Apr 12 – Apr 12".
+    return startText + " \u2013 " + endText;
+  }
+
+  function mapRow(row) {
+    const name = row.international_name
+      ? row.local_name + " (" + row.international_name + ")"
+      : row.local_name;
+
+    const category = CATEGORY_MAP[row.highest_category] || row.highest_category || "—";
+
+    let wind = null;
+    if (row.highest_strength) {
+      const parsed = parseInt(String(row.highest_strength).split("/")[0], 10);
+      if (!isNaN(parsed)) wind = parsed;
+    }
+
+    return {
+      name: name,
+      year: parseInt(row.year, 10),
+      category: category,
+      date: formatDateRange(row.date_start, row.date_end),
+      wind: wind,
+    };
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Request failed: " + res.status);
+      const rows = await res.json();
+      STORMS = rows.map(mapRow);
+
+      if (STORMS.length > 0) {
+        const years = STORMS.map((s) => s.year);
+        YEAR_MIN = Math.min.apply(null, years);
+        YEAR_MAX = Math.max.apply(null, years);
+      }
+    } catch (err) {
+      console.error("Failed to load cyclone data:", err);
+      STORMS = [];
+      tbody.innerHTML =
+        '<tr class="empty-row"><td colspan="6">Could not load data from the server. Check that XAMPP (Apache + MySQL) is running.</td></tr>';
+    }
+  }
 
   // ---------------------------------------------------------------------
   // Animations: count-up numbers, scroll reveal
@@ -117,7 +167,6 @@
   function setupReveal() {
     const targets = document.querySelectorAll("[data-reveal]");
 
-    /* Stagger siblings inside the same parent (e.g. the stat cards). */
     targets.forEach((el) => {
       const siblings = el.parentElement.querySelectorAll(
         ":scope > [data-reveal]"
@@ -190,9 +239,9 @@
     yearMinValue.textContent = min;
     yearMaxValue.textContent = max;
 
-    const span = 2020 - 2010;
-    const leftPct = ((min - 2010) / span) * 100;
-    const rightPct = ((max - 2010) / span) * 100;
+    const span = YEAR_MAX - YEAR_MIN || 1;
+    const leftPct = ((min - YEAR_MIN) / span) * 100;
+    const rightPct = ((max - YEAR_MIN) / span) * 100;
     rangeFill.style.left = leftPct + "%";
     rangeFill.style.width = rightPct - leftPct + "%";
   }
@@ -241,40 +290,33 @@
     const total = filtered.length;
     const spanYears = filters.maxYear - filters.minYear + 1;
     const average = spanYears > 0 ? total / spanYears : 0;
-    const landfalls = filtered.filter((s) => s.date && s.location).length;
 
-    const strongest = filtered.reduce(
-      (best, s) =>
-        s.wind / s.rainfall > (best ? best.wind / best.rainfall : -1)
-          ? s
-          : best,
-      null
-    );
+    const strongest = filtered.reduce((best, s) => {
+      if (s.wind == null) return best;
+      if (!best || s.wind > best.wind) return s;
+      return best;
+    }, null);
 
     animateStat(statTotal, total, 0);
-    statTotalSub.textContent =
-      filters.minYear === 2010 && filters.maxYear === 2020
-        ? "2010–2020"
-        : filters.minYear + "–" + filters.maxYear;
+    statTotalSub.textContent = filters.minYear + "\u2013" + filters.maxYear;
+
     if (strongest) {
-      animateStat(statMaxWind, strongest.wind / strongest.rainfall, 2);
+      animateStat(statMaxWind, strongest.wind, 0);
     } else {
       if (statMaxWind._raf) cancelAnimationFrame(statMaxWind._raf);
       statMaxWind._value = null;
       statMaxWind.textContent = "—";
     }
     statMaxWindSub.textContent = strongest
-      ? strongest.name.replace(/^Typhoon |^TS |^TD /, "") +
-        " · " +
-        strongest.wind + " km/h · " +
-        strongest.rainfall.toFixed(1) + " mm rain"
+      ? strongest.name + " \u00b7 " + strongest.wind + " km/h"
       : "no data in range";
+
     animateStat(statAverage, average, 1);
 
     tableTitle.textContent =
       "List of Historical Cyclones (" +
       filters.minYear +
-      "–" +
+      "\u2013" +
       filters.maxYear +
       ")";
   }
@@ -289,7 +331,7 @@
       const emptyRow = document.createElement("tr");
       emptyRow.className = "empty-row";
       emptyRow.innerHTML =
-        '<td colspan="7">No cyclones match the selected filters.</td>';
+        '<td colspan="6">No cyclones match the selected filters.</td>';
       tbody.appendChild(emptyRow);
       updatePagination(filtered);
       return;
@@ -329,13 +371,12 @@
       nameCell.appendChild(nameWrap);
       row.appendChild(nameCell);
 
+      // Year, Category (placeholder, filled below), Date, Wind
       const cells = [
         storm.year,
-        null, // category badge handled separately
+        null,
         storm.date,
-        storm.location,
-        storm.wind,
-        storm.rainfall.toFixed(1),
+        storm.wind != null ? storm.wind + " km/h" : "—",
       ];
 
       cells.forEach((value) => {
@@ -370,7 +411,7 @@
     const end = Math.min(currentPage * PAGE_SIZE, total);
 
     pageInfo.textContent =
-      total === 0 ? "0 of 0" : start + "–" + end + " of " + total;
+      total === 0 ? "0 of 0" : start + "\u2013" + end + " of " + total;
     prevBtn.disabled = currentPage <= 1;
     nextBtn.disabled = currentPage >= totalPages;
 
@@ -396,13 +437,13 @@
   // CSV export
   // ---------------------------------------------------------------------
   function downloadCsv() {
-    const header = [
-      "Name", "Year", "PAGASA Category", "Landfall Date",
-      "Landfall Location", "Max Wind (km/h)", "Rainfall (mm)",
-    ];
+    const header = ["Name", "Year", "PAGASA Category", "Inclusive Date", "Max Wind (km/h)"];
     const rows = lastFiltered.map((s) => [
-      s.name, s.year, s.category, s.date, s.location,
-      s.wind, s.rainfall.toFixed(1),
+      s.name,
+      s.year,
+      s.category,
+      s.date,
+      s.wind != null ? s.wind : "",
     ]);
     const csv = [header].concat(rows)
       .map((row) =>
@@ -416,7 +457,7 @@
     const url = URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
-    link.download = "camarines-norte-cyclones-2010-2020.csv";
+    link.download = "cyclones-" + YEAR_MIN + "-" + YEAR_MAX + ".csv";
     document.body.appendChild(link);
     link.click();
     link.remove();
@@ -427,8 +468,8 @@
   // Clear filters
   // ---------------------------------------------------------------------
   function clearFilters() {
-    yearMinInput.value = 2010;
-    yearMaxInput.value = 2020;
+    yearMinInput.value = YEAR_MIN;
+    yearMaxInput.value = YEAR_MAX;
     searchInput.value = "";
     searchQuery = "";
     categoryList
@@ -441,9 +482,19 @@
   // ---------------------------------------------------------------------
   // Wiring
   // ---------------------------------------------------------------------
-  function init() {
+  async function init() {
     setupReveal();
     buildCategoryList();
+
+    await loadData();
+
+    yearMinInput.min = YEAR_MIN;
+    yearMinInput.max = YEAR_MAX;
+    yearMinInput.value = YEAR_MIN;
+    yearMaxInput.min = YEAR_MIN;
+    yearMaxInput.max = YEAR_MAX;
+    yearMaxInput.value = YEAR_MAX;
+
     updateRangeUI();
     runFilters();
 

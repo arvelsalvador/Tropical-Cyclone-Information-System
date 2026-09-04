@@ -329,7 +329,7 @@
   color: var(--blue-600);
 }
 
-/* Header Actions (About, Contact, Be Prepared) */
+/* Header Actions (About, Contact, Log-in) */
 .header-actions {
   display: flex;
   align-items: center;
@@ -414,12 +414,6 @@
   box-shadow: 0 8px 18px rgba(29, 78, 216, 0.28);
 }
 
-/* Stop the pulse on hover so the lift transform isn't fighting a
-   frozen scale() value from the paused heartbeat animation. */
-.btn-prepared.heartbeat:hover {
-  animation: none;
-}
-
 .btn-prepared:active {
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(29, 78, 216, 0.24);
@@ -431,7 +425,7 @@
 }
 
 .btn-prepared:hover svg {
-  transform: rotate(-10deg) scale(1.1);
+  transform: scale(1.08);
 }
 
 /* Mobile menu toggle (hidden on desktop) */

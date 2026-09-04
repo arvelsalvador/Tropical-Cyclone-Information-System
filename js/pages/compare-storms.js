@@ -1,20 +1,34 @@
 // Tropical Cyclone Information System — Compare Storms page
 // Renders the upcoming storm profile's historical analogues, wires the
-// comparison controls (strength / direction), and renders the results table.
+// comparison controls, and renders the results table.
+//
+// UPDATED: data now comes live from MySQL via get_cyclones.php.
+// Rainfall, pressure, direction, and location have been removed since
+// they are not currently tracked in the database — comparisons now run
+// on wind speed and PAGASA category only. These can be re-added later
+// once that data is collected.
+// The Best Match panel re-fetches the upcoming storm profile whenever the
+// tab regains focus, so admin edits (e.g. Max Wind) show up immediately
+// without a manual reload.
 
 (function () {
   "use strict";
 
   // ---------------------------------------------------------------------
-  // Upcoming storm (demo profile) + historical dataset (PAGASA records)
+  // Config
   // ---------------------------------------------------------------------
-  const UPCOMING = {
+  const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
+  const UPCOMING_API_URL = "/Weather/api/get_upcoming_storm.php"; // adjust path if needed
+
+  // "Upcoming" storm profile. Defaults below act as demo/fallback data; the
+  // live values come from the admin-managed `upcoming_storm` table
+  // (edited via admin/edit-storm.php) and are loaded in loadUpcoming().
+  let UPCOMING = {
     name: "TY ODIN",
     year: 2025,
     wind: 185,
-    rainfall: 260,
-    pressure: 965,
-    direction: "WNW",
+    peak: null,
+    category: "Typhoon",
   };
 
   const CATEGORY_RANK = {
@@ -25,51 +39,21 @@
     "Super Typhoon": 5,
   };
 
-  const STORMS = [
-    { name: "Typhoon Rolly (Goni)", year: 2020, category: "Super Typhoon", date: "Nov 1, 2020", location: "Mercedes, Camarines Norte", wind: 225, rainfall: 350.2, pressure: 905, direction: "WSW" },
-    { name: "Typhoon Ulysses (Vamco)", year: 2020, category: "Typhoon", date: "Nov 11, 2020", location: "Daet, Camarines Norte", wind: 155, rainfall: 240.0, pressure: 965, direction: "WNW" },
-    { name: "Typhoon Quinta (Molave)", year: 2020, category: "Typhoon", date: "Oct 25, 2020", location: "Paracale, Camarines Norte", wind: 185, rainfall: 290.5, pressure: 950, direction: "WNW" },
-    { name: "Typhoon Ambo (Vongfong)", year: 2020, category: "Typhoon", date: "May 14, 2020", location: "San Vicente, Camarines Norte", wind: 155, rainfall: 210.0, pressure: 975, direction: "NW" },
-    { name: "Typhoon Tisoy (Kammuri)", year: 2019, category: "Typhoon", date: "Dec 3, 2019", location: "Daet, Camarines Norte", wind: 175, rainfall: 265.0, pressure: 955, direction: "W" },
-    { name: "Typhoon Ursula (Phanfone)", year: 2019, category: "Typhoon", date: "Dec 25, 2019", location: "Vinzons, Camarines Norte", wind: 150, rainfall: 180.4, pressure: 980, direction: "WNW" },
-    { name: "Typhoon Rosita (Yutu)", year: 2018, category: "Typhoon", date: "Oct 30, 2018", location: "Santa Elena, Camarines Norte", wind: 160, rainfall: 195.6, pressure: 970, direction: "NW" },
-    { name: "Typhoon Ompong (Mangkhut)", year: 2018, category: "Typhoon", date: "Sept 15, 2018", location: "Bagasbas, Daet", wind: 195, rainfall: 274.1, pressure: 945, direction: "W" },
-    { name: "TD Usman", year: 2018, category: "Tropical Depression", date: "Dec 29, 2018", location: "Labo, Camarines Norte", wind: 55, rainfall: 320.8, pressure: 1000, direction: "WNW" },
-    { name: "TS Urduja (Kai-tak)", year: 2017, category: "Severe Tropical Storm", date: "Dec 14, 2017", location: "Basud, Camarines Norte", wind: 95, rainfall: 156.0, pressure: 992, direction: "W" },
-    { name: "Typhoon Nina (Nock-ten)", year: 2016, category: "Typhoon", date: "Dec 26, 2016", location: "Talisay, Camarines Norte", wind: 205, rainfall: 310.3, pressure: 935, direction: "WSW" },
-    { name: "Typhoon Karen (Sarika)", year: 2016, category: "Typhoon", date: "Oct 16, 2016", location: "San Vicente, Camarines Norte", wind: 165, rainfall: 240.7, pressure: 960, direction: "WNW" },
-    { name: "Typhoon Lawin (Haima)", year: 2016, category: "Typhoon", date: "Oct 20, 2016", location: "Mercedes, Camarines Norte", wind: 175, rainfall: 150.0, pressure: 955, direction: "NW" },
-    { name: "Typhoon Lando (Koppu)", year: 2015, category: "Typhoon", date: "Oct 18, 2015", location: "Santa Elena, Camarines Norte", wind: 170, rainfall: 230.9, pressure: 960, direction: "N" },
-    { name: "Typhoon Nona (Melor)", year: 2015, category: "Typhoon", date: "Dec 14, 2015", location: "Mercedes, Camarines Norte", wind: 175, rainfall: 250.6, pressure: 955, direction: "WNW" },
-    { name: "TS Amang (Mekkhala)", year: 2015, category: "Tropical Storm", date: "Jan 18, 2015", location: "Basud, Camarines Norte", wind: 85, rainfall: 130.2, pressure: 995, direction: "NW" },
-    { name: "Typhoon Glenda (Rammasun)", year: 2014, category: "Typhoon", date: "Jul 16, 2014", location: "Daet, Camarines Norte", wind: 185, rainfall: 220.5, pressure: 950, direction: "WNW" },
-    { name: "TS Mario (Fung-wong)", year: 2014, category: "Tropical Storm", date: "Sep 19, 2014", location: "Vinzons, Camarines Norte", wind: 85, rainfall: 160.4, pressure: 995, direction: "NNW" },
-    { name: "TS Maring (Trami)", year: 2013, category: "Tropical Storm", date: "Aug 19, 2013", location: "Labo, Camarines Norte", wind: 85, rainfall: 185.0, pressure: 995, direction: "N" },
-    { name: "TS Salome", year: 2013, category: "Tropical Storm", date: "Jul 17, 2013", location: "Paracale, Camarines Norte", wind: 85, rainfall: 142.3, pressure: 998, direction: "NNW" },
-    { name: "Typhoon Labuyo (Utor)", year: 2013, category: "Typhoon", date: "Aug 12, 2013", location: "Santa Elena, Camarines Norte", wind: 165, rainfall: 175.2, pressure: 960, direction: "WNW" },
-    { name: "Typhoon Santi (Nari)", year: 2013, category: "Typhoon", date: "Oct 12, 2013", location: "Capalonga, Camarines Norte", wind: 150, rainfall: 205.8, pressure: 970, direction: "W" },
-    { name: "Typhoon Pedring (Nesat)", year: 2011, category: "Typhoon", date: "Sep 27, 2011", location: "Mercedes, Camarines Norte", wind: 175, rainfall: 210.7, pressure: 955, direction: "WNW" },
-    { name: "Typhoon Quiel (Nalgae)", year: 2011, category: "Typhoon", date: "Oct 1, 2011", location: "Labo, Camarines Norte", wind: 160, rainfall: 185.4, pressure: 965, direction: "NW" },
-    { name: "Typhoon Juan (Megi)", year: 2010, category: "Super Typhoon", date: "Oct 18, 2010", location: "Vinzons, Camarines Norte", wind: 225, rainfall: 190.3, pressure: 905, direction: "NW" },
-    { name: "Typhoon Basyang (Conson)", year: 2010, category: "Typhoon", date: "Jul 14, 2010", location: "Daet, Camarines Norte", wind: 130, rainfall: 145.6, pressure: 985, direction: "WNW" },
-    { name: "Typhoon Carina (Egay)", year: 2023, category: "Typhoon", date: "Jul 24, 2023", location: "Daet, Camarines Norte", wind: 185, rainfall: 345.0, pressure: 950, direction: "WNW" },
-  ];
-
-  const RANK_STYLES = [
-    { label: "Best Match", color: "#7c3aed" },
-    { label: "2nd Match", color: "#64748b" },
-    { label: "3rd Match", color: "#b45309" },
-  ];
-
-  const DIRECTION_POINTS = {
-    N: 0,
-    NNW: 337.5,
-    NW: 315,
-    WNW: 292.5,
-    W: 270,
-    WSW: 247.5,
-    SW: 225,
+  const CATEGORY_MAP = {
+    TD: "Tropical Depression",
+    TS: "Tropical Storm",
+    STS: "Severe Tropical Storm",
+    TY: "Typhoon",
+    STY: "Super Typhoon",
   };
+
+  // Whether there is an ACTIVE upcoming storm (the admin's "No active storm"
+  // switch sets is_active = 0). Defaults to true so the demo fallback keeps
+  // working until the API answers; set to false when the storm is hidden.
+  let hasUpcomingStorm = true;
+
+  // Populated by loadData() on startup — replaces the old static STORMS array.
+  let STORMS = [];
 
   // ---------------------------------------------------------------------
   // Element references
@@ -79,8 +63,6 @@
   const stormB = document.getElementById("stormB");
   const compareBtn = document.getElementById("compareNowBtn");
   const resetBtn = document.getElementById("resetBtn");
-  const modeButtons = document.querySelectorAll(".mode-btn");
-  const resultsTabs = document.querySelectorAll(".results-tab");
   const verdictEl = document.getElementById("resultsVerdict");
   const tableBody = document.getElementById("resultsTableBody");
   const colAHead = document.getElementById("colAHead");
@@ -98,39 +80,218 @@
   const analogueComparisonBody = document.getElementById("analogueComparisonBody");
   const analogueModalExplanation = document.getElementById("analogueModalExplanation");
 
-  let currentMode = "strength";
   let lastModalTrigger = null;
+  // Display precision for match percentages; renderAnalogues() raises it
+  // when two Top 3 candidates would otherwise render identically.
+  let scoreDecimals = 1;
   const prefersReducedMotion = window.matchMedia(
     "(prefers-reduced-motion: reduce)"
   ).matches;
 
   // ---------------------------------------------------------------------
-  // Analogue matching — similarity of each historical storm to the upcoming one
+  // Data loading + mapping (NEW)
   // ---------------------------------------------------------------------
-  function similarity(storm) {
-    const windScore = Math.max(0, 1 - Math.abs(storm.wind - UPCOMING.wind) / 140);
-    const rainScore = Math.max(0, 1 - Math.abs(storm.rainfall - UPCOMING.rainfall) / 200);
-    const pressureScore = Math.max(
-      0,
-      1 - Math.abs(storm.pressure - UPCOMING.pressure) / 95
-    );
-    const raw = windScore * 0.45 + rainScore * 0.25 + pressureScore * 0.3;
-    return Math.round(Math.min(0.97, Math.max(0.4, raw)) * 100);
+  function formatDateRange(startStr, endStr) {
+    if (!startStr) return "—";
+    const opts = { month: "short", day: "numeric" };
+    const start = new Date(startStr + "T00:00:00");
+    const startText = start.toLocaleDateString("en-US", opts);
+    if (!endStr) {
+      return startText + ", " + start.getFullYear();
+    }
+    const end = new Date(endStr + "T00:00:00");
+    const endText = end.toLocaleDateString("en-US", opts);
+    // Single-day cyclones (end date same as start) keep the inclusive
+    // range format, e.g. "Apr 12 – Apr 12, 2022".
+    return startText + " \u2013 " + endText + ", " + start.getFullYear();
   }
 
-  function awardSvg(color) {
-    return (
-      '<svg viewBox="0 0 24 24" width="19" height="19" fill="none">' +
-      '<circle cx="12" cy="9" r="5.5" stroke="#fff" stroke-width="1.8"/>' +
-      '<path d="M9.5 13.5L8 21l4-2.2L16 21l-1.5-7.5" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>' +
-      '<path d="M10.2 8.8l1.3 1.3 2.4-2.6" stroke="#fff" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>' +
-      "</svg>"
-    );
+  function mapRow(row) {
+    const name = row.international_name
+      ? row.local_name + " (" + row.international_name + ")"
+      : row.local_name;
+
+    const category = CATEGORY_MAP[row.highest_category] || row.highest_category || "—";
+
+    // highest_strength is stored as "sustained/gust" (e.g. "185/240").
+    let wind = null;
+    let peak = null;
+    if (row.highest_strength) {
+      const parts = String(row.highest_strength).split("/");
+      const sustained = parseInt(parts[0], 10);
+      if (!isNaN(sustained)) wind = sustained;
+      if (parts.length > 1) {
+        const peakVal = parseInt(parts[1], 10);
+        if (!isNaN(peakVal)) peak = peakVal;
+      }
+    }
+
+    // Storm duration in days — used as a secondary ranking signal.
+    let days = null;
+    if (row.date_start && row.date_end) {
+      const start = new Date(row.date_start + "T00:00:00");
+      const end = new Date(row.date_end + "T00:00:00");
+      if (!isNaN(start) && !isNaN(end)) {
+        days = Math.round((end - start) / 86400000) + 1;
+      }
+    }
+
+    return {
+      name: name,
+      year: parseInt(row.year, 10),
+      category: category,
+      date: formatDateRange(row.date_start, row.date_end),
+      // Raw dates retained for the Best Match recency tie-break.
+      dateStart: row.date_start || null,
+      dateEnd: row.date_end || null,
+      wind: wind,
+      peak: peak,
+      days: days,
+    };
   }
+
+  // Applies one API row onto the UPCOMING profile. Only fields present in
+  // the row are overwritten, so a partial row never blanks the profile.
+  function applyUpcomingRow(row) {
+    if (row.storm_name) UPCOMING.name = row.storm_name;
+    if (row.max_wind != null && row.max_wind !== "") {
+      const wind = parseInt(row.max_wind, 10);
+      if (!isNaN(wind)) UPCOMING.wind = wind;
+    }
+    if (row.peak != null && row.peak !== "") {
+      const peak = parseInt(row.peak, 10);
+      if (!isNaN(peak)) UPCOMING.peak = peak;
+    }
+    if (row.category) UPCOMING.category = row.category;
+  }
+
+  async function loadUpcoming() {
+    try {
+      const res = await fetch(UPCOMING_API_URL);
+      if (!res.ok) throw new Error("Request failed: " + res.status);
+      const row = await res.json();
+      // Zero active storms (admin set it to NONE): hide the profile and
+      // disable analogue matching instead of comparing against the demo.
+      hasUpcomingStorm = !!(row && Object.keys(row).length);
+      if (!hasUpcomingStorm) return;
+      applyUpcomingRow(row);
+    } catch (err) {
+      console.warn("Could not load upcoming storm, keeping demo profile:", err);
+    }
+  }
+
+  // Re-fetches the upcoming storm when the tab regains focus, becomes
+  // visible again, or is restored from the back/forward cache. The admin
+  // edits the profile in another tab (admin/edit-storm.php); this keeps
+  // the Best Match panel in sync without a manual reload. The panel is
+  // only re-rendered when a scoring value actually changed.
+  async function refreshUpcoming() {
+    try {
+      const res = await fetch(UPCOMING_API_URL);
+      if (!res.ok) throw new Error("Request failed: " + res.status);
+      const row = await res.json();
+      // If the admin just switched the storm to NONE while this tab was
+      // open, re-render so the stale analogues/match panel disappear.
+      const nextHasUpcoming = !!(row && Object.keys(row).length);
+      if (nextHasUpcoming !== hasUpcomingStorm) {
+        hasUpcomingStorm = nextHasUpcoming;
+        renderAnalogues();
+        if (!hasUpcomingStorm) return;
+      }
+      if (!row) return;
+
+      const previous = {
+        wind: UPCOMING.wind,
+        peak: UPCOMING.peak,
+        category: UPCOMING.category,
+      };
+      applyUpcomingRow(row);
+
+      const changed =
+        previous.wind !== UPCOMING.wind ||
+        previous.peak !== UPCOMING.peak ||
+        previous.category !== UPCOMING.category;
+
+      if (changed) renderAnalogues();
+    } catch (err) {
+      // Silent: a failed refresh keeps the currently displayed profile.
+    }
+  }
+
+  async function loadData() {
+    try {
+      const res = await fetch(API_URL);
+      if (!res.ok) throw new Error("Request failed: " + res.status);
+      const rows = await res.json();
+      STORMS = rows.map(mapRow).filter((s) => s.wind != null);
+    } catch (err) {
+      console.error("Failed to load cyclone data:", err);
+      STORMS = [];
+      analogueList.innerHTML =
+        '<p class="empty-state">Could not load data from the server. Check that XAMPP (Apache + MySQL) is running.</p>';
+    }
+  }
+
+  // ---------------------------------------------------------------------
+  // Analogue matching — similarity of each historical storm to the
+  // upcoming one (sustained wind + peak gust + PAGASA category).
+  // ---------------------------------------------------------------------
+
+  // Gaussian (bell-curve) similarity: 100% for an exact match, decaying
+  // smoothly towards 0% as the gap grows — no artificial cap or floor.
+  // Gaussian similarity with a tiny directional nudge so two storms
+// equidistant from the target (e.g. -5 km/h and +5 km/h) don't render
+// as an exact tie. The nudge is small enough that it never changes
+// which group ranks closer — it only breaks symmetric-score ties.
+function gaussScore(value, target, sigma) {
+  if (value == null || target == null) return null;
+  const gap = value - target;
+  const base = 100 * Math.exp(-(gap * gap) / (2 * sigma * sigma));
+
+  // Directional epsilon: storms weaker than the upcoming storm (gap < 0)
+  // get a hair higher score than storms stronger by the same margin
+  // (gap > 0), since a slightly-weaker historical analogue is generally
+  // the more conservative/useful comparison. Magnitude is tiny (max ~0.5%
+  // at large gaps) so it never overrides the main Gaussian ranking.
+  const directionalNudge = -gap * 0.01;
+
+  return Math.max(0, Math.min(100, base + directionalNudge));
+}
+
+  // Returns the intensity rank of a PAGASA category name, or null when
+  // the label is unknown. Recognises both plain names ("Typhoon") and the
+  // admin dropdown's labelled format ("Typhoon (TY)") via its abbreviation.
+  function categoryRank(cat) {
+    if (cat == null) return null;
+    if (Object.prototype.hasOwnProperty.call(CATEGORY_RANK, cat)) {
+      return CATEGORY_RANK[cat];
+    }
+    const match = /\((TD|TS|STS|TY|STY)\)\s*$/.exec(String(cat));
+    if (match && Object.prototype.hasOwnProperty.call(CATEGORY_MAP, match[1])) {
+      return CATEGORY_RANK[CATEGORY_MAP[match[1]]];
+    }
+    return null;
+  }
+
+  // Weighted multi-factor match score (0–100):
+  //   60% sustained wind   sigma 35 km/h
+  //   25% peak gust        sigma 40 km/h, target scaled 1.25 × sustained
+  //   15% PAGASA category  exact 100% · adjacent 65% · 2 apart 30% · else 0
+  // Factors without data are dropped and the weights renormalise.
+  // "Best Match · Wind Strength" ranks purely by wind closeness — peak
+// gust and PAGASA category are informational only (shown in the modal)
+// and no longer factor into the score.
+function similarity(storm) {
+  const score = gaussScore(storm.wind, UPCOMING.wind, 35);
+  return score == null ? 0 : score;
+}
 
   function animateMatchScore(el, target) {
+    // The final value uses the group's chosen precision (one decimal
+    // normally, escalated so near-tie candidates display distinctly);
+    // whole numbers during the ease-out animation keep it readable.
     if (prefersReducedMotion) {
-      el.textContent = target + "%";
+      el.textContent = target.toFixed(scoreDecimals) + "%";
       return;
     }
 
@@ -140,85 +301,176 @@
     function frame(now) {
       const progress = Math.min(1, (now - start) / duration);
       const eased = 1 - Math.pow(1 - progress, 3);
-      el.textContent = Math.round(target * eased) + "%";
-      if (progress < 1) requestAnimationFrame(frame);
+      if (progress < 1) {
+        el.textContent = Math.round(target * eased) + "%";
+        requestAnimationFrame(frame);
+      } else {
+        el.textContent = target.toFixed(scoreDecimals) + "%";
+      }
     }
 
     el.textContent = "0%";
     requestAnimationFrame(frame);
   }
 
+  // Numeric sort key for how recent a storm is (latest activity wins).
+  function recentness(storm) {
+    const raw = storm.dateEnd || storm.dateStart || "";
+    if (!raw) return 0;
+    const t = new Date(raw + "T00:00:00").getTime();
+    return isNaN(t) ? 0 : t;
+  }
+
+  // Picks the display precision for the Top 3: one decimal normally, but
+  // escalates to two when two candidates would render with the same
+  // string, so near-tie ranks still show distinct percentages. The cap
+  // stays at two because a genuine full-precision tie (identical recorded
+  // data) can never be split by decimals — there, the ranking is decided
+  // by the recency/peak tie-breakers instead.
+  function displayDecimals(scores) {
+    let decimals = 1;
+    let strings = scores.map((s) => s.toFixed(decimals));
+    while (new Set(strings).size !== strings.length && decimals < 2) {
+      decimals++;
+      strings = scores.map((s) => s.toFixed(decimals));
+    }
+    return decimals;
+  }
+
+  // Groups historical storms by their exact Max Wind value.
+  // Assumes `storms` is already in a stable order (STORMS is built in
+  // year/date order by loadData), so groups start in that order too.
+  function groupByWind(storms) {
+    const map = new Map();
+    storms.forEach((storm) => {
+      const w = storm.wind;
+      if (!map.has(w)) map.set(w, { wind: w, storms: [] });
+      map.get(w).storms.push(storm);
+    });
+    return Array.from(map.values()).sort((a, b) => a.wind - b.wind);
+  }
+
+  // Ranks wind groups by how close their wind value is to the current
+  // storm's Max Wind (closest = Rank 1). Equidistant groups are ordered
+  // deterministically — the stronger wind group first — so the result never
+  // depends on array order.
+  function rankGroupsByCloseness(groups, currentWind) {
+    return groups
+      .map((group) => ({ group, distance: Math.abs(group.wind - currentWind) }))
+      .sort(
+        (a, b) =>
+          a.distance - b.distance ||
+          b.group.wind - a.group.wind,
+      )
+      .map((entry) => entry.group);
+  }
+
+  // Picks ONE representative storm from a wind group. The tie-breaker is
+  // "most recent storm date": storms that share the same wind strength are
+  // presented by the most recent record. Movement speed is not tracked for
+  // historical storms, so recency is the data-backed secondary factor
+  // (higher peak gust and longer duration follow, then alphabetical as a
+  // final deterministic guarantee).
+  function pickRepresentative(group) {
+    return group.storms.slice().sort((a, b) => {
+      const recencyDiff = recentness(b) - recentness(a);
+      if (recencyDiff !== 0) return recencyDiff;
+      const peakDiff = (b.peak ?? 0) - (a.peak ?? 0);
+      if (peakDiff !== 0) return peakDiff;
+      const daysDiff = (b.days ?? 0) - (a.days ?? 0);
+      if (daysDiff !== 0) return daysDiff;
+      return String(a.name).localeCompare(String(b.name));
+    })[0];
+  }
+
   function renderAnalogues() {
     analogueList.innerHTML = "";
 
-    const directionScore = (storm) =>
-      Math.round(100 - directionDelta(storm.direction, UPCOMING.direction) / 3);
+    if (!hasUpcomingStorm) {
+      analogueList.innerHTML =
+        '<div class="empty-state">' +
+        '<svg viewBox="0 0 24 24" width="28" height="28" fill="none">' +
+        '<path d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+        "</svg>" +
+        "<p>No active upcoming storm is being monitored, so there are no historical analogues to show.</p>" +
+        "</div>";
+      return;
+    }
 
-    const groups = [
-      {
-        label: "Best match · strength",
-        matches: STORMS.map((storm) => ({ storm, score: similarity(storm) }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3),
-      },
-      {
-        label: "Best match · direction",
-        matches: STORMS.map((storm) => ({ storm, score: directionScore(storm) }))
-          .sort((a, b) => b.score - a.score)
-          .slice(0, 3),
-      },
-    ];
+    const groupEl = document.createElement("section");
+    groupEl.className = "match-group";
 
-    groups.forEach((group) => {
-      const groupEl = document.createElement("section");
-      groupEl.className = "match-group";
+    const heading = document.createElement("h3");
+    heading.className = "match-group-title";
+    heading.textContent = "Best match \u00b7 wind strength";
+    groupEl.appendChild(heading);
 
-      const heading = document.createElement("h3");
-      heading.className = "match-group-title";
-      heading.textContent = group.label;
-      groupEl.appendChild(heading);
+    // Best Match selection (grouping-based): storms are grouped by their
+    // exact Max Wind value, the groups are ranked by how close they are to
+    // the current storm's Max Wind, and ONE representative is picked from
+    // each of the closest groups. Each representative therefore comes from
+    // a different wind-strength group, so the Top 3 percentages are
+    // naturally distinct.
+    // Only match historical storms that were the same strength or weaker
+// than the upcoming storm — never stronger.
+const eligibleStorms = STORMS.filter((storm) => storm.wind <= UPCOMING.wind);
 
-      group.matches.forEach((match, index) => {
-        const row = document.createElement("div");
-        row.className = "analogue-row";
+const groups = rankGroupsByCloseness(
+  groupByWind(eligibleStorms),
+  UPCOMING.wind,
+);
+    const matches = groups
+  .slice(0, 3)
+  .map((group) => {
+    const storm = pickRepresentative(group);
+    return { storm, score: similarity(storm) };
+  })
+  .sort((a, b) => b.score - a.score); // Rank 1 = highest actual score
 
-        const rank = document.createElement("span");
-        rank.className = "rank-number";
-        rank.textContent = index + 1;
+    // One decimal normally; escalate if two of the Top 3 would display
+    // the same string, so each rank shows a distinct percentage.
+    scoreDecimals = displayDecimals(matches.map((match) => match.score));
 
-        const info = document.createElement("div");
-        info.className = "analogue-info";
-        info.innerHTML =
-          '<div class="analogue-name">' + match.storm.name + "</div>" +
-          '<div class="analogue-date">' + match.storm.date + "</div>" +
-          '<div class="match-progress"><span style="width:' + match.score + '%"></span></div>';
+    matches.forEach((match, index) => {
+      const rowEl = document.createElement("div");
+      rowEl.className = index === 0 ? "analogue-row best-match" : "analogue-row";
 
-        const sim = document.createElement("div");
-        sim.className = "analogue-similarity";
-        sim.innerHTML = "<strong>0%</strong>";
-        const scoreEl = sim.querySelector("strong");
+      const rank = document.createElement("span");
+      rank.className = "rank-number";
+      rank.textContent = index + 1;
 
-        const btn = document.createElement("button");
-        btn.type = "button";
-        btn.className = "analogue-view-btn";
-        btn.textContent = "View";
-        btn.addEventListener("click", () => {
-          openAnalogueDetails(match.storm, group.label, match.score, btn);
-        });
+      const info = document.createElement("div");
+      info.className = "analogue-info";
+      info.innerHTML =
+        '<div class="analogue-name">' + match.storm.name + "</div>" +
+        '<div class="analogue-date">' + match.storm.date + "</div>" +
+        '<div class="match-progress"><span style="width:' + match.score + '%"></span></div>';
 
-        row.appendChild(rank);
-        row.appendChild(info);
-        row.appendChild(sim);
-        row.appendChild(btn);
-        groupEl.appendChild(row);
-        animateMatchScore(scoreEl, match.score);
+      const sim = document.createElement("div");
+      sim.className = "analogue-similarity";
+      sim.innerHTML = "<strong>0%</strong>";
+      const scoreEl = sim.querySelector("strong");
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "analogue-view-btn";
+      btn.textContent = "View";
+      btn.addEventListener("click", () => {
+        openAnalogueDetails(match.storm, match.score, btn);
       });
 
-      analogueList.appendChild(groupEl);
+      rowEl.appendChild(rank);
+      rowEl.appendChild(info);
+      rowEl.appendChild(sim);
+      rowEl.appendChild(btn);
+      groupEl.appendChild(rowEl);
+      animateMatchScore(scoreEl, match.score);
     });
 
-    analogueList.querySelectorAll(".analogue-row").forEach((row, index) => {
-      row.style.setProperty("--row-delay", index * 45 + "ms");
+    analogueList.appendChild(groupEl);
+
+    analogueList.querySelectorAll(".analogue-row").forEach((rowEl, index) => {
+      rowEl.style.setProperty("--row-delay", index * 45 + "ms");
     });
   }
 
@@ -233,47 +485,30 @@
       historicalValue + "</td><td>" + upcomingValue + "</td></tr>";
   }
 
-  function openAnalogueDetails(storm, matchLabel, score, trigger) {
-    const isDirectionMatch = matchLabel.indexOf("direction") !== -1;
-    const trackDelta = directionDelta(storm.direction, UPCOMING.direction);
+  function openAnalogueDetails(storm, score, trigger) {
+    // Matches the panel's display precision so near-tie storms can't
+    // read as the same percentage here either.
+    const displayScore = score.toFixed(scoreDecimals);
     const windDelta = storm.wind - UPCOMING.wind;
-    const rainfallDelta = storm.rainfall - UPCOMING.rainfall;
-    const pressureDelta = storm.pressure - UPCOMING.pressure;
-    const windScore = Math.round(Math.max(0, 1 - Math.abs(windDelta) / 140) * 100);
-    const rainScore = Math.round(Math.max(0, 1 - Math.abs(rainfallDelta) / 200) * 100);
-    const pressureScore = Math.round(Math.max(0, 1 - Math.abs(pressureDelta) / 95) * 100);
-    const scoreReason = isDirectionMatch
-      ? "Its " + storm.direction + " track is " + trackDelta +
-        "° from TY ODIN's WNW movement, producing a " + score + "% direction match."
-      : "Its wind, rainfall, and pressure are close to TY ODIN's profile, producing a " +
-        score + "% strength match.";
+    const scoreReason =
+      "Its wind speed is close to " + UPCOMING.name + "'s, producing a " + displayScore + "% match.";
 
-    analogueModalKicker.textContent = matchLabel;
     analogueModalKicker.innerHTML =
-      '<span class="analogue-kicker-icon">&#9670;</span>' + matchLabel;
+      '<span class="analogue-kicker-icon">&#9670;</span>Best match \u00b7 wind strength';
     analogueModalTitle.textContent = storm.name;
     analogueModalSummary.textContent = storm.date + " · " + storm.category;
     analogueModalStats.innerHTML =
       statMarkup("Maximum winds", storm.wind + " km/h", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7c3 0 3-4 0-4M3 12h13c3 0 3-4 0-4M3 16h9c3 0 3-4 0-4M3 20h5"/></svg>') +
-      statMarkup("Rainfall", storm.rainfall.toFixed(1) + " mm", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 17h12a4 4 0 0 0 .4-8A6 6 0 0 0 6 10a3.5 3.5 0 0 0-1 7Z"/><path d="M8 20v1M12 19v2M16 20v1"/></svg>') +
-      statMarkup("Central pressure", storm.pressure + " hPa", '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/><path d="m12 12 4-4M12 5v1M19 12h-1M12 19v-1M5 12h1"/></svg>') +
-      statMarkup("Movement", storm.direction, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="m4 20 16-16M20 4h-7M20 4v7"/></svg>');
+      statMarkup("PAGASA Category", storm.category, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>');
     analogueComparisonStorm.textContent = storm.name;
     analogueComparisonBody.innerHTML =
       comparisonRow("Maximum winds", storm.wind + " km/h", UPCOMING.wind + " km/h") +
-      comparisonRow("Rainfall", storm.rainfall.toFixed(1) + " mm", UPCOMING.rainfall.toFixed(1) + " mm") +
-      comparisonRow("Central pressure", storm.pressure + " hPa", UPCOMING.pressure + " hPa") +
-      comparisonRow("Movement", storm.direction, UPCOMING.direction);
+      comparisonRow("PAGASA Category", storm.category, UPCOMING.category);
     analogueModalExplanation.innerHTML =
       "<h3>Why this is a match</h3><p>" + scoreReason +
       "</p><div class=\"analogue-match-breakdown\"><div class=\"analogue-score-ring\" style=\"--score: " +
-      score + "%\"><strong>" + score + "%</strong><span>" +
-      (isDirectionMatch ? "DIRECTION" : "STRENGTH") + "<br> MATCH</span></div><div class=\"analogue-match-checks\"><span><b>✓</b>Wind closeness: " + windScore +
-      "% (" + (windDelta >= 0 ? "+" : "") + windDelta + " km/h)</span><span><b>✓</b>Rainfall closeness: " +
-      rainScore + "% (" + (rainfallDelta >= 0 ? "+" : "") + rainfallDelta.toFixed(1) +
-      " mm)</span><span><b>✓</b>Pressure closeness: " + pressureScore + "% (" +
-      (pressureDelta >= 0 ? "+" : "") + pressureDelta + " hPa)</span></div></div><p class=\"analogue-landfall\"><span aria-hidden=\"true\">&#9679;</span>Recorded landfall: " +
-      storm.location + ".</p>";
+      displayScore + "%\"><strong>" + displayScore + "%</strong><span>WIND<br>MATCH</span></div><div class=\"analogue-match-checks\"><span><b>✓</b>Wind closeness: " + displayScore +
+      "% (" + (windDelta >= 0 ? "+" : "") + windDelta + " km/h)</span></div></div>";
 
     lastModalTrigger = trigger;
     analogueModal.hidden = false;
@@ -289,30 +524,11 @@
   }
 
   // ---------------------------------------------------------------------
-  // Comparison
+  // Comparison (wind + category only)
   // ---------------------------------------------------------------------
-  function directionDelta(a, b) {
-    const pa = DIRECTION_POINTS[a] !== undefined ? DIRECTION_POINTS[a] : 0;
-    const pb = DIRECTION_POINTS[b] !== undefined ? DIRECTION_POINTS[b] : 0;
-    let diff = Math.abs(pa - pb);
-    if (diff > 180) diff = 360 - diff;
-    return diff;
-  }
-
-  function trackSimilarityTag(storm) {
-    const delta = directionDelta(storm.direction, UPCOMING.direction);
-    if (delta <= 22.5) return { text: "High", color: "#15803d", bg: "#ecfdf5" };
-    if (delta <= 45) return { text: "Moderate", color: "#b45309", bg: "#fef3c7" };
-    return { text: "Low", color: "#b91c1c", bg: "#fee2e2" };
-  }
-
   function metricIcon(label) {
     if (label.indexOf("Wind") !== -1) return "≋";
-    if (label.indexOf("Rainfall") !== -1) return "⌁";
-    if (label.indexOf("Pressure") !== -1) return "◎";
-    if (label.indexOf("Direction") !== -1) return "◌";
-    if (label.indexOf("Location") !== -1) return "⌖";
-    if (label.indexOf("Date") !== -1) return "□";
+    if (label.indexOf("Category") !== -1) return "◈";
     return "◈";
   }
 
@@ -340,13 +556,6 @@
     );
   }
 
-  function tagCellHtml(value) {
-    return (
-      '<span class="value-tag" style="color:' + value.color +
-      ";background:" + value.bg + '">' + value.text + "</span>"
-    );
-  }
-
   function updateWinnerBanner(label, storm, detail, tone) {
     winnerBannerLabel.textContent = label;
     winnerBannerName.textContent = storm ? storm.name + " · " + storm.year : "No clear winner";
@@ -363,20 +572,32 @@
     const b = nameB ? STORMS.find((s) => s.name === nameB) : null;
     if (!a) return;
 
+    // With no active upcoming storm, comparing against "Upcoming" (the B
+    // column when none is chosen) has no meaning — ask for a second storm.
+    if (!hasUpcomingStorm && !b) {
+      colAHead.innerHTML =
+        '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + a.name +
+        ' <span class="col-year">· ' + a.year + "</span></span>";
+      colBHead.textContent = "—";
+      verdictEl.textContent = "No active upcoming storm — pick a second historical storm to compare instead.";
+      tableBody.innerHTML =
+        '<tr class="empty-row"><td colspan="3">' +
+        '<div class="empty-state">' +
+        "<p>No active upcoming storm is being monitored right now, so there is nothing to compare against. Select a second historical storm above.</p>" +
+        "</div></td></tr>";
+      return;
+    }
+
     colAHead.innerHTML =
       '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + a.name +
       ' <span class="col-year">· ' + a.year + "</span></span>";
     colBHead.innerHTML = b
       ? '<span class="th-flex"><span class="col-badge col-badge-b">B</span>' + b.name +
         ' <span class="col-year">· ' + b.year + "</span></span>"
-      : '<span class="th-flex"><span class="col-badge col-badge-b">B</span>TY ODIN' +
+      : '<span class="th-flex"><span class="col-badge col-badge-b">B</span>' + UPCOMING.name +
         ' <span class="col-year">· Upcoming</span></span>';
 
-    if (currentMode === "strength") {
-      renderStrength(a, b);
-    } else {
-      renderDirection(a, b);
-    }
+    renderStrength(a, b);
 
     tableBody.querySelectorAll("tr").forEach((resultRow, index) => {
       resultRow.style.setProperty("--row-delay", index * 55 + "ms");
@@ -401,14 +622,14 @@
         (a.wind >= UPCOMING.wind
           ? "was stronger than"
           : "was weaker than") +
-        " the incoming <strong>TY ODIN</strong>.";
+        " the incoming <strong>" + UPCOMING.name + "</strong>.";
     }
 
     const strengthWinner = winner || (a.wind >= UPCOMING.wind ? a : UPCOMING);
     updateWinnerBanner(
       "Overall Winner",
       strengthWinner,
-      (b ? "is stronger based on the displayed strength metrics." :
+      (b ? "is stronger based on wind speed." :
         (strengthWinner === UPCOMING ? "is stronger than the selected historical storm." :
           "is stronger than the incoming storm.")) +
         " Based on PAGASA best track data.",
@@ -416,72 +637,15 @@
     );
 
     const windWinner = !b ? (a.wind >= UPCOMING.wind ? 1 : 2) : a.wind > b.wind ? 1 : a.wind < b.wind ? 2 : 0;
-    const rainWinner = !b ? (a.rainfall >= UPCOMING.rainfall ? 1 : 2) : a.rainfall > b.rainfall ? 1 : a.rainfall < b.rainfall ? 2 : 0;
-    const pressureWinner = !b
-      ? a.pressure <= UPCOMING.pressure ? 1 : 2
-      : a.pressure < b.pressure ? 1 : a.pressure > b.pressure ? 2 : 0;
 
     const compareB = b || UPCOMING;
     html += row("Maximum Sustained Winds", a.wind + " km/h", compareB.wind + " km/h", windWinner,
       (a.wind / 250) * 100, (compareB.wind / 250) * 100);
-    html += row("Rainfall (24-hr Max)", a.rainfall.toFixed(1) + " mm", compareB.rainfall.toFixed(1) + " mm", rainWinner,
-      (a.rainfall / 400) * 100, (compareB.rainfall / 400) * 100);
-    html += row("Central Pressure", a.pressure + " hPa", compareB.pressure + " hPa", pressureWinner,
-      ((1020 - a.pressure) / 130) * 100, ((1020 - compareB.pressure) / 130) * 100);
 
     const catRank = (x, y) =>
       CATEGORY_RANK[x] > CATEGORY_RANK[y] ? 1 : CATEGORY_RANK[x] < CATEGORY_RANK[y] ? 2 : 0;
-    const catB = b ? b.category : "Typhoon (est.)";
-    html += row("PAGASA Category", a.category, catB, b ? catRank(a.category, b.category) : catRank(a.category, "Typhoon"));
-
-    tableBody.innerHTML = html;
-    verdictEl.innerHTML = verdict;
-  }
-
-  function renderDirection(a, b) {
-    let html = "";
-    const tagA = trackSimilarityTag(a);
-    const tagB = b ? trackSimilarityTag(b) : trackSimilarityTag(UPCOMING);
-
-    html += row("Track Direction", a.direction, b ? b.direction : UPCOMING.direction, 0);
-    html += row("Landfall Location", a.location, b ? b.location : "Forecast: Aurora–Quezon area", 0);
-    html += row("Landfall Date", a.date, b ? b.date : "May 26, 2025", 0);
-    html += row("PAGASA Category", a.category, b ? b.category : "Typhoon (est.)", 0);
-    html +=
-      "<tr><td class=\"metric-col\">Track Similarity to TY ODIN</td><td>" +
-      tagCellHtml(tagA) + "</td><td>" + tagCellHtml(tagB) + "</td></tr>";
-
-    let verdict;
-    if (b) {
-      const deltaA = directionDelta(a.direction, UPCOMING.direction);
-      const deltaB = directionDelta(b.direction, UPCOMING.direction);
-      verdict =
-        deltaA === deltaB
-          ? "Both storms followed tracks similarly close to <strong>TY ODIN</strong>."
-          : "<strong>" +
-            (deltaA < deltaB ? a.name : b.name) +
-            "</strong> followed a track more similar to the incoming <strong>TY ODIN</strong>.";
-    } else {
-      verdict =
-        "<strong>" + a.name + "</strong> moved " + a.direction +
-        " — " +
-        (tagA.text === "High"
-          ? "very close to"
-          : tagA.text === "Moderate"
-            ? "moderately close to"
-            : "quite different from") +
-        " TY ODIN's WNW track.";
-    }
-
-    const deltaA = directionDelta(a.direction, UPCOMING.direction);
-    const deltaB = b ? directionDelta(b.direction, UPCOMING.direction) : Infinity;
-    const directionWinner = deltaB < deltaA ? b : a;
-    updateWinnerBanner(
-      "Closest Track",
-      directionWinner,
-      directionWinner.name + " follows the track most similar to TY ODIN's WNW movement.",
-      directionWinner === b ? "green" : "blue"
-    );
+    const catB = b ? b.category : UPCOMING.category;
+    html += row("PAGASA Category", a.category, catB, catRank(a.category, catB));
 
     tableBody.innerHTML = html;
     verdictEl.innerHTML = verdict;
@@ -506,26 +670,9 @@
     runCompare();
   }
 
-  function setMode(mode) {
-    currentMode = mode;
-    modeButtons.forEach((btn) =>
-      btn.classList.toggle("active", btn.dataset.mode === mode)
-    );
-    resultsTabs.forEach((tab) =>
-      tab.classList.toggle("active", tab.dataset.mode === mode)
-    );
-    runCompareSafe();
-  }
   function resetControls() {
     stormA.selectedIndex = 0;
     stormB.selectedIndex = 0;
-    currentMode = "strength";
-    modeButtons.forEach((btn) =>
-      btn.classList.toggle("active", btn.dataset.mode === "strength")
-    );
-    resultsTabs.forEach((tab) =>
-      tab.classList.toggle("active", tab.dataset.mode === "strength")
-    );
     runCompareSafe();
   }
 
@@ -534,32 +681,42 @@
   // ---------------------------------------------------------------------
   function buildSelects() {
     [stormA, stormB].forEach((select) => {
+      select.innerHTML = "";
+      const placeholder = document.createElement("option");
+      placeholder.value = "";
+      placeholder.textContent = "— Select a storm —";
+      select.appendChild(placeholder);
+
       STORMS.forEach((storm) => {
         const option = document.createElement("option");
         option.value = storm.name;
-        option.textContent =
-          storm.name + "  ·  " + storm.year;
+        option.textContent = storm.name + "  ·  " + storm.year;
         select.appendChild(option);
       });
-            const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = "— Select a storm —";
-      select.insertBefore(placeholder, select.firstChild);
     });
   }
 
-  function init() {
+  async function init() {
+    await loadData();
+    await loadUpcoming();
     buildSelects();
     renderAnalogues();
 
     compareBtn.addEventListener("click", runCompareSafe);
     resetBtn.addEventListener("click", resetControls);
-    modeButtons.forEach((btn) =>
-      btn.addEventListener("click", () => setMode(btn.dataset.mode))
-    );
-    resultsTabs.forEach((tab) =>
-      tab.addEventListener("click", () => setMode(tab.dataset.mode))
-    );
+
+    // Keep the Best Match panel in sync with admin edits made in another
+    // tab: re-fetch the upcoming profile when this tab regains focus, is
+    // restored from the back/forward cache, or becomes visible again.
+    // renderAnalogues() only re-runs when a scoring value actually changed.
+    window.addEventListener("focus", refreshUpcoming);
+    window.addEventListener("pageshow", (event) => {
+      if (event.persisted) refreshUpcoming();
+    });
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") refreshUpcoming();
+    });
+
     analogueModal.querySelectorAll("[data-modal-close]").forEach((el) =>
       el.addEventListener("click", closeAnalogueDetails)
     );

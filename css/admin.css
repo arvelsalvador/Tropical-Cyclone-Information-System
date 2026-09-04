@@ -1,0 +1,1442 @@
+/* ==========================================================================
+   Admin pages — styled with the public site's design language.
+   The public chrome (announcement bar, header, footer) comes from
+   css/components/*. This file covers the admin-only pieces: the tab strip
+   under the header, page heroes, cards, stat tiles, tables, forms, and the
+   centered auth screens. Requires css/base.css to be loaded first.
+   ========================================================================== */
+
+/* Extra tokens the public stylesheet doesn't define */
+:root {
+  --blue-700: #1e40af;
+  --red-50: #fee2e2;
+  --red-fg: #dc2626;
+  --green-fg: #059669;
+
+  /* Aliases used by the cyclones-list toolbar/filter — mapped onto the
+     real base.css tokens so colors stay in sync with the public site */
+  --white: #ffffff;                              /* same value as --bg-page   */
+  --primary: var(--blue-600);                    /* brand blue                */
+  --transition-fast: var(--dur-fast) var(--ease-out);
+  --gray-100: #eef2f7;                           /* hover fills               */
+  --gray-200: var(--border-light);               /* card hairlines            */
+  --gray-300: #d7dee8;                           /* input borders             */
+  --gray-400: #98a6b8;                           /* placeholders, muted icons */
+  --gray-500: var(--text-muted);                 /* secondary text            */
+  --gray-700: #44536a;                           /* dark secondary text       */
+  --gray-800: #22314a;                           /* near-navy text            */
+  --gray-900: var(--text-dark);                  /* primary text              */
+
+  --status-approaching-bg: #fef3c7;
+  --status-approaching-fg: #b45309;
+  --status-strengthening-bg: #ffedd5;
+  --status-strengthening-fg: #c2410c;
+  --status-active-bg: #fee2e2;
+  --status-active-fg: #dc2626;
+  --status-weakening-bg: #dbeafe;
+  --status-weakening-fg: #1d4ed8;
+  --status-gone-bg: #f1f5f9;
+  --status-gone-fg: #64748b;
+}
+
+/* Column layout so the public footer hugs the bottom on short pages */
+body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+/* Page container — same 32px gutters and centered feel as the public pages */
+.admin-main {
+  width: 100%;
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 36px 32px 80px;
+  flex: 1;
+}
+
+/* Auth screens center their single card between header and footer */
+.admin-main--auth {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding-top: 40px;
+  padding-bottom: 56px;
+}
+
+/* ==========================================================================
+   Admin tab strip (below the public header)
+   ========================================================================== */
+
+/* Floating pill header card (matches the reference mock):
+   white rounded card — brand left, tabs centered, Log out right */
+.admin-tabs {
+  position: sticky;
+  top: 12px;
+  z-index: 80;
+  width: calc(100% - 48px);
+  max-width: 1140px;
+  margin: 16px auto 0;
+  background: #ffffff;
+  border: 1px solid rgba(230, 234, 240, 0.7);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+}
+
+.admin-tabs-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 12px 28px;
+  flex-wrap: wrap;
+}
+
+/* Brand block (logo + name) at the left of the card */
+.admin-brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-right: 12px;
+}
+
+.admin-brand img {
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: block;
+}
+
+.admin-brand-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.admin-brand-name {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--navy-900);
+  line-height: 1.3;
+}
+
+.admin-brand-sub {
+  font-size: 10.5px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.admin-tabs-nav {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.admin-tab {
+  position: relative;
+  padding: 10px 18px;
+  border-radius: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-dark);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.admin-tab:hover {
+  background: var(--bg-soft);
+  color: var(--navy-900);
+}
+
+.admin-tab.is-active,
+.admin-tab.is-active:hover {
+  background: var(--blue-50);
+  color: var(--blue-600);
+}
+
+/* Gradient underline under the active tab (blue → cyan, like the mock) */
+.admin-tab.is-active::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 3px;
+  height: 3px;
+  border-radius: var(--radius-full);
+  background: linear-gradient(90deg, #2563eb 0%, #22d3ee 100%);
+}
+
+.admin-tabs-session {
+  display: flex;
+  align-items: center;
+  margin-left: auto;
+}
+
+.admin-tabs-session a {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.admin-tabs-session a:hover {
+  color: var(--red-fg);
+}
+
+/* ==========================================================================
+   Page hero (icon chip + title + subtitle, matching public page heroes)
+   ========================================================================== */
+
+.admin-hero {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 26px;
+}
+
+.admin-hero-icon {
+  width: 54px;
+  height: 54px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.28);
+}
+
+.admin-hero-icon--navy {
+  background: linear-gradient(135deg, #123a63, #0a2540);
+  box-shadow: 0 8px 18px rgba(10, 37, 64, 0.3);
+}
+
+.admin-hero-icon--purple {
+  background: linear-gradient(135deg, #8b5cf6, #7c3aed);
+  box-shadow: 0 8px 18px rgba(124, 58, 237, 0.28);
+}
+
+.admin-hero-icon--red {
+  background: linear-gradient(135deg, #ef4444, #dc2626);
+  box-shadow: 0 8px 18px rgba(220, 38, 38, 0.28);
+}
+
+.admin-hero-title {
+  font-size: 32px;
+  font-weight: 800;
+  color: var(--navy-900);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.admin-hero-sub {
+  font-size: 15px;
+  color: var(--text-body);
+  margin-top: 4px;
+  line-height: 1.55;
+  max-width: 640px;
+}
+
+.admin-hero--center {
+  flex-direction: column;
+  text-align: center;
+  gap: 14px;
+  margin-bottom: 24px;
+}
+
+.admin-hero-action {
+  margin-left: auto;
+}
+
+.admin-hero-action.admin-btn {
+  margin-top: 0;
+}
+
+/* ==========================================================================
+   Cards & shared bits
+   ========================================================================== */
+
+.admin-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 28px;
+  width: min(100%, 440px);
+}
+
+.admin-card--wide {
+  width: min(100%, 640px);
+}
+
+.admin-card--form {
+  width: min(100%, 760px);
+}
+
+.admin-card--page {
+  width: 100%;
+}
+
+.admin-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 4px;
+}
+
+.admin-subtitle {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.55;
+  margin-bottom: 20px;
+}
+
+/* Alerts ------------------------------------------------------------------ */
+
+.alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-size: 13.5px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.alert svg {
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+.alert-success {
+  background: var(--green-50);
+  color: var(--green-fg);
+  border: 1px solid rgba(5, 150, 105, 0.25);
+}
+
+.alert-error {
+  background: var(--red-50);
+  color: var(--red-fg);
+  border: 1px solid rgba(220, 38, 38, 0.25);
+}
+
+/* ==========================================================================
+   Dashboard stat tiles (feature-card style, like the public home page)
+   ========================================================================== */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+.stat-card {
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  transition:
+    transform var(--dur-med) var(--ease-out),
+    box-shadow var(--dur-med) var(--ease-out);
+}
+
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-hover);
+}
+
+.stat-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  margin-bottom: 14px;
+}
+
+.stat-icon--blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.stat-icon--purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.stat-icon--red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.stat-icon--green  { background: linear-gradient(135deg, #34d399, #059669); }
+
+.stat-label {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-size: 27px;
+  font-weight: 800;
+  color: var(--navy-900);
+  margin-top: 6px;
+  line-height: 1.2;
+}
+
+.stat-value--small {
+  font-size: 17px;
+  margin-top: 12px;
+}
+
+.stat-sub {
+  font-size: 13px;
+  color: var(--text-body);
+  margin-top: 4px;
+  line-height: 1.4;
+}
+
+/* ==========================================================================
+   Dashboard layout
+   ========================================================================== */
+
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+
+@media (max-width: 880px) {
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dash-card {
+  width: 100%;
+}
+
+.dash-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-900);
+  margin-bottom: 14px;
+}
+
+.dash-card-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.dash-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--blue-600);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.dash-link:hover {
+  color: var(--blue-700);
+  text-decoration: underline;
+}
+
+.dash-storm-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 12px;
+}
+
+.dash-storm-name {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--navy-900);
+}
+
+.dash-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.dash-fact {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+
+.dash-fact-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.dash-fact-value {
+  font-size: 14.5px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-top: 2px;
+  word-break: break-word;
+}
+
+.dash-fact-note {
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.dash-updated {
+  margin-top: 12px;
+  font-size: 12.5px;
+  color: var(--text-muted);
+}
+
+.dash-empty {
+  font-size: 14px;
+  color: var(--text-body);
+  line-height: 1.5;
+}
+
+/* Quick actions ------------------------------------------------------------ */
+
+.dash-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-action {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+  border: 1px solid var(--border-light);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--text-dark);
+  background: #ffffff;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.dash-action:hover {
+  border-color: var(--blue-500);
+  background: var(--blue-50);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(15, 30, 51, 0.08);
+}
+
+.dash-action-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.dash-action-icon--blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+.dash-action-icon--purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.dash-action-icon--green  { background: linear-gradient(135deg, #34d399, #059669); }
+.dash-action-icon--navy   { background: linear-gradient(135deg, #123a63, #0a2540); }
+
+.dash-action-text {
+  flex: 1;
+}
+
+.dash-action-title {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.dash-action-desc {
+  font-size: 12.5px;
+  color: var(--text-body);
+  margin-top: 2px;
+}
+
+.dash-action-arrow {
+  color: var(--text-muted);
+  flex-shrink: 0;
+  transition: transform var(--dur-fast) var(--ease-out);
+}
+
+.dash-action:hover .dash-action-arrow {
+  transform: translateX(3px);
+  color: var(--blue-600);
+}
+
+/* ==========================================================================
+   Pills (category / status badges)
+   ========================================================================== */
+
+.pill {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.pill--muted {
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  color: var(--text-body);
+}
+
+/* Category palette — same colors as the public Historical Data page */
+.pill--STY { background: var(--purple-100); color: var(--purple-600); }
+.pill--TY  { background: #fee2e2; color: #dc2626; }
+.pill--STS { background: var(--orange-50); color: #ea580c; }
+.pill--TS  { background: #fef9c3; color: var(--amber-500); }
+.pill--TD  { background: var(--signal-1-bg); color: var(--signal-1-fg); }
+
+/* Upcoming-storm status colors */
+.pill--status-approaching   { background: var(--status-approaching-bg); color: var(--status-approaching-fg); }
+.pill--status-strengthening { background: var(--status-strengthening-bg); color: var(--status-strengthening-fg); }
+.pill--status-active        { background: var(--status-active-bg); color: var(--status-active-fg); }
+.pill--status-weakening     { background: var(--status-weakening-bg); color: var(--status-weakening-fg); }
+.pill--status-gone          { background: var(--status-gone-bg); color: var(--status-gone-fg); }
+
+/* ==========================================================================
+   Data table
+   ========================================================================== */
+
+.admin-table-wrap {
+  width: 100%;
+  background: #ffffff;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow-x: auto;
+}
+
+.admin-table-wrap--flush {
+  border: none;
+  box-shadow: none;
+  margin-top: 14px;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px 14px;
+  background: var(--bg-soft);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  border-bottom: 1px solid var(--border-light);
+  white-space: nowrap;
+}
+
+.admin-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-light);
+  color: var(--text-body);
+  vertical-align: middle;
+}
+
+.admin-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.admin-table tbody tr {
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.admin-table tbody tr:hover {
+  background: #fafcff;
+}
+
+.cell-strong {
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.cell-sub {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.admin-empty {
+  padding: 36px 20px;
+  text-align: center;
+  color: var(--text-body);
+  font-size: 14px;
+}
+
+/* Signal chips -------------------------------------------------------------- */
+
+.sig-cell {
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sig-chip {
+  display: inline-block;
+  min-width: 0;
+  text-align: center;
+  padding: 3px 10px;
+  border-radius: 8px;
+  background: var(--blue-50);
+  color: var(--blue-600);
+  font-size: 12px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sig-chip--none {
+  background: var(--bg-soft);
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+/* Signal-level colors — reuse the public site's signal palette */
+.sig-chip--level-1 { background: var(--signal-1-bg); color: var(--signal-1-fg); }
+.sig-chip--level-2 { background: var(--signal-2-bg); color: var(--signal-2-fg); }
+.sig-chip--level-3 { background: var(--signal-3-bg); color: var(--signal-3-fg); }
+.sig-chip--level-4 { background: var(--signal-4-bg); color: var(--signal-4-fg); }
+.sig-chip--level-5 { background: var(--signal-5-bg); color: var(--signal-5-fg); }
+
+/* ==========================================================================
+   Buttons (pill-shaped, like .btn-prepared on the public site)
+   ========================================================================== */
+
+.admin-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  margin-top: 20px;
+  padding: 11px 24px;
+  background: var(--blue-600);
+  color: #ffffff;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.admin-btn:hover {
+  background: #1741b8;
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.28);
+}
+
+.admin-btn:active {
+  transform: translateY(0) scale(0.99);
+  box-shadow: none;
+}
+
+.admin-btn--inline {
+  width: auto;
+}
+
+.admin-btn-sm {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 15px;
+  border-radius: var(--radius-full);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  background: var(--blue-50);
+  color: var(--blue-600);
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out),
+    transform var(--dur-fast) var(--ease-out);
+}
+
+.admin-btn-sm:hover {
+  background: var(--blue-600);
+  color: #ffffff;
+  transform: translateY(-1px);
+}
+
+.admin-btn-sm--danger {
+  background: var(--red-50);
+  color: var(--red-fg);
+}
+
+.admin-btn-sm--danger:hover {
+  background: var(--red-fg);
+  color: #ffffff;
+}
+
+.row-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.row-actions form {
+  margin: 0;
+}
+
+.form-cancel {
+  display: inline-block;
+  margin-left: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.form-cancel:hover {
+  color: var(--red-fg);
+}
+
+/* ==========================================================================
+   Pagination (page-btn style from the public Historical Data page)
+   ========================================================================== */
+
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+}
+
+.admin-page-link {
+  min-width: 32px;
+  padding: 6px 11px;
+  text-align: center;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  background: #ffffff;
+  color: var(--text-body);
+  font-size: 13px;
+  font-weight: 600;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out);
+}
+
+.admin-page-link:hover {
+  background: var(--bg-soft);
+  border-color: #cfd8e3;
+}
+
+.admin-page-link--active,
+.admin-page-link--active:hover {
+  background: var(--navy-900);
+  border-color: var(--navy-900);
+  color: #ffffff;
+}
+
+.admin-page-link--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+.admin-page-ellipsis {
+  color: var(--text-muted);
+  font-size: 13px;
+}
+
+.admin-page-info {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* ==========================================================================
+   Forms
+   ========================================================================== */
+
+.admin-card label {
+  display: block;
+  margin: 14px 0 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+}
+
+.admin-card form label:first-of-type {
+  margin-top: 0;
+}
+
+.admin-card input,
+.admin-card select,
+.admin-card textarea {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-dark);
+  background: #ffffff;
+  transition:
+    border-color var(--dur-fast) var(--ease-out),
+    box-shadow var(--dur-fast) var(--ease-out);
+}
+
+.admin-card input:focus,
+.admin-card select:focus,
+.admin-card textarea:focus {
+  outline: none;
+  border-color: var(--blue-500);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-card textarea {
+  resize: vertical;
+  min-height: 96px;
+}
+
+.admin-card select {
+  cursor: pointer;
+}
+
+/* Red highlight on the invalid field itself (set by cls() or the
+   client-side validators) */
+.admin-card input.input-error,
+.admin-card select.input-error,
+.admin-card textarea.input-error {
+  border-color: var(--red-fg);
+  background: var(--red-50);
+}
+
+.admin-card input.input-error:focus,
+.admin-card select.input-error:focus,
+.admin-card textarea.input-error:focus {
+  border-color: var(--red-fg);
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.field-error {
+  margin-top: 6px;
+  font-size: 12.5px;
+  color: var(--red-fg);
+}
+
+.field-hint {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px 16px;
+}
+
+.form-section-title {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  margin: 22px 0 4px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border-light);
+}
+
+.form-section-title:first-child {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+
+/* Show/Hide password toggle ------------------------------------------------ */
+
+.pw-wrap {
+  position: relative;
+}
+
+.pw-wrap input {
+  padding-right: 56px;
+}
+
+.pw-toggle {
+  position: absolute;
+  right: 14px;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 4px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  user-select: none;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.pw-toggle:hover {
+  color: var(--blue-600);
+}
+
+/* Links under auth cards ------------------------------------------------------ */
+
+.admin-alt {
+  text-align: center;
+  margin-top: 16px;
+  font-size: 13.5px;
+}
+
+.admin-alt a {
+  color: var(--blue-600);
+  font-weight: 600;
+}
+
+.admin-alt a:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   Sectioned form cards + sticky action bar (Upcoming Storm page pattern)
+   ========================================================================== */
+
+.admin-card--section {
+  width: 100%;
+  padding: 22px 26px;
+  margin-bottom: 18px;
+}
+
+.form-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-bottom: 14px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.form-card-icon {
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--blue-600);
+  background: var(--blue-50);
+  flex-shrink: 0;
+}
+
+.form-card-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+/* "No active storm right now" toggle (Upcoming Storm page) */
+.none-mode-card {
+  display: block;
+}
+
+.none-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+}
+
+.none-toggle input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  margin-top: 3px;
+  flex-shrink: 0;
+  accent-color: #2f80ed;
+  cursor: pointer;
+}
+
+.none-toggle-text {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.none-toggle-text strong {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--navy-900);
+}
+
+.none-toggle-text small {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  line-height: 1.45;
+}
+
+/* Field spanning both columns of a .form-grid */
+.form-full {
+  grid-column: 1 / -1;
+}
+
+/* Sticky bottom action bar (Cancel + Save Changes) */
+.storm-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 70;
+  background: #ffffff;
+  border-top: 1px solid var(--border-light);
+  box-shadow: 0 -8px 20px rgba(15, 30, 51, 0.05);
+}
+
+.storm-actions-inner {
+  max-width: 1140px;
+  margin: 0 auto;
+  padding: 12px 32px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.storm-actions .admin-btn {
+  margin-top: 0;
+  border-radius: 10px;
+  padding: 10px 22px;
+  box-shadow: none;
+}
+
+.storm-actions .admin-btn:hover {
+  transform: none;
+}
+
+.storm-actions .admin-btn--cancel {
+  background: #ffffff;
+  color: var(--text-dark);
+  border: 1px solid var(--border-light);
+}
+
+.storm-actions .admin-btn--cancel:hover {
+  background: var(--bg-soft);
+  box-shadow: none;
+}
+
+/* ==========================================================================
+   Responsive & motion preferences
+   ========================================================================== */
+
+@media (max-width: 720px) {
+  .admin-main {
+    padding: 28px 20px 64px;
+  }
+
+  .admin-tabs {
+    width: calc(100% - 32px);
+    margin-top: 12px;
+    top: 8px;
+  }
+
+  .admin-tabs-inner {
+    padding: 12px 20px;
+  }
+
+  .admin-hero {
+    gap: 12px;
+  }
+
+  .admin-hero-title {
+    font-size: 25px;
+  }
+
+  .admin-hero-action {
+    margin-left: 0;
+  }
+
+  .admin-card {
+    padding: 22px;
+  }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .stat-card,
+  .dash-action,
+  .admin-btn,
+  .admin-btn-sm,
+  .admin-filter-btn,
+  .admin-filter-btn .chev,
+  .admin-search-clear,
+  .admin-tab,
+  .admin-page-link {
+    transition: none;
+  }
+
+  .stat-card:hover,
+  .dash-action:hover {
+    transform: none;
+  }
+}
+
+/* ===========================================================================
+   CSS_PART: toolbar — search field + filter dropdown card (cyclones list)
+   =========================================================================== */
+.admin-toolbar-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow-card);
+  /* position + z-index lift this card (and its dropdown) above the table
+     card below — both are [data-reveal] elements, so both get a transform,
+     which makes the later-in-DOM table paint on top without this */
+  position: relative;
+  z-index: 20;
+}
+
+.admin-search {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex: 1 1 auto;
+  max-width: 440px;
+}
+
+.admin-search-icon {
+  position: absolute;
+  left: 14px;
+  display: inline-flex;
+  color: var(--gray-400);
+  pointer-events: none;
+}
+
+.admin-search input {
+  width: 100%;
+  padding: 11px 38px 11px 42px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--gray-900);
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: 12px;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-search input::placeholder {
+  color: var(--gray-400);
+}
+
+.admin-search input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-search-clear {
+  position: absolute;
+  right: 10px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  color: var(--gray-400);
+  font-size: 16px;
+  line-height: 1;
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.admin-search-clear:hover {
+  background: var(--gray-100);
+  color: var(--gray-700);
+}
+
+/* Filter dropdown */
+.admin-filter {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.admin-filter-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--gray-700);
+  background: var(--white);
+  border: 1px solid var(--gray-300);
+  border-radius: var(--radius-full);
+  cursor: pointer;
+  list-style: none;
+  user-select: none;
+  transition: border-color var(--transition-fast), background var(--transition-fast),
+              color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.admin-filter-btn::-webkit-details-marker {
+  display: none;
+}
+
+.admin-filter-btn:hover {
+  border-color: var(--primary);
+  color: var(--primary);
+}
+
+.admin-filter[open] .admin-filter-btn {
+  border-color: var(--primary);
+  color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-filter-btn .chev {
+  transition: transform var(--transition-fast);
+}
+
+.admin-filter[open] .admin-filter-btn .chev {
+  transform: rotate(180deg);
+}
+
+.admin-filter-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+}
+
+.admin-filter-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  z-index: 30;
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: var(--white);
+  border: 1px solid var(--gray-200);
+  border-radius: 14px;
+  box-shadow: var(--shadow-hover);
+  padding: 16px;
+}
+
+.admin-filter-menu label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--gray-500);
+  margin-top: 6px;
+}
+
+.admin-filter-menu select {
+  width: 100%;
+  padding: 9px 12px;
+  font: inherit;
+  font-size: 0.88rem;
+  color: var(--gray-900);
+  border: 1px solid var(--gray-300);
+  border-radius: 10px;
+  background: var(--white);
+  outline: none;
+}
+
+.admin-filter-menu select:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.admin-filter-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+
+.admin-filter-reset {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--gray-500);
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.admin-filter-reset:hover {
+  color: var(--danger);
+}
+
+/* Strength cell — sustained dark, gust muted */
+.strength-sustained {
+  color: var(--gray-800);
+  font-weight: 600;
+}
+
+.strength-sep {
+  color: var(--gray-300);
+}
+
+.strength-gust {
+  color: var(--gray-400);
+  font-weight: 500;
+}
+
+@media (max-width: 720px) {
+  .admin-toolbar-card {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .admin-search {
+    max-width: none;
+  }
+
+  .admin-filter-menu {
+    left: 0;
+    right: auto;
+    width: 100%;
+  }
+}

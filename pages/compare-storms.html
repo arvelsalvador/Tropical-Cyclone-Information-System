@@ -70,11 +70,11 @@
           </svg>
           Contact
         </a>
-        <a href="../pages/prepared.html" class="btn-prepared">
+        <a href="../admin/login.php" class="btn-prepared">
           <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
           </svg>
-          Be Prepared
+          Log-in
         </a>
     </div>
     <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
@@ -149,6 +149,7 @@
             <span class="step-badge">1</span> Upcoming Storm Profile
           </h2>
 
+          <div id="upcomingStormSection" class="upcoming-hidden">
           <div class="profile-head">
             <div class="profile-storm-icon">
               <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
@@ -165,10 +166,10 @@
             </div>
             <div>
               <div class="profile-name-row">
-                <h3>TY ODIN</h3>
-                <span class="badge-approaching">Approaching</span>
+                <h3 data-us="storm_name">TY ODIN</h3>
+                <span class="badge-approaching" data-us="status">Approaching</span>
               </div>
-              <p class="profile-meta">May 24, 2025 &nbsp;·&nbsp; 8:00 AM PHT</p>
+              <p class="profile-meta">&nbsp;</p>
             </div>
           </div>
 
@@ -186,8 +187,8 @@
                 </svg>
                 Max Winds
               </span>
-              <strong>185 km/h</strong>
-              <small>Cat 3 (Severe Typhoon)</small>
+              <strong data-us="wind">185 km/h</strong>
+              <small data-us="category">Cat 3 (Severe Typhoon)</small>
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
@@ -202,8 +203,8 @@
                 </svg>
                 Movement
               </span>
-              <strong>18 km/h</strong>
-              <small>WNW</small>
+              <strong data-us="movement_speed">18 km/h</strong>
+              <small data-us="movement_direction">WNW</small>
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
@@ -224,8 +225,8 @@
                 </svg>
                 PAGASA Signal
               </span>
-              <strong>Signal #2</strong>
-              <small>Camarines Norte</small>
+              <strong data-us="pagasa_signal">Signal #2</strong>
+              <small>&nbsp;</small>
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
@@ -246,7 +247,7 @@
                 </svg>
                 Central Pressure
               </span>
-              <strong>965 hPa</strong>
+              <strong data-us="pressure">965 hPa</strong>
               <small>&nbsp;</small>
             </div>
             <div class="profile-stat">
@@ -270,8 +271,8 @@
                 </svg>
                 Forecast Landfall
               </span>
-              <strong>May 26, 2025</strong>
-              <small>Mon Evening</small>
+              <strong data-us="landfall">May 26, 2025</strong>
+              <small data-us="forecast_landfall_note">Mon Evening</small>
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
@@ -292,7 +293,7 @@
                 </svg>
                 Location
               </span>
-              <strong>420 km E of Catanduanes</strong>
+              <strong data-us="location_note">420 km E of Catanduanes</strong>
               <small>&nbsp;</small>
             </div>
           </div>
@@ -309,11 +310,17 @@
               </svg>
               Advisory notes
             </h3>
-            <ul>
+            <ul data-us="advisory_list">
               <li>Rapid intensification observed over past 12 hours — winds up 35 km/h.</li>
               <li>Track closely resembles Nona (2015) and Tisoy (2019), both of which caused significant flooding in Daet.</li>
               <li>Signal may be raised to #3 within 24 hours if intensification continues.</li>
             </ul>
+          </div>
+        </div>
+
+          <div class="upcoming-empty upcoming-hidden" id="upcomingEmpty">
+            <div class="upcoming-empty-title">No active tropical cyclone</div>
+            <p class="upcoming-empty-sub">No tropical cyclone is currently being monitored in the Philippine Area of Responsibility. Check back later for updates.</p>
           </div>
         </section>
 
@@ -341,24 +348,6 @@
                 />
               </svg>
               Storm Strength
-            </button>
-            <button type="button" class="mode-btn" data-mode="direction">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-                <circle
-                  cx="12"
-                  cy="12"
-                  r="8"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                />
-                <path
-                  d="M12 4v8l5 3"
-                  stroke="currentColor"
-                  stroke-width="1.8"
-                  stroke-linecap="round"
-                />
-              </svg>
-              Storm Direction
             </button>
           </div>
         </div>
@@ -430,13 +419,6 @@
               </svg>
               Strength
             </button>
-            <button type="button" class="results-tab" data-mode="direction">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <circle cx="12" cy="12" r="8" stroke="currentColor" stroke-width="1.8" />
-                <path d="M12 4v8l5 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
-              Direction
-            </button>
           </div>
         </div>
 
@@ -500,14 +482,14 @@
         <p class="analogue-modal-summary" id="analogueModalSummary"></p>
         <div class="analogue-modal-stats" id="analogueModalStats"></div>
         <div class="analogue-modal-comparison">
-          <h3>Compared with TY ODIN</h3>
+          <h3>Compared with <span data-us="storm_name">TY ODIN</span></h3>
           <div class="analogue-comparison-table-wrap">
             <table class="analogue-comparison-table">
               <thead>
                 <tr>
                   <th>Metric</th>
                   <th id="analogueComparisonStorm"></th>
-                  <th>TY ODIN</th>
+                  <th data-us="storm_name">TY ODIN</th>
                 </tr>
               </thead>
               <tbody id="analogueComparisonBody"></tbody>
@@ -543,6 +525,7 @@
 </footer></div>
 
     <script src="../js/main.js" data-root="../"></script>
-    <script src="../js/pages/compare-storms.js" defer></script>
+    <script src="../js/upcoming-storm.js" defer></script>
+    <script src="../js/pages/compare-storms.js?v=4" defer></script>
   </body>
 </html>

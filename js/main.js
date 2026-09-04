@@ -92,58 +92,6 @@
       });
     }
 
-    // ── "Be Prepared" click feedback ──────────────────────────────────────────
-    // Click: pop + blue→green flash (css/components/buttons.css), then the
-    // browser navigates. The green state carries across normal navigation
-    // (sessionStorage) and resets to blue when the page is refreshed.
-    var preparedBtns = document.querySelectorAll("a.btn-prepared[href]");
-
-    // Detect how this page was loaded — a refresh wipes the remembered state.
-    var preparedNavType = "";
-    try {
-      if (window.performance && performance.getEntriesByType) {
-        var navEntry = performance.getEntriesByType("navigation")[0];
-        if (navEntry) preparedNavType = navEntry.type;
-      }
-      if (!preparedNavType && window.performance && performance.navigation) {
-        preparedNavType = ["navigate", "reload", "back_forward"][
-          performance.navigation.type
-        ];
-      }
-    } catch (err) {
-      preparedNavType = "";
-    }
-
-    try {
-      if (preparedNavType === "reload") {
-        // Refresh: forget the click so the button resets to blue
-        sessionStorage.removeItem("prepared-btn-clicked");
-      } else if (sessionStorage.getItem("prepared-btn-clicked") === "1") {
-        preparedBtns.forEach(function (btn) {
-          btn.classList.add("is-green");
-        });
-      }
-    } catch (err) {}
-
-    preparedBtns.forEach(function (btn) {
-      btn.addEventListener("click", function (e) {
-        // Let modified clicks (new tab / new window) behave normally
-        if (e.defaultPrevented) return;
-        if (e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || e.button !== 0)
-          return;
-        if (btn.classList.contains("is-clicked")) return;
-        e.preventDefault();
-        btn.classList.add("is-clicked");
-        try {
-          sessionStorage.setItem("prepared-btn-clicked", "1");
-        } catch (err) {}
-        var target = btn.href;
-        window.setTimeout(function () {
-          window.location.href = target;
-        }, 550);
-      });
-    });
-
     // ── Header shadow once the page scrolls ────────────────────────────────
     if (siteHeader) {
       var onScroll = function () {
