@@ -573,16 +573,6 @@
   flex-wrap: wrap;
 }
 
-.dataset-link {
-  font-size: 13.5px;
-  font-weight: 600;
-  color: var(--blue-600);
-}
-
-.dataset-link:hover {
-  text-decoration: underline;
-}
-
 .csv-btn {
   display: inline-flex;
   align-items: center;

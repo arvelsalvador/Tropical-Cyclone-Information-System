@@ -744,27 +744,46 @@
   gap: 14px;
   margin: 2px 0 10px;
   padding: 10px 16px;
-  background: linear-gradient(100deg, #f5f9ff, #eef5ff);
-  border: 1px solid #d5e4ff;
+  /* Idle state (no result yet): dim and inactive — muted surfaces and no
+     glow at all. A decisive result adds .is-win (soft green glow) and a
+     tie adds .is-tie (soft blue glow); see the state rules below. */
+  background: linear-gradient(100deg, #f8fafc, #f1f5f9);
+  border: 1px solid var(--border-light);
   border-radius: 10px;
+  box-shadow: none;
   transition:
     background 0.2s ease,
     border-color 0.2s ease,
+    box-shadow 0.2s ease,
     transform 0.2s ease;
 }
 
 .winner-banner:hover {
   transform: translateY(-1px);
-  border-color: #b9d1f8;
+  border-color: #cbd5e1;
 }
 
-.winner-banner-green {
-  background: linear-gradient(100deg, #f3fbf7, #ecf9f1);
-  border-color: #c8ead5;
+/* Decisive result: soft green glow — small blur radius and low alpha keep
+   it subtle and polished rather than the old harsh neon-yellow shadow. */
+.winner-banner.is-win {
+  background: linear-gradient(100deg, #f0fdf4, #dcfce7);
+  border-color: #86efac;
+  box-shadow: 0 2px 10px rgba(34, 197, 94, 0.22);
 }
 
-.winner-banner-green:hover {
-  border-color: #a9dabb;
+.winner-banner.is-win:hover {
+  border-color: #6ee7b7;
+}
+
+/* Tie result: soft blue glow at the same restrained intensity */
+.winner-banner.is-tie {
+  background: linear-gradient(100deg, #f0f6ff, #dbeafe);
+  border-color: #bfdbfe;
+  box-shadow: 0 2px 10px rgba(37, 99, 235, 0.16);
+}
+
+.winner-banner.is-tie:hover {
+  border-color: #93c5fd;
 }
 
 .winner-banner-icon {
@@ -773,10 +792,27 @@
   height: 48px;
   flex-shrink: 0;
   place-items: center;
-  color: #f59e0b;
-  background: #fff;
-  border: 1px solid #dbe7fa;
+  /* Idle: unlit indicator light */
+  color: #94a3b8;
+  background: #eef2f7;
+  border: 1px solid #e2e8f0;
   border-radius: 50%;
+  transition:
+    color 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.winner-banner.is-win .winner-banner-icon {
+  color: #15803d;
+  background: #fff;
+  border-color: #86efac;
+}
+
+.winner-banner.is-tie .winner-banner-icon {
+  color: var(--blue-600);
+  background: #fff;
+  border-color: #bfdbfe;
 }
 
 .winner-banner-copy {
@@ -785,13 +821,17 @@
 
 .winner-banner-copy > span {
   display: block;
-  color: var(--blue-600);
+  color: var(--text-muted);
   font-size: 10px;
   font-weight: 700;
 }
 
-.winner-banner-green .winner-banner-copy > span {
+.winner-banner.is-win .winner-banner-copy > span {
   color: #15803d;
+}
+
+.winner-banner.is-tie .winner-banner-copy > span {
+  color: var(--blue-600);
 }
 
 .winner-banner-copy h3 {
@@ -837,36 +877,214 @@
   margin-top: 2px;
 }
 
-.select-box select {
+/* The picker toggle replaces the old native <select>: opens a panel with
+   a search box + scrollable storm list (native dropdowns can't be
+   searched). The hidden <select> in the markup stays for state only. */
+.select-box select[hidden] {
+  display: none;
+}
+
+.picker-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
   width: 100%;
-  appearance: none;
-  -webkit-appearance: none;
   font-family: inherit;
   font-size: 13.5px;
   font-weight: 600;
   color: var(--text-dark);
-  padding: 11px 34px 11px 12px;
+  padding: 11px 12px;
   border: 1px solid var(--border-light);
   border-radius: 10px;
-  background:
-    url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%237c8aa0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
-    no-repeat right 12px center #fff;
+  background: #fff url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none'%3E%3Cpath d='M6 9l6 6 6-6' stroke='%237c8aa0' stroke-width='2.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")
+    no-repeat right 12px center;
+  cursor: pointer;
+  text-align: left;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.picker-toggle:hover {
+  border-color: #c7d8f9;
+}
+
+.storm-picker.is-open .picker-toggle,
+.picker-toggle:focus-visible {
+  outline: none;
+  border-color: #c7d8f9;
+  box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+.picker-toggle .picker-toggle-label {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* A chosen storm reads stronger than the muted placeholder text */
+.picker-toggle:not(.has-value) .picker-toggle-label {
+  color: #7c8aa0;
+  font-weight: 500;
+}
+
+.storm-picker.is-open .picker-chevron {
+  transform: rotate(180deg);
+}
+
+.picker-chevron {
+  flex-shrink: 0;
+  margin-right: 16px;
+  color: #7c8aa0;
+  transition: transform 0.15s ease;
+}
+
+/* Dropdown panel: search box on top, options below (appears on click) */
+.picker-panel {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 0;
+  z-index: 60;
+  background: #fff;
+  border: 1px solid #d5e4ff;
+  border-radius: 12px;
+  box-shadow: 0 14px 34px rgba(15, 46, 76, 0.16);
+  padding: 8px;
+}
+
+.storm-picker {
+  position: relative;
+}
+
+.picker-search {
+  width: 100%;
+  font-family: inherit;
+  font-size: 13px;
+  color: var(--text-dark);
+  padding: 9px 11px 9px 32px;
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  background: var(--bg-soft)
+    url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none'%3E%3Ccircle cx='11' cy='11' r='7' stroke='%237c8aa0' stroke-width='2'/%3E%3Cpath d='M20 20l-3.5-3.5' stroke='%237c8aa0' stroke-width='2' stroke-linecap='round'/%3E%3C/svg%3E")
+    no-repeat 10px center;
+  outline: none;
+}
+
+.picker-search:focus {
+  border-color: #c7d8f9;
+  box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+.picker-search::placeholder {
+  color: #9aa7b8;
+}
+
+.picker-list {
+  max-height: 224px;
+  overflow-y: auto;
+  margin-top: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.picker-option {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-dark);
+  text-align: left;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 7px;
+  background: transparent;
   cursor: pointer;
 }
 
-.vs-label {
-  font-size: 13px;
-  font-weight: 800;
+.picker-option:hover {
+  background: var(--blue-50);
+}
+
+.picker-option.is-selected {
+  background: #e8f1fe;
+  color: var(--blue-600);
+  font-weight: 700;
+}
+
+.picker-empty {
+  font-size: 12.5px;
   color: var(--text-muted);
-  letter-spacing: 0.04em;
+  text-align: center;
+  padding: 14px 8px;
+}
+
+.controls-head-title {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.controls-head-icon {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  flex-shrink: 0;
+  background: var(--blue-600);
+  border-radius: 12px;
+  box-shadow: 0 4px 10px rgba(47, 128, 237, 0.28);
+}
+
+.controls-head-sub {
+  font-size: 12.5px;
+  color: var(--text-muted);
+  margin-top: 2px;
+}
+
+.vs-label {
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--blue-600);
+  background: #fff;
+  border: 1px solid #dbe7fa;
+  border-radius: 50%;
+  box-shadow: 0 2px 8px rgba(15, 46, 76, 0.08);
+  letter-spacing: 0.05em;
 }
 
 .controls-actions {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
   margin-top: 14px;
+}
+
+.controls-actions .compare-now-btn {
+  flex: 1;
+  justify-content: center;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 14.5px;
+}
+
+.compare-arrow {
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.controls-actions .compare-now-btn:hover .compare-arrow {
+  transform: translateX(3px);
 }
 
 .compare-now-btn {
@@ -936,6 +1154,16 @@
   gap: 12px;
 }
 
+/* Dynamic context line under the results title — its text is generated
+   by JS from the active comparison mode (e.g. "Comparing cyclones by
+   strength"), never hardcoded per result. */
+.results-subtitle {
+  margin-top: 3px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .results-trophy-icon {
   display: flex;
   align-items: center;
@@ -945,16 +1173,6 @@
   flex-shrink: 0;
   background: var(--blue-600);
   border-radius: 50%;
-}
-
-.results-verdict {
-  font-size: 13.5px;
-  color: var(--text-body);
-  margin-top: 4px;
-}
-
-.results-verdict strong {
-  color: var(--text-dark);
 }
 
 .results-tabs {
@@ -1070,6 +1288,16 @@
   background: #15803d;
 }
 
+/* Result tones: on a decisive result the winner's column turns green and
+   the loser's red; on a tie the default A-blue / B-green above is kept */
+.col-badge-green {
+  background: #15803d;
+}
+
+.col-badge-red {
+  background: #dc2626;
+}
+
 .col-year {
   color: var(--text-muted);
   font-weight: 600;
@@ -1145,6 +1373,10 @@
   color: #15803d;
 }
 
+.metric-red strong {
+  color: #dc2626;
+}
+
 .metric-bar {
   display: block;
   height: 4px;
@@ -1157,6 +1389,10 @@
   background: #dcefe4;
 }
 
+.metric-red .metric-bar {
+  background: #fee2e2;
+}
+
 .metric-bar i {
   display: block;
   height: 100%;
@@ -1167,6 +1403,10 @@
 
 .metric-green .metric-bar i {
   background: #15803d;
+}
+
+.metric-red .metric-bar i {
+  background: #dc2626;
 }
 
 .metric-winner {
@@ -1248,7 +1488,9 @@
   .results-table tbody tr,
   .mode-btn,
   .results-tab,
-  .compare-now-btn {
+  .compare-now-btn,
+  .winner-banner,
+  .winner-banner-icon {
     animation: none !important;
     transition: none !important;
     transform: none !important;

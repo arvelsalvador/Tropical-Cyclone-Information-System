@@ -10,6 +10,15 @@
 // The Best Match panel re-fetches the upcoming storm profile whenever the
 // tab regains focus, so admin edits (e.g. Max Wind) show up immediately
 // without a manual reload.
+//
+// SIMPLIFIED: storm picking is now two plain <select> dropdowns (storm A
+// required, storm B optional). The old searchable/filterable/sortable
+// panels and their "Sort by" toolbar were removed.
+//
+// SEARCHABLE DROPDOWNS: each dropdown opens a small panel (native selects
+// can't be searched) with a search input above the storm list; the list
+// filters as you type. A hidden <select> per picker stays the source of
+// truth, so compare/tie/reset logic works unchanged.
 
 (function () {
   "use strict";
@@ -55,15 +64,29 @@
   // Populated by loadData() on startup — replaces the old static STORMS array.
   let STORMS = [];
 
+  // Selected storm per dropdown (by name — the identity runCompare uses).
+  const selection = { stormA: "", stormB: "" };
+
+  // Comparison modes drive both the results subtitle and the tab labels;
+  // add new modes here first, then their metric logic in renderStrength.
+  // The subtitle is generated from the active mode's context string, so a
+  // new mode only needs its own entry — nothing is hardcoded per result.
+  const COMPARISON_MODES = {
+    strength: { subtitle: "Comparing cyclones by strength" },
+  };
+  const activeMode = "strength";
+
   // ---------------------------------------------------------------------
   // Element references
   // ---------------------------------------------------------------------
   const analogueList = document.getElementById("analogueList");
-  const stormA = document.getElementById("stormA");
-  const stormB = document.getElementById("stormB");
+  // Hidden <select> per picker keeps the source of truth (the visible
+  // control is a button + search panel — see the pickers section below).
+  const stormASelect = document.getElementById("stormA-select");
+  const stormBSelect = document.getElementById("stormB-select");
   const compareBtn = document.getElementById("compareNowBtn");
   const resetBtn = document.getElementById("resetBtn");
-  const verdictEl = document.getElementById("resultsVerdict");
+  const resultsSubtitle = document.getElementById("resultsSubtitle");
   const tableBody = document.getElementById("resultsTableBody");
   const colAHead = document.getElementById("colAHead");
   const colBHead = document.getElementById("colBHead");
@@ -71,7 +94,12 @@
   const winnerBannerLabel = document.getElementById("winnerBannerLabel");
   const winnerBannerName = document.getElementById("winnerBannerName");
   const winnerBannerDetail = document.getElementById("winnerBannerDetail");
+  const winnerBannerIcon = winnerBanner
+    ? winnerBanner.querySelector(".winner-banner-icon")
+    : null;
   const analogueModal = document.getElementById("analogueModal");
+  // Searchable picker refs (stormA / stormB), collected once in init().
+  const pickers = {};
   const analogueModalTitle = document.getElementById("analogueModalTitle");
   const analogueModalKicker = document.getElementById("analogueModalKicker");
   const analogueModalSummary = document.getElementById("analogueModalSummary");
@@ -89,7 +117,7 @@
   ).matches;
 
   // ---------------------------------------------------------------------
-  // Data loading + mapping (NEW)
+  // Data loading + mapping
   // ---------------------------------------------------------------------
   function formatDateRange(startStr, endStr) {
     if (!startStr) return "—";
@@ -240,23 +268,25 @@
   // Gaussian (bell-curve) similarity: 100% for an exact match, decaying
   // smoothly towards 0% as the gap grows — no artificial cap or floor.
   // Gaussian similarity with a tiny directional nudge so two storms
-// equidistant from the target (e.g. -5 km/h and +5 km/h) don't render
-// as an exact tie. The nudge is small enough that it never changes
-// which group ranks closer — it only breaks symmetric-score ties.
-function gaussScore(value, target, sigma) {
-  if (value == null || target == null) return null;
-  const gap = value - target;
-  const base = 100 * Math.exp(-(gap * gap) / (2 * sigma * sigma));
+  // equidistant from the target (e.g. -5 km/h and +5 km/h) don't render
+  // as an exact tie. The nudge is small enough that it never changes
+  // which group ranks closer — it only breaks symmetric-score ties.
+  function gaussScore(value, target, sigma) {
+    if (value == null || target == null) return null;
+    const gap = value - target;
+    const base = 100 * Math.exp(-(gap * gap) / (2 * sigma * sigma));
 
-  // Directional epsilon: storms weaker than the upcoming storm (gap < 0)
-  // get a hair higher score than storms stronger by the same margin
-  // (gap > 0), since a slightly-weaker historical analogue is generally
-  // the more conservative/useful comparison. Magnitude is tiny (max ~0.5%
-  // at large gaps) so it never overrides the main Gaussian ranking.
-  const directionalNudge = -gap * 0.01;
+    // Directional epsilon: storms weaker than the upcoming storm (gap < 0)
+    // get a hair higher score than storms stronger by the same margin
+    // (gap > 0), since a slightly-weaker historical analogue is generally
+    // the more conservative/useful comparison. At 0.1% per 100 km/h of gap
+    // it is orders of magnitude below the Gaussian base difference between
+    // two distinct wind values, so it can only split exact equidistant
+    // ties — it must never reorder storms of different strength.
+    const directionalNudge = -gap * 0.001;
 
-  return Math.max(0, Math.min(100, base + directionalNudge));
-}
+    return Math.max(0, Math.min(100, base + directionalNudge));
+  }
 
   // Returns the intensity rank of a PAGASA category name, or null when
   // the label is unknown. Recognises both plain names ("Typhoon") and the
@@ -273,18 +303,20 @@ function gaussScore(value, target, sigma) {
     return null;
   }
 
-  // Weighted multi-factor match score (0–100):
-  //   60% sustained wind   sigma 35 km/h
-  //   25% peak gust        sigma 40 km/h, target scaled 1.25 × sustained
-  //   15% PAGASA category  exact 100% · adjacent 65% · 2 apart 30% · else 0
-  // Factors without data are dropped and the weights renormalise.
+  // Wind-closeness match score (0–100): Gaussian similarity of the storm's
+  // sustained wind to the upcoming storm's Max Wind, sigma 100 km/h. The
+  // wide sigma keeps the bell curve spread across the whole historical
+  // wind range, so even an upcoming storm far stronger than anything on
+  // record (e.g. 400 km/h vs a 215 km/h database max) still shows a
+  // meaningful spread between candidates instead of everything reading
+  // ~0%, and the score ordering tracks wind closeness.
   // "Best Match · Wind Strength" ranks purely by wind closeness — peak
-// gust and PAGASA category are informational only (shown in the modal)
-// and no longer factor into the score.
-function similarity(storm) {
-  const score = gaussScore(storm.wind, UPCOMING.wind, 35);
-  return score == null ? 0 : score;
-}
+  // gust and PAGASA category are informational only (shown in the modal)
+  // and do not factor into the score.
+  function similarity(storm) {
+    const score = gaussScore(storm.wind, UPCOMING.wind, 100);
+    return score == null ? 0 : score;
+  }
 
   function animateMatchScore(el, target) {
     // The final value uses the group's chosen precision (one decimal
@@ -411,21 +443,24 @@ function similarity(storm) {
     // each of the closest groups. Each representative therefore comes from
     // a different wind-strength group, so the Top 3 percentages are
     // naturally distinct.
+    // Rank order = group closeness (rankGroupsByCloseness already returns
+    // groups closest-first, stronger group first on exact ties). The
+    // similarity score is display-only and must never re-order the ranks:
+    // when the upcoming storm sits far outside the historical range the
+    // Gaussian bases all collapse towards 0%, and a score sort would let
+    // the tie-break nudge crown a weaker storm as the "best match".
     // Only match historical storms that were the same strength or weaker
-// than the upcoming storm — never stronger.
-const eligibleStorms = STORMS.filter((storm) => storm.wind <= UPCOMING.wind);
+    // than the upcoming storm — never stronger.
+    const eligibleStorms = STORMS.filter((storm) => storm.wind <= UPCOMING.wind);
 
-const groups = rankGroupsByCloseness(
-  groupByWind(eligibleStorms),
-  UPCOMING.wind,
-);
-    const matches = groups
-  .slice(0, 3)
-  .map((group) => {
-    const storm = pickRepresentative(group);
-    return { storm, score: similarity(storm) };
-  })
-  .sort((a, b) => b.score - a.score); // Rank 1 = highest actual score
+    const groups = rankGroupsByCloseness(
+      groupByWind(eligibleStorms),
+      UPCOMING.wind,
+    );
+    const matches = groups.slice(0, 3).map((group) => {
+      const storm = pickRepresentative(group);
+      return { storm, score: similarity(storm) };
+    });
 
     // One decimal normally; escalate if two of the Top 3 would display
     // the same string, so each rank shows a distinct percentage.
@@ -545,27 +580,60 @@ const groups = rankGroupsByCloseness(
       value + "</strong>" + bar + "</div>" + badge + "</div>";
   }
 
-  function row(label, valueA, valueB, winner, barA, barB) {
-    // winner: 0 = none, 1 = A, 2 = B
+  function row(label, valueA, valueB, winner, classA, classB, barA, barB) {
+    // winner: 0 = none, 1 = A, 2 = B. classA/classB carry each column's
+    // result tone: "metric-green" for the overall winner, "metric-red" for
+    // the loser, or the default identity classes on a tie.
     return (
-      '<tr><td>' + metricCellHtml(valueA, "metric-blue", barA, winner === 1) +
+      '<tr><td>' + metricCellHtml(valueA, classA, barA, winner === 1) +
       '</td><th scope="row" class="metric-col"><span class="metric-icon">' +
       metricIcon(label) + '</span><span>' + label + '</span></th><td>' +
-      metricCellHtml(valueB, "metric-green", barB, winner === 2) +
+      metricCellHtml(valueB, classB, barB, winner === 2) +
       "</td></tr>"
     );
   }
 
-  function updateWinnerBanner(label, storm, detail, tone) {
+  // Trophy icon (the banner's default) and an "=" icon for ties — the
+  // banner swaps between them so a tie doesn't show a single winner's
+  // trophy. Mirror of the inline SVG in compare-storms.html.
+  const TROPHY_ICON =
+    '<svg viewBox="0 0 24 24" width="30" height="30" fill="none">' +
+    '<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
+    '<path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
+    "</svg>";
+  const TIE_ICON =
+    '<svg viewBox="0 0 24 24" width="30" height="30" fill="none">' +
+    '<path d="M5 9h14M5 15h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" />' +
+    "</svg>";
+
+  // names is plain text (one storm, or "A & B" for a tie); tone is
+  // "win" (decisive result), "tie" (equal strength) or "idle" (nothing
+  // compared yet). The banner itself only glows once a tone is set: idle
+  // keeps the dim, unlit indicator light; wins glow soft green and ties
+  // glow soft blue (see .is-win / .is-tie in compare-storms.css).
+  function updateWinnerBanner(label, names, detail, tone) {
     winnerBannerLabel.textContent = label;
-    winnerBannerName.textContent = storm ? storm.name + " · " + storm.year : "No clear winner";
+    winnerBannerName.textContent = names;
     winnerBannerDetail.textContent = detail;
-    winnerBanner.classList.toggle("winner-banner-green", tone === "green");
+    winnerBanner.classList.toggle("winner-banner-tie", tone === "tie");
+    winnerBanner.classList.toggle("is-win", tone === "win");
+    winnerBanner.classList.toggle("is-tie", tone === "tie");
+    if (winnerBannerIcon) {
+      winnerBannerIcon.innerHTML = tone === "tie" ? TIE_ICON : TROPHY_ICON;
+    }
+  }
+
+  // Results-header subtitle: describes what is being compared based on
+  // the active comparison mode, not any particular result.
+  function updateResultsSubtitle() {
+    if (!resultsSubtitle) return;
+    const mode = COMPARISON_MODES[activeMode];
+    resultsSubtitle.textContent = mode ? mode.subtitle : "Select a storm above to start a comparison.";
   }
 
   function runCompare() {
-    const nameA = stormA.value;
-    const nameB = stormB.value;
+    const nameA = selection.stormA;
+    const nameB = selection.stormB;
     if (!nameA) return;
 
     const a = STORMS.find((s) => s.name === nameA);
@@ -575,11 +643,11 @@ const groups = rankGroupsByCloseness(
     // With no active upcoming storm, comparing against "Upcoming" (the B
     // column when none is chosen) has no meaning — ask for a second storm.
     if (!hasUpcomingStorm && !b) {
+      updateWinnerBanner("Comparison", "", "", "idle");
       colAHead.innerHTML =
         '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + a.name +
         ' <span class="col-year">· ' + a.year + "</span></span>";
       colBHead.textContent = "—";
-      verdictEl.textContent = "No active upcoming storm — pick a second historical storm to compare instead.";
       tableBody.innerHTML =
         '<tr class="empty-row"><td colspan="3">' +
         '<div class="empty-state">' +
@@ -588,15 +656,9 @@ const groups = rankGroupsByCloseness(
       return;
     }
 
-    colAHead.innerHTML =
-      '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + a.name +
-      ' <span class="col-year">· ' + a.year + "</span></span>";
-    colBHead.innerHTML = b
-      ? '<span class="th-flex"><span class="col-badge col-badge-b">B</span>' + b.name +
-        ' <span class="col-year">· ' + b.year + "</span></span>"
-      : '<span class="th-flex"><span class="col-badge col-badge-b">B</span>' + UPCOMING.name +
-        ' <span class="col-year">· Upcoming</span></span>';
-
+    // Column headers (badge color included) render inside renderStrength(),
+    // where the overall winner — and therefore each column's green/red
+    // result tone — is known.
     renderStrength(a, b);
 
     tableBody.querySelectorAll("tr").forEach((resultRow, index) => {
@@ -606,62 +668,109 @@ const groups = rankGroupsByCloseness(
 
   function renderStrength(a, b) {
     let html = "";
-    let verdict;
 
-    const stronger = (x, y) =>
-      !y || x.wind > y.wind ? x : y.wind > x.wind ? y : null;
+    // Overall result: higher max sustained wind wins; on equal winds the
+    // higher PAGASA category breaks the tie; identical winds AND category
+    // is an explicit tie. (Previously an A-vs-B tie fell through to a
+    // comparison against the upcoming storm, so a tied pair could show an
+    // unrelated storm as the "winner".)
+    const compareB = b || UPCOMING;
+    const rankOf = (storm) => categoryRank(storm.category);
+    const windDiff = a.wind - compareB.wind;
+    const catDiff = (rankOf(a) ?? 0) - (rankOf(compareB) ?? 0);
+    const isTie = windDiff === 0 && catDiff === 0;
+    const winner = isTie
+      ? null
+      : windDiff > 0 || (windDiff === 0 && catDiff > 0)
+        ? a
+        : compareB;
 
-    const winner = stronger(a, b);
-    if (b) {
-      verdict = winner
-        ? "<strong>" + winner.name + "</strong> is stronger overall."
-        : "Both storms are of comparable strength.";
+    // Column colors follow the overall result: the winner's column reads
+    // green and the loser's red (header badges, values and bars alike).
+    // An exact tie has no winner or loser, so both columns keep their
+    // default blue/green identities.
+    const badgeA = isTie
+      ? "col-badge-a"
+      : winner === a ? "col-badge-green" : "col-badge-red";
+    const badgeB = isTie
+      ? "col-badge-b"
+      : winner === compareB ? "col-badge-green" : "col-badge-red";
+    const classA = isTie
+      ? "metric-blue"
+      : winner === a ? "metric-green" : "metric-red";
+    const classB = isTie
+      ? "metric-green"
+      : winner === compareB ? "metric-green" : "metric-red";
+
+    colAHead.innerHTML =
+      '<span class="th-flex"><span class="col-badge ' + badgeA + '">A</span>' +
+      a.name + ' <span class="col-year">· ' + a.year + "</span></span>";
+    colBHead.innerHTML =
+      '<span class="th-flex"><span class="col-badge ' + badgeB + '">B</span>' +
+      compareB.name + ' <span class="col-year">· ' +
+      (b ? compareB.year : "Upcoming") + "</span></span>";
+
+    if (isTie) {
+      updateWinnerBanner(
+        "It's a Tie",
+        a.name + " & " + compareB.name,
+        "Both storms top out at " + a.wind +
+          " km/h at the same PAGASA category — neither is stronger. Based on PAGASA best track data.",
+        "tie"
+      );
+    } else if (!b) {
+      updateWinnerBanner(
+        "Overall Winner",
+        winner.name + " · " + winner.year,
+        (winner === UPCOMING
+          ? "is stronger than the selected historical storm."
+          : "is stronger than the incoming storm.") +
+          " Based on PAGASA best track data.",
+        "win"
+      );
+    } else if (windDiff !== 0) {
+      updateWinnerBanner(
+        "Overall Winner",
+        winner.name + " · " + winner.year,
+        "is stronger based on wind speed. Based on PAGASA best track data.",
+        "win"
+      );
     } else {
-      verdict =
-        "<strong>" + a.name + "</strong> " +
-        (a.wind >= UPCOMING.wind
-          ? "was stronger than"
-          : "was weaker than") +
-        " the incoming <strong>" + UPCOMING.name + "</strong>.";
+      updateWinnerBanner(
+        "Overall Winner",
+        winner.name + " · " + winner.year,
+        "reached a higher PAGASA category at the same wind speed. Based on PAGASA best track data.",
+        "win"
+      );
     }
 
-    const strengthWinner = winner || (a.wind >= UPCOMING.wind ? a : UPCOMING);
-    updateWinnerBanner(
-      "Overall Winner",
-      strengthWinner,
-      (b ? "is stronger based on wind speed." :
-        (strengthWinner === UPCOMING ? "is stronger than the selected historical storm." :
-          "is stronger than the incoming storm.")) +
-        " Based on PAGASA best track data.",
-      strengthWinner === UPCOMING ? "green" : "blue"
-    );
+    // Per-row "Stronger" badges: the wind row is decided by wind speed, the
+    // category row by PAGASA category; 0 = row is level, so no badge.
+    const windWinner = windDiff > 0 ? 1 : windDiff < 0 ? 2 : 0;
+    const catWinner = catDiff > 0 ? 1 : catDiff < 0 ? 2 : 0;
 
-    const windWinner = !b ? (a.wind >= UPCOMING.wind ? 1 : 2) : a.wind > b.wind ? 1 : a.wind < b.wind ? 2 : 0;
+    html += row("Maximum Sustained Winds", a.wind + " km/h", compareB.wind + " km/h",
+      windWinner, classA, classB, (a.wind / 250) * 100, (compareB.wind / 250) * 100);
 
-    const compareB = b || UPCOMING;
-    html += row("Maximum Sustained Winds", a.wind + " km/h", compareB.wind + " km/h", windWinner,
-      (a.wind / 250) * 100, (compareB.wind / 250) * 100);
-
-    const catRank = (x, y) =>
-      CATEGORY_RANK[x] > CATEGORY_RANK[y] ? 1 : CATEGORY_RANK[x] < CATEGORY_RANK[y] ? 2 : 0;
-    const catB = b ? b.category : UPCOMING.category;
-    html += row("PAGASA Category", a.category, catB, catRank(a.category, catB));
+    html += row("PAGASA Category", a.category, compareB.category, catWinner,
+      classA, classB);
 
     tableBody.innerHTML = html;
-    verdictEl.innerHTML = verdict;
   }
 
   function runCompareSafe() {
-    if (!stormA.value) {
-      verdictEl.textContent = "Select at least one historical storm to compare.";
+    if (!selection.stormA) {
+      // Idle/empty state: no result yet, so the banner indicator stays
+      // dim (no glow classes set) and the guidance empty state shows.
+      updateWinnerBanner("Comparison", "", "", "idle");
       tableBody.innerHTML =
         '<tr class="empty-row"><td colspan="3">' +
         '<div class="empty-state">' +
         '<svg viewBox="0 0 24 24" width="28" height="28" fill="none">' +
         '<path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />' +
         "</svg>" +
-        "<p>Select a historical storm above, then click " +
-        '<strong>Compare Now</strong> to see results here.</p>' +
+        "<p>Select a historical storm from the dropdown above, then click " +
+        "<strong>Compare Storms</strong> to see results here.</p>" +
         "</div></td></tr>";
       colAHead.textContent = "—";
       colBHead.textContent = "—";
@@ -671,39 +780,231 @@ const groups = rankGroupsByCloseness(
   }
 
   function resetControls() {
-    stormA.selectedIndex = 0;
-    stormB.selectedIndex = 0;
+    selection.stormA = "";
+    selection.stormB = "";
+    if (stormASelect) stormASelect.value = "";
+    if (stormBSelect) stormBSelect.value = "";
+    syncPickerToggles();
     runCompareSafe();
   }
 
   // ---------------------------------------------------------------------
-  // Init
+  // Searchable storm pickers
   // ---------------------------------------------------------------------
-  function buildSelects() {
-    [stormA, stormB].forEach((select) => {
-      select.innerHTML = "";
-      const placeholder = document.createElement("option");
-      placeholder.value = "";
-      placeholder.textContent = "— Select a storm —";
-      select.appendChild(placeholder);
+  // Each picker is a button + a panel with a search input and a scrollable
+  // option list. Clicking the toggle opens the panel and focuses its
+  // search box; typing filters the list; clicking an option picks the
+  // storm, closes the panel and fires the same change flow the old native
+  // <select> used. A hidden <select> (kept in sync) remains the single
+  // source of truth for the compare logic below.
+  const PLACEHOLDER = { stormA: "Select a storm\u2026", stormB: "None (compare with upcoming)" };
 
-      STORMS.forEach((storm) => {
+  function pickerContainer(which) {
+    return document.querySelector('[data-picker="' + which + '"]');
+  }
+
+  // Case-insensitive "does the storm match the query" — searches both the
+  // local name and the international name in parentheses.
+  function stormMatchesQuery(storm, query) {
+    return storm.name.toLowerCase().indexOf(query) !== -1;
+  }
+
+  function renderPickerOptions(picker) {
+    const query = picker.search.value.trim().toLowerCase();
+    picker.list.innerHTML = "";
+
+    const ordered = STORMS.slice().sort((a, b) => {
+      const aD = a.dateStart || "";
+      const bD = b.dateStart || "";
+      if (!aD && bD) return 1;
+      if (aD && !bD) return -1;
+      if (aD !== bD) return aD > bD ? -1 : 1;
+      return b.year - a.year ||
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    });
+
+    // Storm B's leading placeholder (compare against the upcoming storm
+    // instead of a second historical storm) is part of every list render;
+    // a query hides it so search results stay storm-only.
+    if (picker.which === "stormB" && !query) {
+      const noneOpt = document.createElement("button");
+      noneOpt.type = "button";
+      noneOpt.className = "picker-option";
+      noneOpt.setAttribute("role", "option");
+      noneOpt.setAttribute("data-value", "");
+      noneOpt.textContent = PLACEHOLDER.stormB;
+      picker.list.appendChild(noneOpt);
+    }
+
+    let shown = 0;
+    ordered.forEach((storm) => {
+      if (query && !stormMatchesQuery(storm, query)) return;
+      const opt = document.createElement("button");
+      opt.type = "button";
+      opt.className = "picker-option";
+      opt.setAttribute("role", "option");
+      opt.setAttribute("data-value", storm.name);
+      opt.setAttribute("aria-selected", String(selection[picker.which] === storm.name));
+      opt.textContent = storm.name + " \u00b7 " + storm.year;
+      if (selection[picker.which] === storm.name) opt.classList.add("is-selected");
+      picker.list.appendChild(opt);
+      shown++;
+    });
+
+    if (!shown) {
+      const empty = document.createElement("div");
+      empty.className = "picker-empty";
+      empty.textContent = "No storms match \u201c" + picker.search.value.trim() + "\u201d.";
+      picker.list.appendChild(empty);
+    }
+  }
+
+  function syncPickerToggles() {
+    Object.keys(pickers).forEach((which) => {
+      const picker = pickers[which];
+      const hiddenSelect = picker.root.querySelector("select");
+      const chosen = hiddenSelect ? hiddenSelect.value : "";
+      picker.toggle.querySelector(".picker-toggle-label").textContent =
+        chosen || PLACEHOLDER[which];
+      picker.toggle.classList.toggle("has-value", !!chosen);
+    });
+  }
+
+  function closePicker(picker, refocusToggle) {
+    if (!picker || picker.panel.hidden) return;
+    picker.panel.hidden = true;
+    picker.toggle.setAttribute("aria-expanded", "false");
+    picker.root.classList.remove("is-open");
+    picker.search.value = "";
+    if (refocusToggle) picker.toggle.focus();
+  }
+
+  function closeAllPickers(except) {
+    Object.keys(pickers).forEach((which) => {
+      if (pickers[which] !== except) closePicker(pickers[which], false);
+    });
+  }
+
+  function openPicker(picker) {
+    closeAllPickers(picker);
+    renderPickerOptions(picker);
+    picker.panel.hidden = false;
+    picker.toggle.setAttribute("aria-expanded", "true");
+    picker.root.classList.add("is-open");
+    picker.search.value = "";
+    picker.search.focus();
+  }
+
+  function commitPick(which, value) {
+    const picker = pickers[which];
+    const hiddenSelect = picker.root.querySelector("select");
+    selection[which] = value;
+    if (hiddenSelect) hiddenSelect.value = value;
+    syncPickerToggles();
+    closeAllPickers(null);
+  }
+
+  function setupPicker(which) {
+    const root = pickerContainer(which);
+    if (!root) return;
+    const toggle = root.querySelector(".picker-toggle");
+    const panel = root.querySelector(".picker-panel");
+    const search = root.querySelector(".picker-search");
+    const list = root.querySelector(".picker-list");
+    if (!toggle || !panel || !search || !list) return;
+
+    const picker = { which, root, toggle, panel, search, list };
+    pickers[which] = picker;
+
+    toggle.addEventListener("click", () => {
+      if (panel.hidden) openPicker(picker);
+      else closePicker(picker, true);
+    });
+
+    // Type-to-filter; the list re-renders on every keystroke.
+    search.addEventListener("input", () => renderPickerOptions(picker));
+
+    // Click an option to choose it (delegated — the list re-renders often).
+    list.addEventListener("click", (event) => {
+      const opt = event.target.closest(".picker-option");
+      if (!opt) return;
+      commitPick(which, opt.getAttribute("data-value") || "");
+    });
+
+    search.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closePicker(picker, true);
+      } else if (event.key === "Enter") {
+        event.preventDefault();
+        const first = list.querySelector(".picker-option");
+        if (first) commitPick(which, first.getAttribute("data-value") || "");
+      }
+    });
+  }
+
+  // ---------------------------------------------------------------------
+  // Storm dropdowns
+  // ---------------------------------------------------------------------
+  // Fills both <select> dropdowns with every storm, newest first (undated
+  // storms last, A→Z name tie-break). Storm B keeps its leading "None"
+  // placeholder option — leaving it empty compares against the upcoming
+  // storm instead of a second historical one.
+  function populateStormSelects() {
+    if (!stormASelect || !stormBSelect) return;
+    // The pickers render from STORMS directly; the hidden <select> options
+    // stay in sync for the verify harness and as a fallback.
+
+    const ordered = STORMS.slice().sort((a, b) => {
+      const aD = a.dateStart || "";
+      const bD = b.dateStart || "";
+      if (!aD && bD) return 1;
+      if (aD && !bD) return -1;
+      if (aD !== bD) return aD > bD ? -1 : 1;
+      return b.year - a.year ||
+        a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
+    });
+
+    [stormASelect, stormBSelect].forEach((select) => {
+      // Drop any storm options from a previous fill (keeps the placeholder).
+      Array.from(select.options)
+        .filter((option) => option.value !== "")
+        .forEach((option) => option.remove());
+
+      ordered.forEach((storm) => {
         const option = document.createElement("option");
         option.value = storm.name;
-        option.textContent = storm.name + "  ·  " + storm.year;
+        option.textContent = storm.name + " · " + storm.year;
         select.appendChild(option);
       });
     });
   }
 
+  // ---------------------------------------------------------------------
+  // Init
+  // ---------------------------------------------------------------------
   async function init() {
     await loadData();
     await loadUpcoming();
-    buildSelects();
+    populateStormSelects();
+    setupPicker("stormA");
+    setupPicker("stormB");
+    syncPickerToggles();
+    updateResultsSubtitle();
     renderAnalogues();
 
     compareBtn.addEventListener("click", runCompareSafe);
     resetBtn.addEventListener("click", resetControls);
+
+    if (stormASelect) {
+      stormASelect.addEventListener("change", () => {
+        selection.stormA = stormASelect.value;
+      });
+    }
+    if (stormBSelect) {
+      stormBSelect.addEventListener("change", () => {
+        selection.stormB = stormBSelect.value;
+      });
+    }
 
     // Keep the Best Match panel in sync with admin edits made in another
     // tab: re-fetch the upcoming profile when this tab regains focus, is
@@ -722,6 +1023,17 @@ const groups = rankGroupsByCloseness(
     );
     document.addEventListener("keydown", (event) => {
       if (event.key === "Escape") closeAnalogueDetails();
+    });
+
+    // Click-away closes any open picker; Escape closes it and refocuses
+    // the toggle so keyboard users don't get stranded.
+    document.addEventListener("click", (event) => {
+      Object.keys(pickers).forEach((which) => {
+        const picker = pickers[which];
+        if (!picker.panel.hidden && !picker.root.contains(event.target)) {
+          closePicker(picker, false);
+        }
+      });
     });
 
     resetControls();

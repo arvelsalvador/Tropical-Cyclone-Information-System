@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Weather App File Guide</title>
+<style>
+  @page { size: A4; margin: 16mm 15mm 17mm; }
+  :root { --ink:#203040; --muted:#5c6b78; --blue:#0d6e9e; --line:#d8e2e8; --soft:#eef6f9; }
+  * { box-sizing:border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; color:var(--ink); line-height:1.45; font-size:10.5pt; margin:0; }
+  h1 { color:var(--blue); font-size:25pt; margin:0 0 6px; }
+  h2 { color:var(--blue); font-size:17pt; border-bottom:2px solid var(--line); padding-bottom:4px; margin:22px 0 10px; page-break-after:avoid; }
+  h3 { color:#2b5368; font-size:12.5pt; margin:13px 0 3px; page-break-after:avoid; }
+  p { margin:5px 0 8px; }
+  ul { margin:4px 0 9px 20px; padding:0; }
+  li { margin:3px 0; }
+  code { font-family: Consolas, monospace; font-size:9pt; color:#173f56; }
+  .cover { background:var(--soft); border-left:7px solid var(--blue); padding:24px 25px; margin-bottom:20px; }
+  .subtitle { color:var(--muted); font-size:12pt; }
+  .note { background:#fff8df; border:1px solid #ead68a; padding:9px 11px; margin:10px 0; }
+  .flow { background:#f5f8fa; border:1px solid var(--line); padding:10px 13px; font-family:Consolas, monospace; white-space:pre-line; }
+  .group { break-inside:avoid; }
+  .small { color:var(--muted); font-size:9pt; }
+  .columns { columns:2; column-gap:25px; }
+  .columns .group { break-inside:avoid; }
+</style>
+</head>
+<body>
+<section class="cover">
+  <h1>Weather App File Guide</h1>
+  <div class="subtitle">A simple explanation of what each project file does</div>
+  <p><strong>Project:</strong> Tropical Cyclone Information System</p>
+  <p class="small">Prepared September 9, 2026</p>
+</section>
+
+<h2>How the app works</h2>
+<p>The project has a public website, an admin portal, and a MySQL database. The public pages display information. Admin pages update information. PHP API files connect the browser to the database.</p>
+<div class="flow">Admin edits storm data
+        |
+        v
+MySQL database: cyclone_db
+        |
+        v
+PHP API returns JSON
+        |
+        v
+JavaScript reads the JSON
+        |
+        v
+Public pages show the information</div>
+<div class="note"><strong>Filename note:</strong> There is no <code>lunch.json</code>. The file is <code>.vscode/launch.json</code>. It tells VS Code how to open the site in Chrome.</div>
+
+<h2>Root and VS Code files</h2>
+<div class="group"><h3>index.html</h3><p>The homepage. It contains the video hero, storm statistics, upcoming storm area, education links, and resource previews.</p></div>
+<div class="group"><h3>composer.json</h3><p>Lists the PHP package required by the app. The project uses PHPMailer to send password-reset emails.</p></div>
+<div class="group"><h3>composer.lock</h3><p>Records the exact versions of the installed PHP packages so the project uses predictable dependencies.</p></div>
+<div class="group"><h3>.gitignore</h3><p>Tells Git which files should not be saved in the repository, such as temporary files or private configuration.</p></div>
+<div class="group"><h3>.vscode/launch.json</h3><p>Defines a Chrome debugging setup for <code>http://localhost:8080</code>, using the project folder as the web root.</p></div>
+
+<h2>Admin folder</h2>
+<p>These PHP files are used by administrators to log in and manage cyclone records.</p>
+<div class="columns">
+<div class="group"><h3>admin/auth.php</h3><p>Checks whether an admin is logged in. If not, it redirects the visitor to <code>login.php</code>. This protects admin-only pages.</p></div>
+<div class="group"><h3>admin/login.php</h3><p>Shows the login form and checks the username and password against the <code>admins</code> database table. A successful login creates a PHP session.</p></div>
+<div class="group"><h3>admin/logout.php</h3><p>Clears the admin session, removes the session cookie, and sends the user back to the login page.</p></div>
+<div class="group"><h3>admin/forgot-password.php</h3><p>Starts password recovery. It creates a six-digit code, saves it in the database, and emails it using PHPMailer.</p></div>
+<div class="group"><h3>admin/reset-password.php</h3><p>Checks the six-digit code. If it is valid and not expired, it hashes and saves the new password.</p></div>
+<div class="group"><h3>admin/dashboard.php</h3><p>Shows an admin overview: total cyclones, latest year, strongest storm, recent records, and the current upcoming storm.</p></div>
+<div class="group"><h3>admin/edit-storm.php</h3><p>Lets the admin add or edit the current upcoming storm. The saved values later appear on the public pages.</p></div>
+<div class="group"><h3>admin/cyclones.php</h3><p>Shows historical cyclones in a searchable, filterable, paginated table.</p></div>
+<div class="group"><h3>admin/cyclone-form.php</h3><p>Adds a new cyclone or edits an existing one. It validates names, dates, wind speeds, categories, and warning signals before saving.</p></div>
+<div class="group"><h3>admin/cyclone-delete.php</h3><p>Deletes a historical cyclone. It only accepts a POST request, which helps prevent accidental deletion from a normal link.</p></div>
+<div class="group"><h3>admin/helpers.php</h3><p>Contains shared admin functions for database connections, form values, error messages, CSS error classes, and dropdown options.</p></div>
+<div class="group"><h3>admin/nav.php</h3><p>Displays the admin navigation bar and highlights the current admin section.</p></div>
+<div class="group"><h3>admin/partials/site-footer.php</h3><p>Displays the footer used by admin pages.</p></div>
+</div>
+<div class="note"><strong>Security reminder:</strong> The email account password is currently written directly in <code>admin/forgot-password.php</code>. It should be moved to a protected environment variable before deployment.</div>
+
+<h2>API folder</h2>
+<div class="group"><h3>api/get_cyclones.php</h3><p>Reads all historical cyclone rows from MySQL and returns them as JSON. Public JavaScript uses this for tables, statistics, charts, and comparisons.</p></div>
+<div class="group"><h3>api/get_upcoming_storm.php</h3><p>Reads the active upcoming storm and returns it as JSON. If no storm is active, the public site displays an empty state.</p></div>
+
+<h2>Public HTML pages</h2>
+<div class="columns">
+<div class="group"><h3>pages/about.html</h3><p>Explains the platform's purpose, audience, goals, and official data source.</p></div>
+<div class="group"><h3>pages/compare-storms.html</h3><p>Lets users compare an upcoming storm with historical cyclones or another selected storm.</p></div>
+<div class="group"><h3>pages/contact.html</h3><p>Shows contact information, emergency guidance, official sources, and a browser-only feedback form.</p></div>
+<div class="group"><h3>pages/historical-data.html</h3><p>Shows historical cyclone records with searching, filters, pagination, statistics, and CSV export.</p></div>
+<div class="group"><h3>pages/resources.html</h3><p>Lists emergency hotlines, government agencies, disaster resources, and useful external websites.</p></div>
+<div class="group"><h3>pages/education/index.html</h3><p>The Education Hub. It contains topic cards, resource tiles, preparedness facts, and links to detailed guides.</p></div>
+<div class="group"><h3>pages/education/warning-signals.html</h3><p>Explains PAGASA warning signals, wind ranges, lead times, and recommended actions.</p></div>
+<div class="group"><h3>pages/education/evacuation-guide.html</h3><p>Explains when and how to evacuate and includes a go-bag checklist.</p></div>
+<div class="group"><h3>pages/education/preparedness-tips.html</h3><p>Explains what to do before, during, and after a typhoon and includes an emergency-kit checklist.</p></div>
+</div>
+
+<h2>Reusable partials</h2>
+<div class="group"><h3>partials/header.html</h3><p>A reusable public header containing the announcement bar, logo, navigation, Education menu, About and Contact links, and admin login link.</p></div>
+<div class="group"><h3>partials/footer.html</h3><p>A reusable public footer containing site information and navigation links.</p></div>
+<p class="small">Several pages currently contain equivalent header and footer markup directly instead of loading these partial files dynamically.</p>
+
+<h2>JavaScript files</h2>
+<div class="columns">
+<div class="group"><h3>js/main.js</h3><p>Shared browser behavior: mobile menu, Education dropdown, announcement dismissal, header effects, active links, and reveal animations.</p></div>
+<div class="group"><h3>js/home-overview.js</h3><p>Loads cyclone data and calculates homepage totals, year range, average, strongest storm, busiest year, and newest cyclone.</p></div>
+<div class="group"><h3>js/upcoming-storm.js</h3><p>Loads the active storm from the API and places its values into the public page.</p></div>
+<div class="group"><h3>js/storm-category.js</h3><p>Converts sustained wind speed into a PAGASA-style category such as Tropical Depression, Typhoon, or Super Typhoon.</p></div>
+<div class="group"><h3>js/topic-models.js</h3><p>Stores the education topics, titles, icons, summaries, and detailed text.</p></div>
+<div class="group"><h3>js/topic-detail-modal.js</h3><p>Builds and controls the Education Hub popup. It supports closing, Escape, focus restoration, and keyboard navigation.</p></div>
+<div class="group"><h3>js/pages/compare-storms.js</h3><p>Loads storms, finds similar storms, renders storm selectors, compares values, and displays winner or tie results.</p></div>
+<div class="group"><h3>js/pages/historical-data.js</h3><p>Loads records, applies filters, creates the table and pagination, calculates statistics, and exports filtered CSV data.</p></div>
+<div class="group"><h3>js/pages/evacuation-guide.js</h3><p>Creates the evacuation checklist, saves checked items in the browser, updates progress, and supports reset controls.</p></div>
+<div class="group"><h3>js/pages/preparedness-tips.js</h3><p>Creates the preparedness checklist, saves its state in the browser, updates progress, and supports reset controls.</p></div>
+</div>
+
+<h2>CSS files</h2>
+<div class="columns">
+<div class="group"><h3>css/base.css</h3><p>Global styles: reset rules, colors, typography, spacing, focus styles, layout helpers, and animations.</p></div>
+<div class="group"><h3>css/admin.css</h3><p>Styles the admin login, dashboard, forms, tables, alerts, cards, status colors, and admin navigation.</p></div>
+<div class="group"><h3>css/components/header.css</h3><p>Styles the announcement bar, public header, logo, navigation, dropdown, login button, and mobile menu.</p></div>
+<div class="group"><h3>css/components/buttons.css</h3><p>Provides shared public button styles.</p></div>
+<div class="group"><h3>css/components/footer.css</h3><p>Styles the public and admin footer.</p></div>
+<div class="group"><h3>css/pages/home.css</h3><p>Styles the homepage hero video, feature cards, overview cards, and storm profile.</p></div>
+<div class="group"><h3>css/pages/about.css</h3><p>Styles the About page sections, cards, links, and call-to-action area.</p></div>
+<div class="group"><h3>css/pages/compare-storms.css</h3><p>Styles storm selectors, comparison tables, result panels, controls, and dialogs.</p></div>
+<div class="group"><h3>css/pages/contact.css</h3><p>Styles the contact hero, feedback form, emergency note, and official-source panel.</p></div>
+<div class="group"><h3>css/pages/education.css</h3><p>Styles the Education Hub, topic cards, resource tiles, fact panel, and topic modal.</p></div>
+<div class="group"><h3>css/pages/evacuation-guide.css</h3><p>Styles evacuation decisions, reminders, tables, checklists, and progress components.</p></div>
+<div class="group"><h3>css/pages/historical-data.css</h3><p>Styles the historical-data filters, statistics, table, pagination, search, and CSV button.</p></div>
+<div class="group"><h3>css/pages/preparedness-tips.css</h3><p>Styles the preparedness phases, emergency-kit checklist, tips, and call-to-action.</p></div>
+<div class="group"><h3>css/pages/resources.css</h3><p>Styles hotline cards, agency cards, resource links, and resource-page animations.</p></div>
+<div class="group"><h3>css/pages/warning-signals.css</h3><p>Styles warning-signal cards, reference tables, reminders, and responsive layouts.</p></div>
+</div>
+
+<h2>Assets</h2>
+<div class="group"><h3>assets/images/Logo.png</h3><p>The main logo used by the public header and admin navigation.</p></div>
+<div class="group"><h3>assets/images/Logo_original.png and Main_Logo.png</h3><p>Other logo versions kept as source or backup images.</p></div>
+<div class="group"><h3>assets/images/Storm_bg.jpg</h3><p>Storm photograph used for hero backgrounds and as the homepage video fallback image.</p></div>
+<div class="group"><h3>assets/images/bg.png, bg1.jpg, bg2.jpg, bg3.jpg, bg4.jpg</h3><p>General and education-related background or thumbnail images.</p></div>
+<div class="group"><h3>assets/images/education-hub-background-v3-color.png</h3><p>Education Hub background.</p></div>
+<div class="group"><h3>assets/images/evacuation-guide-background-color.png</h3><p>Evacuation Guide background.</p></div>
+<div class="group"><h3>assets/images/preparedness-tips-background-color.png</h3><p>Preparedness Tips background.</p></div>
+<div class="group"><h3>assets/images/warning-signals-background-color.png</h3><p>Warning Signals background.</p></div>
+<div class="group"><h3>assets/images/education-guide-thumbnail.png, how-storms-work-thumbnail.png, contact-resources-dialing-thumbnail.png</h3><p>Homepage thumbnails for education, storm science, and contact/resource sections.</p></div>
+<div class="group"><h3>assets/video/background_video.mp4</h3><p>Muted looping video used behind the homepage hero section.</p></div>
+
+<h2>Scripts folder</h2>
+<div class="columns">
+<div class="group"><h3>scripts/__seed_admin.php</h3><p>Temporary helper that creates a test admin account for automated testing.</p></div>
+<div class="group"><h3>scripts/check-logo-alpha.js</h3><p>Checks whether logo pixels are transparent.</p></div>
+<div class="group"><h3>scripts/make-logo-transparent.js</h3><p>Removes a near-white logo background and creates a transparent image.</p></div>
+<div class="group"><h3>scripts/tmp_add_reveal.js</h3><p>Temporary script that adds reveal-animation attributes to HTML.</p></div>
+<div class="group"><h3>scripts/tmp_fix_reveal.js</h3><p>Temporary script that repairs reveal-animation attributes.</p></div>
+<div class="group"><h3>scripts/tmp_data_scan.ps1</h3><p>PowerShell research tool for scanning storm-data files, finding duplicates, and reading metadata.</p></div>
+<div class="group"><h3>scripts/verify-best-match.tmp.js</h3><p>Temporary test for the best historical-storm match calculation.</p></div>
+<div class="group"><h3>scripts/verify-compare-panels.tmp.js</h3><p>Temporary test for comparison selectors, panels, winner states, and reset behavior.</p></div>
+<div class="group"><h3>scripts/verify-topic-modal.tmp.js</h3><p>Temporary test for the Education topic popup, closing behavior, focus, and keyboard controls.</p></div>
+</div>
+
+<h2>Vendor folder</h2>
+<div class="group"><h3>vendor/autoload.php</h3><p>Automatically loads installed PHP packages so the application can use PHPMailer.</p></div>
+<div class="group"><h3>vendor/phpmailer/</h3><p>Third-party PHPMailer code used to send password-reset emails.</p></div>
+<div class="group"><h3>vendor/composer/</h3><p>Composer-generated files that help PHP locate and load installed packages.</p></div>
+<p class="small">Vendor files normally should not be edited manually because they are generated or supplied by external packages.</p>
+
+<h2>Example: updating the upcoming storm</h2>
+<p>When an administrator edits the storm:</p>
+<ol>
+<li><code>admin/edit-storm.php</code> validates and saves the information.</li>
+<li>The information is stored in the MySQL <code>upcoming_storm</code> table.</li>
+<li><code>api/get_upcoming_storm.php</code> reads the active row and returns JSON.</li>
+<li><code>js/upcoming-storm.js</code> receives the JSON in the browser.</li>
+<li>The homepage and comparison page display the new storm information.</li>
+</ol>
+</body>
+</html>

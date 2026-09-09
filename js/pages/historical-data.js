@@ -114,6 +114,7 @@
       year: parseInt(row.year, 10),
       category: category,
       date: formatDateRange(row.date_start, row.date_end),
+      dateStart: row.date_start || null,
       wind: wind,
     };
   }
@@ -124,6 +125,16 @@
       if (!res.ok) throw new Error("Request failed: " + res.status);
       const rows = await res.json();
       STORMS = rows.map(mapRow);
+
+      // Most recent first: newest year on top, then the latest date within
+      // the same year; cyclones without a date sort last inside their year.
+      STORMS.sort((a, b) => {
+        if (b.year !== a.year) return b.year - a.year;
+        const aDate = a.dateStart || "";
+        const bDate = b.dateStart || "";
+        if (aDate !== bDate) return aDate > bDate ? -1 : 1;
+        return 0;
+      });
 
       if (STORMS.length > 0) {
         const years = STORMS.map((s) => s.year);

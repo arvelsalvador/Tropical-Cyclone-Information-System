@@ -273,6 +273,12 @@ body {
   width: min(100%, 440px);
 }
 
+/* None-mode on the Upcoming Storm page: the detail cards get the hidden
+   attribute toggled by JS — make sure it always wins over card styling. */
+.admin-card[hidden] {
+  display: none;
+}
+
 .admin-card--wide {
   width: min(100%, 640px);
 }
@@ -1023,6 +1029,13 @@ body {
 
 .admin-alt a:hover {
   text-decoration: underline;
+}
+
+/* Dot separator between multiple links in the row (e.g. Forgot password ·
+   Back to Home on the login card) */
+.admin-alt-sep {
+  margin: 0 10px;
+  color: var(--text-muted);
 }
 
 /* ==========================================================================

@@ -13,7 +13,7 @@
     <link rel="stylesheet" href="../css/components/header.css" />
     <link rel="stylesheet" href="../css/components/buttons.css" />
     <link rel="stylesheet" href="../css/components/footer.css" />
-    <link rel="stylesheet" href="../css/pages/compare-storms.css" />
+    <link rel="stylesheet" href="../css/pages/compare-storms.css?v=7" />
   </head>
   <body>
     <div id="site-header"><div class="announcement-bar">
@@ -336,7 +336,28 @@
       <section class="comparison-workspace cs-card" data-reveal>
         <div class="comparison-controls">
         <div class="controls-head">
-              <h2 class="cs-section-title">Compare historical storms</h2>
+          <div class="controls-head-title">
+            <span class="controls-head-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
+                <circle cx="12" cy="12" r="2.6" fill="#fff" />
+                <path
+                  d="M12 9c0-4.4 3.2-7.5 8.4-7.5-1.3 3.4-4.3 5.6-8.4 7.5z"
+                  fill="#fff"
+                />
+                <path
+                  d="M12 15c0 4.4-3.2 7.5-8.4 7.5 1.3-3.4 4.3-5.6 8.4-7.5z"
+                  fill="#fff"
+                />
+              </svg>
+            </span>
+            <div>
+              <h2 class="cs-section-title">Storm Comparison</h2>
+              <p class="controls-head-sub">
+                Compare historical storms with upcoming storms to find similar
+                patterns and impacts.
+              </p>
+            </div>
+          </div>
           <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-mode="strength">
               <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
@@ -353,26 +374,44 @@
         </div>
 
         <div class="selects-row">
-          <div class="select-box">
-            <label for="stormA">
-              Historical Storm
-              <small>Select the first historical storm</small>
+          <div class="select-box storm-picker" data-picker="stormA">
+            <label for="stormA">Historical Storm
+              <small>Required — the storm to compare</small>
             </label>
-                       <select id="stormA" autocomplete="off"></select>
+            <button type="button" class="picker-toggle" id="stormA" aria-haspopup="listbox" aria-expanded="false">
+              <span class="picker-toggle-label">Select a storm…</span>
+              <svg class="picker-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="picker-panel" hidden>
+              <input type="text" class="picker-search" placeholder="Search storms…" aria-label="Search storms" />
+              <div class="picker-list" role="listbox" tabindex="-1"></div>
+            </div>
+            <select id="stormA-select" hidden aria-hidden="true" tabindex="-1">
+              <option value="">Select a storm…</option>
+            </select>
           </div>
           <span class="vs-label">VS</span>
-          <div class="select-box">
-            <label for="stormB">
-              Historical Storm (Optional)
-              <small>Select another historical storm</small>
+          <div class="select-box storm-picker" data-picker="stormB">
+            <label for="stormB">Historical Storm (Optional)
+              <small>Optional — pick another past storm</small>
             </label>
-                        <select id="stormB" autocomplete="off"></select>
+            <button type="button" class="picker-toggle" id="stormB" aria-haspopup="listbox" aria-expanded="false">
+              <span class="picker-toggle-label">None (compare with upcoming)</span>
+              <svg class="picker-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
+            <div class="picker-panel" hidden>
+              <input type="text" class="picker-search" placeholder="Search storms…" aria-label="Search storms" />
+              <div class="picker-list" role="listbox" tabindex="-1"></div>
+            </div>
+            <select id="stormB-select" hidden aria-hidden="true" tabindex="-1">
+              <option value="">None (compare with upcoming)</option>
+            </select>
           </div>
         </div>
 
         <div class="controls-actions">
           <button type="button" class="compare-now-btn" id="compareNowBtn">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
               <path
                 d="M4 20V10M10 20V4M16 20v-7M22 20V8"
                 stroke="#fff"
@@ -380,7 +419,8 @@
                 stroke-linecap="round"
               />
             </svg>
-            Compare Now
+            Compare Storms
+            <span class="compare-arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="reset-btn" id="resetBtn">
             <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
@@ -409,7 +449,7 @@
             </span>
             <div>
               <h2 class="cs-section-title">Comparison Results</h2>
-              <p class="results-verdict" id="resultsVerdict"></p>
+              <p class="results-subtitle" id="resultsSubtitle">Select a storm above to start a comparison.</p>
             </div>
           </div>
           <div class="results-tabs">
@@ -526,6 +566,6 @@
 
     <script src="../js/main.js" data-root="../"></script>
     <script src="../js/upcoming-storm.js" defer></script>
-    <script src="../js/pages/compare-storms.js?v=4" defer></script>
+    <script src="../js/pages/compare-storms.js?v=10" defer></script>
   </body>
 </html>

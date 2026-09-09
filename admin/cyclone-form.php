@@ -222,10 +222,11 @@ if ($db_error === '') {
         <div class="form-section-title">Period &amp; Peak</div>
         <div class="form-grid">
           <div>
-            <label for="f_year">Year *</label>
-            <input type="number" id="f_year" name="year" min="1901" max="2155"<?php echo cls('year'); ?>
-                   value="<?php echo val('year'); ?>" placeholder="e.g. 2025">
-            <?php echo err('year'); ?>
+            <label for="f_strength">Highest Strength — Sustained/Gust (km/h)</label>
+            <input type="text" id="f_strength" name="highest_strength"<?php echo cls('highest_strength'); ?>
+                   value="<?php echo val('highest_strength'); ?>" placeholder="e.g. 185/230">
+            <?php echo err('highest_strength'); ?>
+            <p class="field-hint">Format: sustained/gust — e.g. 185/230. The sustained part auto-selects the Highest Category.</p>
           </div>
           <div>
             <label for="f_cat">Highest Category</label>

@@ -106,7 +106,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <button type="submit" class="admin-btn">Log In</button>
       </form>
 
-      <p class="admin-alt"><a href="forgot-password.php">Forgot password?</a></p>
+      <p class="admin-alt">
+        <a href="forgot-password.php">Forgot password?</a>
+        <span class="admin-alt-sep" aria-hidden="true">·</span>
+        <a href="../index.html">&larr; Back to Home</a>
+      </p>
     </section>
   </main>
 

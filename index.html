@@ -188,7 +188,8 @@
               <h3>Historical Typhoon Data</h3>
               <p>
                 Explore typhoon frequency, paths, landfalls, and impacts in
-                Camarines Norte from 2010–2020.
+                Camarines Norte from
+                <span id="featureYearRange">2010–2020</span>.
               </p>
               <a href="pages/historical-data.html" class="feature-link"
                 >View Data <span>&rarr;</span></a
@@ -281,7 +282,9 @@
         <div class="home-lower-inner">
           <div class="info-card overview-card" data-reveal>
             <h2>Historical Typhoon Overview</h2>
-            <p class="card-subtitle">Camarines Norte (2010–2020)</p>
+            <p class="card-subtitle">
+              Camarines Norte (<span id="overviewYearRange">2010–2020</span>)
+            </p>
 
             <div class="stat-cards">
               <div class="stat-card" data-reveal style="--reveal-delay: 0s">
@@ -297,9 +300,9 @@
                   </svg>
                 </div>
                 <div class="stat-card-text">
-                  <span class="stat-card-number">26</span>
+                  <span class="stat-card-number" id="statTotal">0</span>
                   <span class="stat-card-label">Total Cyclones</span>
-                  <span class="stat-card-sub">2010–2020</span>
+                  <span class="stat-card-sub" id="statTotalSub">&mdash;</span>
                 </div>
               </div>
 
@@ -316,9 +319,9 @@
                   </svg>
                 </div>
                 <div class="stat-card-text">
-                  <span class="stat-card-number">1.18</span>
-                  <span class="stat-card-label">Strongest (Wind/Rainfall)</span>
-                  <span class="stat-card-sub">km/h per mm recorded</span>
+                  <span class="stat-card-number" id="statMaxWind">0</span>
+                  <span class="stat-card-label">Max Wind</span>
+                  <span class="stat-card-sub" id="statMaxWindSub">&mdash;</span>
                 </div>
               </div>
 
@@ -343,7 +346,7 @@
                   </svg>
                 </div>
                 <div class="stat-card-text">
-                  <span class="stat-card-number">2.4</span>
+                  <span class="stat-card-number" id="statAverage">0</span>
                   <span class="stat-card-label">Average per Year</span>
                   <span class="stat-card-sub">cyclones</span>
                 </div>
@@ -353,15 +356,15 @@
             <div class="overview-highlights" data-reveal style="--reveal-delay: 0.25s">
               <div class="highlight-item">
                 <span class="highlight-label">Busiest Year</span>
-                <span class="highlight-value">2020 &middot; 4 cyclones</span>
+                <span class="highlight-value" id="hlBusiest">&mdash;</span>
               </div>
               <div class="highlight-item">
-                <span class="highlight-label">Wettest Storm</span>
-                <span class="highlight-value">Rolly &middot; 350.2 mm</span>
+                <span class="highlight-label">Strongest Storm</span>
+                <span class="highlight-value" id="hlStrongest">&mdash;</span>
               </div>
               <div class="highlight-item">
-                <span class="highlight-label">Most Affected</span>
-                <span class="highlight-value">Nina &middot; 132k people</span>
+                <span class="highlight-label">Most Recent Cyclone</span>
+                <span class="highlight-value" id="hlRecent">&mdash;</span>
               </div>
             </div>
 
@@ -546,7 +549,7 @@
         </div>
       </section>
 
-      <!-- Learning Resources (duplicated from Education hub) -->
+      <!-- Education & Resources (adapted from the Education hub) -->
       <section class="home-learning">
         <div class="home-learning-inner">
           <section class="edu-card" data-reveal>
@@ -568,26 +571,27 @@
                   />
                 </svg>
               </span>
-              Learning Resources
+              Education &amp; Resources
             </h2>
             <div class="resources-grid">
               <a
-                href="pages/resources.html"
+                href="pages/education/index.html"
                 class="resource-tile"
                 data-reveal
                 style="--reveal-delay: 0.05s"
               >
                 <div class="resource-thumb thumb-blue">
                   <img
-                    src="assets/images/bg4.jpg"
-                    alt="Emergency preparedness lesson"
+                    src="assets/images/education-guide-thumbnail.png"
+                    alt="Education guide and tips for before and after cyclones and typhoons"
                   />
                 </div>
                 <div class="resource-body">
-                  <span class="resource-tag">INFOGRAPHIC</span>
-                  <h3>Typhoon Preparedness Checklist</h3>
+                  <span class="resource-tag">EDUCATION</span>
+                  <h3>Education Guide and Tips</h3>
                   <p>
-                    A quick visual guide to preparing your home and family.
+                    Guides and tips on what to do before and after cyclones and
+                    typhoons.
                   </p>
                   <span class="resource-btn">View Resource</span>
                 </div>
@@ -603,8 +607,8 @@
               >
                 <div class="resource-thumb thumb-navy">
                   <img
-                    src="assets/images/bg2.jpg"
-                    alt="Satellite view of a typhoon"
+                    src="assets/images/how-storms-work-thumbnail.png"
+                    alt="How storms work — video thumbnail"
                   />
                 </div>
                 <div class="resource-body">
@@ -625,17 +629,18 @@
               >
                 <div class="resource-thumb thumb-light">
                   <img
-                    src="assets/images/bg3.jpg"
-                    alt="Flooded road during a storm"
+                    src="assets/images/contact-resources-dialing-thumbnail.png"
+                    alt="Contact information and resources with dialing details"
                   />
                 </div>
                 <div class="resource-body">
-                  <span class="resource-tag">PDF GUIDE</span>
-                  <h3>Family Emergency Plan Template</h3>
+                  <span class="resource-tag">CONTACTS</span>
+                  <h3>Contact Information &amp; Resources</h3>
                   <p>
-                    Download a template to create your family's emergency plan.
+                    A list of contact information that you need to get help and
+                    communication.
                   </p>
-                  <span class="resource-btn">Download PDF</span>
+                  <span class="resource-btn">View Contacts</span>
                 </div>
               </a>
             </div>
@@ -693,5 +698,6 @@
 
     <script src="js/main.js" data-root=""></script>
     <script src="js/upcoming-storm.js" defer></script>
+    <script src="js/home-overview.js" defer></script>
   </body>
 </html>

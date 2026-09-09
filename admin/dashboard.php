@@ -295,19 +295,6 @@ if ($strongest) {
               </div>
               <span class="dash-action-arrow">&rarr;</span>
             </a>
-            <a class="dash-action" href="../index.html" target="_blank" rel="noopener">
-              <div class="dash-action-icon dash-action-icon--navy">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </div>
-              <div class="dash-action-text">
-                <div class="dash-action-title">View Public Site</div>
-                <div class="dash-action-desc">Open the public site in a new tab</div>
-              </div>
-              <span class="dash-action-arrow">&rarr;</span>
-            </a>
           </div>
         </section>
       </div>

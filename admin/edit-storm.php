@@ -180,7 +180,7 @@ $isActiveChecked = $_SERVER['REQUEST_METHOD'] === 'POST'
       </section>
 
       <!-- Card 1: Storm details -->
-      <section class="admin-card admin-card--section" data-reveal style="--reveal-delay: 0.08s">
+      <section class="admin-card admin-card--section" data-reveal style="--reveal-delay: 0.08s" id="stormFieldsCard1"<?php echo $isActiveChecked ? ' hidden' : ''; ?>>
         <div class="form-card-header">
           <span class="form-card-icon">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -218,7 +218,7 @@ $isActiveChecked = $_SERVER['REQUEST_METHOD'] === 'POST'
       </section>
 
       <!-- Card 2: Classification (Category auto-suggests from Max Wind) -->
-      <section class="admin-card admin-card--section" data-reveal style="--reveal-delay: 0.12s">
+      <section class="admin-card admin-card--section" data-reveal style="--reveal-delay: 0.12s" id="stormFieldsCard2"<?php echo $isActiveChecked ? ' hidden' : ''; ?>>
         <div class="form-card-header">
           <span class="form-card-icon">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -246,7 +246,7 @@ $isActiveChecked = $_SERVER['REQUEST_METHOD'] === 'POST'
       </section>
 
       <!-- Card 3: Forecast information -->
-      <section class="admin-card admin-card--section" data-reveal style="--reveal-delay: 0.16s">
+      <section class="admin-card admin-card--section" data-reveal style="--reveal-delay: 0.16s" id="stormFieldsCard3"<?php echo $isActiveChecked ? ' hidden' : ''; ?>>
         <div class="form-card-header">
           <span class="form-card-icon">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -309,6 +309,7 @@ $isActiveChecked = $_SERVER['REQUEST_METHOD'] === 'POST'
 
   <?php require 'partials/site-footer.php'; ?>
 
+  <script src="../js/storm-category.js"></script>
   <script>
     // Client-side validation: mirrors the PHP rules above. Empty Storm Name /
     // Status turn their field red instantly and the form is NOT submitted;
@@ -398,6 +399,39 @@ $isActiveChecked = $_SERVER['REQUEST_METHOD'] === 'POST'
       );
 
       // ------------------------------------------------------------------
+      // None-mode visibility: when "No active storm right now" is checked,
+      // the storm detail cards are hidden — the admin is clearing the
+      // profile, so there is nothing to fill in. Unchecking reveals the
+      // cards and the textfields again. The server also renders the cards
+      // hidden on load (PHP hidden attribute), so there is never a flash
+      // of the fields when the storm is already inactive.
+      var noneToggle = form.elements["is_active"];
+      var detailCards = [
+        document.getElementById("stormFieldsCard1"),
+        document.getElementById("stormFieldsCard2"),
+        document.getElementById("stormFieldsCard3"),
+      ];
+
+      function syncDetailCards() {
+        // Checked = no active storm = hide the fields. Note: the checkbox's
+        // POST value is 0, so checked means is_active = 0 (none mode).
+        var hide = noneToggle && noneToggle.checked;
+        detailCards.forEach(function (card) {
+          if (!card) return;
+          if (hide) {
+            card.setAttribute("hidden", "");
+          } else {
+            card.removeAttribute("hidden");
+          }
+        });
+      }
+
+      if (noneToggle) {
+        noneToggle.addEventListener("change", syncDetailCards);
+        syncDetailCards();
+      }
+
+      // ------------------------------------------------------------------
       // Category auto-suggest from Max Wind (PAGASA wind ranges):
       //   61-88 TD | 89-117 TS | 118-148 STS | 149-184 TY | 185+ STY
       // Below 61 / empty / invalid wind resets Category to its placeholder.
@@ -407,20 +441,22 @@ $isActiveChecked = $_SERVER['REQUEST_METHOD'] === 'POST'
       // the tag (manual override); editing Max Wind re-applies the tag.
       // Nothing fires on page load, so a saved category is never rewritten
       // before the admin actually edits the wind.
+      //
+      // The wind -> category thresholds live in js/storm-category.js, shared
+      // with the Historical Cyclone form (Highest Strength -> Highest
+      // Category), so the classification is defined in exactly one place.
+      // That helper returns a canonical key ("TD".."STY"); this form's option
+      // values are the full label strings, so the key is mapped through the
+      // shared label table.
       // ------------------------------------------------------------------
       var categorySelect = form.elements["category"];
       var windField = form.elements["max_wind"];
       var windTag = " (current)";
 
       function categoryForWind(value) {
-        if (value === "") return null;
-        var n = Number(value);
-        if (isNaN(n) || n < 61) return null;
-        if (n <= 88)  return "Tropical Depression (TD)";
-        if (n <= 117) return "Tropical Storm (TS)";
-        if (n <= 148) return "Severe Tropical Storm (STS)";
-        if (n <= 184) return "Typhoon (TY)";
-        return "Super Typhoon (STY)";
+        if (typeof window.getCategoryFromStrength !== "function") return null;
+        var key = window.getCategoryFromStrength(value);
+        return key ? window.STORM_CATEGORY_LABELS[key] : null;
       }
 
       function clearWindTags() {

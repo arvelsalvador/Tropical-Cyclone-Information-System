@@ -15,6 +15,13 @@
   gap: 40px;
 }
 
+/* Admin footer variant: no Explore/Info nav columns, brand only.
+   Doubled class keeps it winning over the responsive .footer-inner rules
+   below at every breakpoint. */
+.footer-inner.footer-inner--admin {
+  grid-template-columns: 1fr;
+}
+
 .footer-brand .footer-logo-text {
   display: block;
   font-size: 16px;
