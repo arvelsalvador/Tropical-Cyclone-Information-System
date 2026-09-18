@@ -14,6 +14,7 @@
     <link rel="stylesheet" href="../css/components/buttons.css" />
     <link rel="stylesheet" href="../css/components/footer.css" />
     <link rel="stylesheet" href="../css/pages/historical-data.css" />
+    <link rel="stylesheet" href="../css/pages/bulletin-modal.css" />
   </head>
   <body>
     <div id="site-header"><div class="announcement-bar">
@@ -36,7 +37,7 @@
     <nav class="main-nav">
       <a href="../index.html" class="nav-link">Home</a>
       <a href="../pages/historical-data.html" class="nav-link">Historical Data</a>
-      <a href="../pages/compare-storms.html" class="nav-link">Metrics</a>
+      <a href="../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
         <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
           Education
@@ -97,7 +98,7 @@
             </svg>
           </div>
           <div>
-            <h1>Historical Typhoon Data</h1>
+            <h1>Historical Data</h1>
             <p>
               Explore past tropical cyclones that affected Camarines Norte
               (2010–2020).
@@ -273,9 +274,18 @@
 
           <div class="table-card" data-reveal>
             <div class="table-head">
-              <h2 class="table-title" id="tableTitle">
-                List of Historical Cyclones (2010–2020)
-              </h2>
+              <div>
+                <h2 class="table-title" id="tableTitle">
+                  List of Historical Cyclones (2010–2020)
+                </h2>
+                <p class="table-hint">
+                  <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
+                    <path d="M2 12s3.5-6.5 10-6.5S22 12 22 12s-3.5 6.5-10 6.5S2 12 2 12z" stroke="currentColor" stroke-width="2" stroke-linejoin="round" />
+                    <circle cx="12" cy="12" r="2.6" stroke="currentColor" stroke-width="2" />
+                  </svg>
+                  Click any row to preview its PAGASA bulletins
+                </p>
+              </div>
               <div class="table-search">
                 <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
                   <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" />
@@ -303,7 +313,7 @@
                     <th>PAGASA Category</th>
                     <th>Inclusive Date</th>
                     <th>Max Wind (km/h)</th>
-                    <th>Rainfall (mm)</th>
+                    <th>Bulletins</th>
                   </tr>
                 </thead>
                 <tbody id="stormTableBody"></tbody>
@@ -377,7 +387,7 @@
       <h4>Explore</h4>
       <a href="../index.html">Home</a>
       <a href="../pages/historical-data.html">Historical Data</a>
-      <a href="../pages/compare-storms.html">Metrics</a>
+      <a href="../pages/analysis-comparison.html">Analysis Comparison</a>
       <a href="../pages/resources.html">Resources</a>
     </div>
     <div class="footer-col">
@@ -393,5 +403,98 @@
 
     <script src="../js/main.js" data-root="../"></script>
     <script src="../js/pages/historical-data.js?v=2" defer></script>
+
+    <!-- Bulletin preview modal -->
+    <div
+      class="bulletin-modal-backdrop"
+      id="bulletinModal"
+      hidden
+    >
+      <div
+        class="bulletin-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulletinModalTitle"
+      >
+        <div class="bulletin-modal-head">
+          <div class="bulletin-modal-titles">
+            <div class="bulletin-modal-text">
+              <h2 id="bulletinModalTitle">Wilma Bulletins</h2>
+              <p id="bulletinModalSubtitle">2025 Tropical Depression</p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="bulletin-close"
+            id="bulletinClose"
+            aria-label="Close bulletin viewer"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div id="bulletinListView">
+          <div class="bulletin-search" id="bulletinSearchWrap">
+            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
+              <circle cx="11" cy="11" r="6" stroke="currentColor" stroke-width="2" />
+              <path d="M20 20l-4-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+            </svg>
+            <input
+              type="search"
+              id="bulletinSearch"
+              placeholder="Search bulletins…"
+              aria-label="Search bulletins"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              id="bulletinSearchClear"
+              class="bulletin-search-clear"
+              aria-label="Clear search"
+              hidden
+            >
+              &times;
+            </button>
+          </div>
+          <div class="bulletin-list-bar">
+            <span class="bulletin-count" id="bulletinCount"></span>
+            <span class="bulletin-list-hint">Click to preview</span>
+          </div>
+          <ul class="bulletin-list" id="bulletinList"></ul>
+          <p class="bulletin-status" id="bulletinStatus" role="status"></p>
+        </div>
+
+        <div id="bulletinPreviewView" hidden>
+          <div class="bulletin-preview-top">
+            <button
+              type="button"
+              class="bulletin-back"
+              id="bulletinBackBtn"
+            >
+              &larr; Back to list
+            </button>
+            <p class="bulletin-preview-title" id="bulletinPreviewTitle"></p>
+          </div>
+          <iframe
+            id="bulletinPreviewFrame"
+            class="bulletin-preview-frame"
+            title="Bulletin PDF preview"
+          ></iframe>
+          <div class="bulletin-preview-actions">
+            <a
+              id="bulletinOpenNewTab"
+              class="bulletin-btn-secondary"
+              href="#"
+              target="_blank"
+              rel="noopener"
+              >Open in new tab</a
+            >
+            <a id="bulletinDownload" class="bulletin-btn-primary" href="#" download
+              >Download</a
+            >
+          </div>
+        </div>
+      </div>
+    </div>
   </body>
 </html>

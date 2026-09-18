@@ -229,7 +229,9 @@
 }
 
 /* ==========================================================================
-   Phase cards (before / during / after)
+   Phase cards (before / during / after) — journey waypoint system, no
+   color coding. Waypoint nodes + ghost numerals carry the art; the
+   before/during/after classes remain as hooks but carry no colors.
    ========================================================================== */
 .pt-phase-list {
   display: flex;
@@ -239,12 +241,34 @@
 }
 
 .pt-phase {
+  position: relative;
   display: flex;
   background: #fff;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
   overflow: hidden;
+}
+
+/* Ghost phase numeral watermark (from data-ghost on the article) */
+.pt-phase[data-ghost]::after {
+  content: attr(data-ghost);
+  position: absolute;
+  right: 10px;
+  top: -6px;
+  font-size: 92px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #eef4fc;
+  pointer-events: none;
+}
+
+@supports ((-webkit-text-stroke: 1px #dbe7f7)) {
+  .pt-phase[data-ghost]::after {
+    color: transparent;
+    -webkit-text-stroke: 1.5px #dbe7f7;
+  }
 }
 
 .pt-phase-badge {
@@ -254,10 +278,30 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   padding: 24px 16px;
-  color: #fff;
+  color: var(--text-dark);
+  background: transparent;
   text-align: center;
+}
+
+/* Waypoint node — white medallion with a blue phase icon */
+.pt-journey-node {
+  width: 56px;
+  height: 56px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #1d4ed8;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.18);
+}
+
+.pt-journey-node svg {
+  width: 24px;
+  height: 24px;
 }
 
 .pt-phase-label {
@@ -272,23 +316,19 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   opacity: 0.85;
-}
-
-.before .pt-phase-badge {
-  background: #10b981;
-}
-
-.during .pt-phase-badge {
-  background: #ea580c;
-}
-
-.after .pt-phase-badge {
-  background: var(--blue-600);
+  color: var(--text-muted);
 }
 
 .pt-phase-body {
+  position: relative;
   flex: 1;
   padding: 22px 24px;
+}
+
+/* Keep card text above the ghost numeral watermark */
+.pt-phase-body > * {
+  position: relative;
+  z-index: 1;
 }
 
 .pt-phase-body h3 {
@@ -335,18 +375,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-}
-
-.before .pt-phase-cols li::before {
-  background: #10b981;
-}
-
-.during .pt-phase-cols li::before {
-  background: #ea580c;
-}
-
-.after .pt-phase-cols li::before {
-  background: var(--blue-600);
+  background: #1d4ed8;
 }
 
 /* ==========================================================================
@@ -587,8 +616,25 @@
   .pt-phase-badge {
     width: 100%;
     flex-direction: row;
+    align-items: center;
     justify-content: flex-start;
     padding: 14px 20px;
+    gap: 12px;
+  }
+
+  .pt-journey-node {
+    width: 48px;
+    height: 48px;
+    border-width: 2.5px;
+  }
+
+  .pt-journey-node svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .pt-phase[data-ghost]::after {
+    font-size: 64px;
   }
 
   .pt-phase-body {
@@ -818,7 +864,7 @@
   transition-delay: 0s;
 }
 
-/* 2) Phase cards — lift + colored glow on hover, badge brightens */
+/* 2) Phase cards — lift on hover, waypoint node pops */
 .pt-phase {
   transition:
     transform var(--dur-med) var(--ease-out),
@@ -832,12 +878,12 @@
   box-shadow: var(--shadow-hover);
 }
 
-.pt-phase-badge {
-  transition: background var(--dur-med) var(--ease-out);
+.pt-journey-node {
+  transition: transform var(--dur-med) var(--ease-spring);
 }
 
-.pt-phase:hover .pt-phase-badge {
-  filter: brightness(1.06);
+.pt-phase:hover .pt-journey-node {
+  transform: scale(1.07);
 }
 
 /* 3) Principle icon pops on hover */
@@ -904,6 +950,7 @@
   .pt-tip,
   .pt-cta,
   .pt-phase-badge,
+  .pt-journey-node,
   .pt-principle-icon,
   .pt-tip-icon,
   .pt-btn,
@@ -919,8 +966,8 @@
     transform: none;
   }
 
-  .pt-phase:hover .pt-phase-badge {
-    filter: none;
+  .pt-phase:hover .pt-journey-node {
+    transform: none;
   }
 
   .pt-tip:hover .pt-tip-icon,

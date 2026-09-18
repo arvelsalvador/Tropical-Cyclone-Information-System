@@ -229,16 +229,33 @@
 }
 
 /* ==========================================================================
-   Decision cards (escalating urgency)
+   Decision cards — "evacuation journey" (no color coding; travel order
+   along the dashed route conveys escalation so nothing reads as a PAGASA
+   signal color). A dashed rail threads the waypoint nodes; ghost numerals
+   watermark each card body.
    ========================================================================== */
 .eg-decision-list {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 16px;
   margin-top: 20px;
 }
 
+/* Dashed journey route — echoes the hero art's home-to-shelter path */
+.eg-decision-list::before {
+  content: "";
+  position: absolute;
+  left: 99px;
+  top: 64px;
+  bottom: 64px;
+  border-left: 3px dashed #c7d8f9;
+  border-radius: 2px;
+  pointer-events: none;
+}
+
 .eg-decision {
+  position: relative;
   display: flex;
   background: #fff;
   border: 1px solid var(--border-light);
@@ -247,52 +264,82 @@
   overflow: hidden;
 }
 
+/* Ghost step numeral watermark (from data-ghost on the article) */
+.eg-decision[data-ghost]::after {
+  content: attr(data-ghost);
+  position: absolute;
+  right: 10px;
+  top: -6px;
+  font-size: 92px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #eef4fc;
+  pointer-events: none;
+}
+
+@supports ((-webkit-text-stroke: 1px #dbe7f7)) {
+  .eg-decision[data-ghost]::after {
+    color: transparent;
+    -webkit-text-stroke: 1.5px #dbe7f7;
+  }
+}
+
 .eg-decision-badge {
-  width: 168px;
+  width: 200px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   padding: 24px 16px;
-  color: #fff;
+  color: var(--text-dark);
+  background: transparent;
   text-align: center;
 }
 
-.eg-decision-label {
-  font-size: 15px;
-  font-weight: 800;
-  line-height: 1.3;
+/* Waypoint node — white medallion with a blue journey icon, sitting on
+   the dashed route. (Replaces the old .eg-decision-num step circles.) */
+.eg-journey-node {
+  width: 64px;
+  height: 64px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid #1d4ed8;
+  box-shadow: 0 6px 16px rgba(29, 78, 216, 0.18);
+}
+
+.eg-journey-node svg {
+  width: 28px;
+  height: 28px;
 }
 
 .eg-decision-scope {
-  font-size: 10.5px;
-  font-weight: 600;
+  font-size: 15px;
+  font-weight: 800;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  opacity: 0.85;
+  color: #0a2540;
 }
 
-.stay .eg-decision-badge {
-  background: #3b82f6;
-}
-
-.ready .eg-decision-badge {
-  background: #eab308;
-}
-
-.go .eg-decision-badge {
-  background: #dc2626;
-}
-
-.order .eg-decision-badge {
-  background: #0a2540;
-}
+/* Badge panels stay transparent — the journey nodes carry the art.
+   The stay/ready/go/order classes remain as hooks but carry no colors. */
 
 .eg-decision-body {
+  position: relative;
   flex: 1;
   padding: 22px 24px;
+}
+
+/* Keep card text above the ghost numeral watermark */
+.eg-decision-body > * {
+  position: relative;
+  z-index: 1;
 }
 
 .eg-decision-body h3 {
@@ -324,22 +371,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-}
-
-.stay .eg-decision-body li::before {
-  background: #3b82f6;
-}
-
-.ready .eg-decision-body li::before {
-  background: #eab308;
-}
-
-.go .eg-decision-body li::before {
-  background: #dc2626;
-}
-
-.order .eg-decision-body li::before {
-  background: #0a2540;
+  background: #1d4ed8;
 }
 
 /* ==========================================================================
@@ -708,13 +740,37 @@
   .eg-decision-badge {
     width: 100%;
     flex-direction: row;
+    align-items: center;
     justify-content: flex-start;
     text-align: left;
     padding: 14px 20px;
+    gap: 12px;
   }
 
+  /* Journey rail is a desktop composition — hide on stacked mobile */
+  .eg-decision-list::before {
+    display: none;
+  }
+
+  .eg-journey-node {
+    width: 48px;
+    height: 48px;
+    border-width: 2.5px;
+  }
+
+  .eg-journey-node svg {
+    width: 22px;
+    height: 22px;
+  }
+
+  /* Smaller signal tag on narrow rows so node + message + signal fit */
   .eg-decision-scope {
     margin-left: auto;
+    font-size: 12.5px;
+  }
+
+  .eg-decision[data-ghost]::after {
+    font-size: 64px;
   }
 
   .eg-decision-body {
@@ -774,7 +830,7 @@
   transition-delay: 0s;
 }
 
-/* 2) Decision cards — lift + colored glow on hover, badge icon pops */
+/* 2) Decision cards — lift on hover, waypoint node pops */
 .eg-decision {
   transition:
     transform var(--dur-med) var(--ease-out),
@@ -788,12 +844,12 @@
   box-shadow: var(--shadow-hover);
 }
 
-.eg-decision-badge {
-  transition: background var(--dur-med) var(--ease-out);
+.eg-journey-node {
+  transition: transform var(--dur-med) var(--ease-spring);
 }
 
-.eg-decision:hover .eg-decision-badge {
-  filter: brightness(1.06);
+.eg-decision:hover .eg-journey-node {
+  transform: scale(1.07);
 }
 
 /* 3) Principle icon pops on hover */
@@ -860,6 +916,7 @@
   .eg-reminder,
   .eg-cta,
   .eg-decision-badge,
+  .eg-journey-node,
   .eg-principle-icon,
   .eg-reminder-icon,
   .eg-btn,
@@ -875,8 +932,8 @@
     transform: none;
   }
 
-  .eg-decision:hover .eg-decision-badge {
-    filter: none;
+  .eg-decision:hover .eg-journey-node {
+    transform: none;
   }
 
   .eg-reminder:hover .eg-reminder-icon,

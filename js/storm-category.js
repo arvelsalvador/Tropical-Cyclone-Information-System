@@ -1,11 +1,12 @@
 // ===========================================================================
-// Shared storm-classification utility for the admin forms.
+// Shared storm-classification utility.
 //
-// Extracted from the inline script in admin/edit-storm.php so the Upcoming
-// Storm form (Max Wind -> Category auto-suggest) and the Historical Cyclone
-// form (Highest Strength -> Highest Category auto-select) share ONE copy of
-// the PAGASA wind-range thresholds. Future changes to the classification
-// only need to happen in this file.
+// Originally extracted from the old admin Upcoming Storm form so the Max
+// Wind -> Category auto-suggest and the Historical Cyclone form (Highest
+// Strength -> Highest Category auto-select) share ONE copy of the PAGASA
+// wind-range thresholds. It is now also used by the public Analysis
+// Comparison sandbox. Future changes to the classification only need to
+// happen in this file.
 //
 // Load this file BEFORE each form's inline <script> (both admin pages do).
 // Exposes:
@@ -21,7 +22,7 @@
   "use strict";
 
   // PAGASA wind ranges (km/h, max sustained wind) — the exact values the
-  // inline categoryForWind() in admin/edit-storm.php always used:
+  // original admin forms always used:
   //   below 61  -> unclassified (null)
   //   61 - 88   -> Tropical Depression
   //   89 - 117  -> Tropical Storm

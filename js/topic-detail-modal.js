@@ -5,7 +5,7 @@
 // The modal is driven entirely by a TopicModel (see js/topic-models.js), so
 // all five cards share this one component — new topics need no new code.
 //
-// Structure follows the existing analogue-details dialog on the Metrics
+// Structure follows the existing analogue-details dialog on the Analysis Comparison
 // page: fixed backdrop, rounded dialog, Escape/backdrop/X to close, body
 // scroll lock while open.
 //
@@ -34,11 +34,14 @@
     dialog: null, // .topic-modal__dialog   (rounded card)
     panel: null, // .topic-modal__panel    (header + scroll body)
     header: null, // .topic-modal__header   (sticky)
-    badge: null, // .topic-modal__badge    (circular icon)
+    badge: null, // .topic-modal__badge    (gradient icon)
     title: null, // .topic-modal__title
     tagline: null, // .topic-modal__tagline
     closeX: null, // .topic-modal__close    (X, top-right)
     body: null, // .topic-modal__body     (scrollable sections)
+    prevBtn: null, // .topic-modal__footer previous-topic button
+    nextBtn: null, // .topic-modal__footer next-topic button
+    count: null, // .topic-modal__footer "Topic X of N" label
     closeBtn: null, // .topic-modal__footer .topic-modal__close-btn
   };
 
@@ -69,6 +72,11 @@
       "    </header>" +
       '    <div class="topic-modal__body"></div>' +
       '    <footer class="topic-modal__footer">' +
+      '      <div class="topic-modal__pager">' +
+      '        <span class="topic-modal__count" aria-live="polite"></span>' +
+      '        <button type="button" class="topic-modal__page-btn" data-topic-modal-prev aria-label="Previous topic"><span aria-hidden="true">&lsaquo;</span> Prev</button>' +
+      '        <button type="button" class="topic-modal__page-btn" data-topic-modal-next aria-label="Next topic">Next <span aria-hidden="true">&rsaquo;</span></button>' +
+      "      </div>" +
       '      <button type="button" class="topic-modal__close-btn" data-topic-modal-close>Close</button>' +
       "    </footer>" +
       "  </div>" +
@@ -83,11 +91,23 @@
     el.tagline = el.root.querySelector(".topic-modal__tagline");
     el.closeX = el.root.querySelector(".topic-modal__close");
     el.body = el.root.querySelector(".topic-modal__body");
+    el.prevBtn = el.root.querySelector("[data-topic-modal-prev]");
+    el.nextBtn = el.root.querySelector("[data-topic-modal-next]");
+    el.count = el.root.querySelector(".topic-modal__count");
     el.closeBtn = el.root.querySelector(".topic-modal__close-btn");
 
     // Close on X, footer Close button, and backdrop click.
+    // Prev/Next have their own handler below and must not bubble to close.
     el.closeX.innerHTML = CLOSE_X_SVG;
     el.root.addEventListener("click", function (event) {
+      if (event.target.closest("[data-topic-modal-prev]")) {
+        goTo(-1);
+        return;
+      }
+      if (event.target.closest("[data-topic-modal-next]")) {
+        goTo(1);
+        return;
+      }
       if (event.target.closest("[data-topic-modal-close]")) close();
     });
 
@@ -130,10 +150,30 @@
     return html;
   }
 
+  function topicIndex(topic) {
+    var models = window.TOPIC_MODELS || [];
+    for (var i = 0; i < models.length; i++) {
+      if (models[i] === topic || models[i].id === (topic && topic.id)) return i;
+    }
+    return -1;
+  }
+
+  // Step to the previous/next topic in journey order, wrapping around
+  // (After the Storm → What is a Typhoon). Keeps the dialog open so the
+  // five topics read as one continuous lesson.
+  function goTo(offset) {
+    var models = window.TOPIC_MODELS || [];
+    if (!models.length || !currentTopic) return;
+    var next = (topicIndex(currentTopic) + offset + models.length) % models.length;
+    currentTopic = models[next];
+    render(currentTopic);
+    el.closeX.focus();
+  }
+
   function render(topic) {
     currentTopic = topic;
 
-    // Card-matching color theme: .topic-modal--sky / --green / etc.
+    // Per-topic badge theme matching its card (homepage feature-icon palette).
     el.root.className = "topic-modal topic-modal--" + (topic.theme || "sky");
 
     el.badge.innerHTML = topic.icon || "";
@@ -142,6 +182,13 @@
     el.body.innerHTML = renderBody(topic);
     el.body.scrollTop = 0;
     el.panel.scrollTop = 0;
+
+    var models = window.TOPIC_MODELS || [];
+    var at = topicIndex(topic);
+    if (el.count) {
+      el.count.textContent =
+        at >= 0 ? "Topic " + (at + 1) + " of " + models.length : "";
+    }
   }
 
   // ------------------------------------------------------------------

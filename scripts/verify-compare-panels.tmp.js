@@ -1,6 +1,6 @@
-// TEMP harness — real compare-storms.js (searchable storm pickers) vs live APIs.
+// TEMP harness — real analysis-comparison.js (searchable storm pickers) vs live APIs.
 const fs = require("fs");
-const FILE = "C:/xampp/htdocs/Weather/js/pages/compare-storms.js";
+const FILE = "C:/xampp/htdocs/Weather/js/pages/analysis-comparison.js";
 function makeEl(id) {
   const el = {
     id, textContent: "", className: "", disabled: false, style: {}, dataset: {},
@@ -24,6 +24,7 @@ function makeEl(id) {
     querySelector() { return makeEl("stub"); },
     addEventListener(t, f) { el._listeners[t] = f; },
     setAttribute() {}, focus() {}, scrollIntoView() {}, closest() { return null; },
+    reset() {},
     fire(t, e) { if (el._listeners[t]) el._listeners[t](e); },
   };
   Object.defineProperty(el, "innerHTML", { get: () => el._html, set(v) { el._html = v; if (v === "") el.children.length = 0; } });
@@ -36,7 +37,20 @@ function makeEl(id) {
   return el;
 }
 const els = new Map();
-global.window = { matchMedia: () => ({ matches: true }), addEventListener() {} };
+global.window = {
+  matchMedia: () => ({ matches: true }),
+  addEventListener() {},
+  // Stand-in for js/storm-category.js (not eval'd here).
+  getCategoryFromStrength: (w) => {
+    const n = Number(w);
+    if (isNaN(n) || n < 61) return null;
+    if (n <= 88) return "TD";
+    if (n <= 117) return "TS";
+    if (n <= 148) return "STS";
+    if (n <= 184) return "TY";
+    return "STY";
+  },
+};
 global.document = {
   readyState: "complete", activeElement: null, visibilityState: "visible",
   getElementById(id) { if (!els.has(id)) els.set(id, makeEl(id)); return els.get(id); },
@@ -52,11 +66,8 @@ const realFetch = global.fetch;
 const ABBR_CAT = { TD: "Tropical Depression", TS: "Tropical Storm", STS: "Severe Tropical Storm", TY: "Typhoon", STY: "Super Typhoon" };
 global.fetch = (u, o) => realFetch("http://localhost" + u, o);
 eval(fs.readFileSync(FILE, "utf8"));
-let HAS_UPCOMING = false;
-realFetch("http://localhost/Weather/api/get_upcoming_storm.php")
-  .then((r) => r.json())
-  .then((row) => { HAS_UPCOMING = !!(row && Object.keys(row).length); })
-  .catch(() => {});
+// Sandbox world: no admin upcoming-storm API anymore. The harness drives
+// the Step 1 form stubs instead (see sandbox checks below).
 
 // Find a live pair with identical max sustained winds AND identical PAGASA
 // category — the app's tie rule. Name construction mirrors mapRow().
@@ -111,20 +122,26 @@ const timer = setInterval(() => {
     // Idle state: the indicator light must have NO glow classes.
     check("idle -> no glow on indicator", !els.get("winnerBanner").hasClass("is-win") && !els.get("winnerBanner").hasClass("is-tie"), els.get("winnerBanner")._classes.join(","));
 
-    // Pick storm A only -> compares against the upcoming storm (or asks
-    // for a second storm when the admin currently has none set).
+    // Sandbox: an empty submit is rejected with a visible error...
+    els.get("customStormForm").fire("submit", { preventDefault() {} });
+    check("empty sandbox submit rejected", els.get("customStormError").hidden === false, String(els.get("customStormError").hidden));
+    check("rejected submit applies nothing", els.get("upcomingStormSection").hasClass("upcoming-hidden") && !els.get("upcomingStormSection").hasClass("sandbox-mode"));
+
+    // ...while a filled, valid form applies on submit.
+    els.get("customStormName").value = "TY ODIN";
+    els.get("customStormWind").value = "185";
+    els.get("customStormWind").fire("input");
+    els.get("customStormForm").fire("submit", { preventDefault() {} });
+    check("valid submit applies upcoming storm profile", els.get("upcomingStormSection").hasClass("sandbox-mode") && !els.get("upcomingStormSection").hasClass("upcoming-hidden"));
+    check("submit suggests Super Typhoon (185+)", els.get("customStormCategory").value === "Super Typhoon", els.get("customStormCategory").value);
+    check("submit clears the error", els.get("customStormError").hidden === true);
+
+    // Pick storm A only -> compares against the applied upcoming storm.
     selA.value = "Nando (Ragasa)"; selA.fire("change");
     els.get("compareNowBtn").fire("click");
     check("col A header shows storm", els.get("colAHead").innerHTML.indexOf("Nando (Ragasa)") !== -1, els.get("colAHead").innerHTML);
-    let hasUpcoming = HAS_UPCOMING;
-    if (hasUpcoming) {
-      check("col B defaults to upcoming", els.get("colBHead").innerHTML.indexOf("Upcoming") !== -1, els.get("colBHead").innerHTML);
-      check("table rendered", els.get("resultsTableBody").innerHTML.indexOf("Maximum Sustained Winds") !== -1);
-    } else {
-      check("no upcoming -> col B empty", els.get("colBHead").textContent === "\u2014", els.get("colBHead").textContent);
-      check("no upcoming -> asks for second storm", els.get("resultsTableBody").innerHTML.indexOf("No active upcoming storm") !== -1, els.get("resultsTableBody").innerHTML);
-      check("no upcoming -> guidance table", els.get("resultsTableBody").innerHTML.indexOf("empty-state") !== -1);
-    }
+    check("col B defaults to upcoming storm", els.get("colBHead").innerHTML.indexOf("Upcoming storm") !== -1, els.get("colBHead").innerHTML);
+    check("table rendered", els.get("resultsTableBody").innerHTML.indexOf("Maximum Sustained Winds") !== -1);
 
     // Pick storm B too -> A vs B comparison.
     selB.value = "Betty (Mawar)"; selB.fire("change");
@@ -157,12 +174,45 @@ const timer = setInterval(() => {
     }
 
     // Reset clears both dropdowns and the results, and returns the
-    // indicator to the dim idle state (no glow).
+    // indicator to the dim idle state (no glow). It also clears the
+    // sandbox, so a fresh A-only compare afterwards has no upcoming storm.
     els.get("resetBtn").fire("click");
     check("reset clears dropdown A", selA._value === "", String(selA._value));
     check("reset clears dropdown B", selB._value === "", String(selB._value));
     check("reset restores guidance empty table", els.get("resultsTableBody").innerHTML.indexOf("empty-state") !== -1);
     check("reset -> indicator back to idle (no glow)", !els.get("winnerBanner").hasClass("is-win") && !els.get("winnerBanner").hasClass("is-tie"), els.get("winnerBanner")._classes.join(","));
+    selA.value = "Nando (Ragasa)"; selA.fire("change");
+    els.get("compareNowBtn").fire("click");
+    check("after reset col B empty (sandbox cleared)", els.get("colBHead").textContent === "\u2014", els.get("colBHead").textContent);
+    check("after reset asks for upcoming storm", els.get("resultsTableBody").innerHTML.indexOf("No upcoming storm has been applied yet") !== -1);
+
+    // Category explainer follows the wind input (name left empty so
+    // nothing auto-applies yet).
+    els.get("customStormWind").value = "200";
+    els.get("customStormWind").fire("input");
+    check("wind input suggests category", els.get("customStormCategory").value === "Super Typhoon", els.get("customStormCategory").value);
+    check("category explainer shows", els.get("customStormCategoryInfo").hidden === false && els.get("customStormCategoryInfo").innerHTML.indexOf("Super Typhoon") !== -1);
+
+    // Valid typing updates guidance only; the Apply button is required.
+    els.get("customStormName").value = "AUTO STORM";
+    els.get("customStormWind").value = "150";
+    els.get("customStormWind").fire("input");
+    check("typing does not apply upcoming storm", !els.get("upcomingStormSection").hasClass("sandbox-mode"));
+    setTimeout(() => {
+      try {
+        check("typing remains unapplied", !els.get("upcomingStormSection").hasClass("sandbox-mode"));
+        els.get("customStormForm").fire("submit", { preventDefault() {} });
+        check("Apply button applies upcoming storm", els.get("upcomingStormSection").hasClass("sandbox-mode"));
+        const kids = els.get("analogueList").children;
+        check("Apply rendered analogues", kids.length > 0 && kids[0].className === "match-group", String(kids.length));
+      } catch (err) {
+        failures++;
+        console.log("FAIL harness error: " + err.stack);
+      }
+      console.log(failures === 0 ? "--- ALL CHECKS PASSED ---" : "--- " + failures + " CHECK(S) FAILED ---");
+      setTimeout(() => process.exit(failures === 0 ? 0 : 1), 100);
+    }, 800);
+    return;
   } catch (err) {
     failures++;
     console.log("FAIL harness error: " + err.stack);

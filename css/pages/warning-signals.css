@@ -409,35 +409,6 @@
   color: var(--text-dark);
 }
 
-.ws-dot {
-  display: inline-block;
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  margin-right: 8px;
-  vertical-align: middle;
-}
-
-.dot-1 {
-  background: #3b82f6;
-}
-
-.dot-2 {
-  background: #eab308;
-}
-
-.dot-3 {
-  background: #ea580c;
-}
-
-.dot-4 {
-  background: #dc2626;
-}
-
-.dot-5 {
-  background: #7f1d1d;
-}
-
 .ws-table-note {
   font-size: 12px;
   line-height: 1.55;

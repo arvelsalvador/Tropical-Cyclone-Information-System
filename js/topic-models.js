@@ -8,9 +8,9 @@
 //   id:       string   — card ↔ topic link (data-topic-id)
 //   title:    string   — card heading + modal header
 //   tagline:  string   — one-line summary shown under the modal title
-//   icon:     string   — SVG markup (white strokes/fills; the badge is colored)
-//   theme:    string   — accent key shared with CSS (.topic-modal--<theme>)
-//                        sky | green | orange | purple | teal
+//   icon:     string   — SVG markup (white glyphs on the gradient badge)
+//   theme:    string   — accent key shared with CSS (.topic-modal--sky, etc.),
+//                        mirroring the homepage feature-icon palette.
 //   sections: [{ heading: string|null, paragraphs: string[] }, ...]
 // }
 
@@ -60,7 +60,7 @@ window.TOPIC_MODELS = [
     icon:
       '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
       '<path d="M12 3.5L4 10v10.5h5.5V15a2.5 2.5 0 015 0v5.5H20V10L12 3.5z" fill="#fff" />' +
-      '<path d="M12 10.8c-.9 0-1.6.7-1.6 1.6 0 1.1 1.6 2.6 1.6 2.6s1.6-1.5 1.6-2.6c0-.9-.7-1.6-1.6-1.6z" fill="#22c55e" />' +
+      '<path d="M12 10.8c-.9 0-1.6.7-1.6 1.6 0 1.1 1.6 2.6 1.6 2.6s1.6-1.5 1.6-2.6c0-.9-.7-1.6-1.6-1.6z" fill="#fff" />' +
       "</svg>",
     sections: [
       {
@@ -104,8 +104,8 @@ window.TOPIC_MODELS = [
       '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
       '<rect x="5" y="4.5" width="14" height="17" rx="2.2" fill="#fff" />' +
       '<rect x="9" y="3" width="6" height="3.2" rx="1.4" fill="#fff" />' +
-      '<path d="M9 12.2l1.8 1.8L15 10" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
-      '<line x1="8.2" y1="17" x2="15.8" y2="17" stroke="#f97316" stroke-width="1.8" stroke-linecap="round" />' +
+'<path d="M9 12.2l1.8 1.8L15 10" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
+       '<line x1="8.2" y1="17" x2="15.8" y2="17" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />' +
       "</svg>",
     sections: [
       {
@@ -148,7 +148,7 @@ window.TOPIC_MODELS = [
     icon:
       '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
       '<path d="M12 3l7 2.6v6c0 5-3 8.4-7 9.4-4-1-7-4.4-7-9.4v-6L12 3z" fill="#fff" />' +
-      '<path d="M9 12l2.2 2.2L15.5 9.6" stroke="#8b5cf6" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />' +
+      '<path d="M9 12l2.2 2.2L15.5 9.6" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" />' +
       "</svg>",
     sections: [
       {
@@ -191,7 +191,7 @@ window.TOPIC_MODELS = [
     icon:
       '<svg viewBox="0 0 24 24" fill="none" aria-hidden="true">' +
       '<path d="M12 3.5L4 10v10.5h5.5V15a2.5 2.5 0 015 0v5.5H20V10L12 3.5z" fill="#fff" />' +
-      '<path d="M12 11.2c-1.5-1.6-3.8-.5-3.8 1.3 0 1.6 2 3 3.8 4.3 1.8-1.3 3.8-2.7 3.8-4.3 0-1.8-2.3-2.9-3.8-1.3z" fill="#14b8a6" />' +
+      '<path d="M12 11.2c-1.5-1.6-3.8-.5-3.8 1.3 0 1.6 2 3 3.8 4.3 1.8-1.3 3.8-2.7 3.8-4.3 0-1.8-2.3-2.9-3.8-1.3z" fill="#fff" />' +
       "</svg>",
     sections: [
       {

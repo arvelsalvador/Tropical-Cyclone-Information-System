@@ -1,8 +1,8 @@
 <?php
 // ===========================================================================
 // Admin header strip — the top navigation for every logged-in admin page.
-// Carries the brand, the admin-only tabs (Dashboard, Upcoming Storm,
-// Historical Cyclones), and the session controls. The public site nav is
+// Carries the brand, the admin-only tabs (Dashboard, Historical Cyclones),
+// and the session controls. The public site nav is
 // intentionally not shown on admin pages; the footer links back to the
 // public pages.
 // Pages include this right after auth.php:
@@ -36,7 +36,6 @@ function nav_is_active($section, $target) {
     </a>
     <nav class="admin-tabs-nav">
       <a href="dashboard.php" class="admin-tab<?php echo nav_is_active($nav_section, 'dashboard.php'); ?>">Dashboard</a>
-      <a href="edit-storm.php" class="admin-tab<?php echo nav_is_active($nav_section, 'edit-storm.php'); ?>">Upcoming Storm</a>
       <a href="cyclones.php" class="admin-tab<?php echo nav_is_active($nav_section, 'cyclones'); ?>">Historical Cyclones</a>
     </nav>
     <div class="admin-tabs-session">

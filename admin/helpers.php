@@ -2,12 +2,12 @@
 // ===========================================================================
 // Shared helpers for the admin portal pages.
 //
-// Extracted from edit-storm.php so every admin form page (upcoming storm,
-// historical cyclones, ...) reuses the same connection and the same
+// Extracted from the old upcoming-storm admin form so every admin form
+// page (historical cyclones, ...) reuses the same connection and the same
 // validation-display code instead of duplicating it.
 // ===========================================================================
 
-// Opens the cyclone_db connection in the exact way edit-storm.php always did:
+// Opens the cyclone_db connection: the connection itself is non-throwing
 // the connection itself is non-throwing (check $conn->connect_error), while
 // statements executed after it report errors strictly.
 function db_connect() {

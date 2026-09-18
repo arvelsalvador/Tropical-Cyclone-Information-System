@@ -4,7 +4,7 @@ require 'helpers.php';
 
 // Historical Cyclones — add / edit form (no ?id= = add, ?id=N = edit).
 // PHP is the validation authority; the client script re-checks the same rules.
-// Data written here feeds the public Historical Data and Metrics pages.
+// Data written here feeds the public Historical Data and Analysis Comparison pages.
 
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0; // >0 = edit mode
 
@@ -91,7 +91,7 @@ if ($conn->connect_error) {
             }
 
             // Field list + types + values in ONE place so the bind string can
-            // never drift out of sync (same pattern as edit-storm.php).
+            // never drift out of sync.
             $fields = [
                 'local_name'           => ['s', $local_name],
                 'international_name'   => ['s', $international_name],
@@ -183,9 +183,9 @@ if ($db_error === '') {
         <h1 class="admin-hero-title"><?php echo $id > 0 ? 'Edit Historical Cyclone' : 'Add Historical Cyclone'; ?></h1>
         <p class="admin-hero-sub">
           <?php if ($id > 0): ?>
-            Updating <strong><?php echo htmlspecialchars($current['local_name']); ?> (<?php echo htmlspecialchars((string) $current['year']); ?>)</strong> — this record appears on the public Historical Data and Metrics pages.
+            Updating <strong><?php echo htmlspecialchars($current['local_name']); ?> (<?php echo htmlspecialchars((string) $current['year']); ?>)</strong> — this record appears on the public Historical Data and Analysis Comparison pages.
           <?php else: ?>
-            New records appear immediately on the public Historical Data and Metrics pages.
+            New records appear immediately on the public Historical Data and Analysis Comparison pages.
           <?php endif; ?>
         </p>
       </div>

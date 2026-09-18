@@ -13,6 +13,7 @@
   // Config
   // ---------------------------------------------------------------------
   const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
+  const BULLETIN_API_URL = "/Weather/api/get_bulletins.php?cyclone_id=";
 
   const CATEGORIES = {
     "Super Typhoon": { color: "#7c3aed", bg: "#ede9fe" },
@@ -96,6 +97,35 @@
     return startText + " \u2013 " + endText;
   }
 
+  function toTitleCase(s) {
+    return String(s)
+      .toLowerCase()
+      .replace(/(?:^|[\s-(/])\S/g, (c) => c.toUpperCase());
+  }
+
+  // Display name: title-case the local part, keep the international
+  // part exactly as stored, e.g. "UWAN (Fung-wong)" -> "Uwan (Fung-wong)".
+  function stormDisplayName(storm) {
+    const raw = storm.name || "";
+    const paren = raw.indexOf(" (");
+    if (paren === -1) return toTitleCase(raw);
+    return toTitleCase(raw.slice(0, paren)) + raw.slice(paren);
+  }
+
+  // Full label with PAGASA category prefix, e.g. "Typhoon Uwan (Fung-wong)".
+  // Falls back to the bare display name when no category is recorded.
+  function stormLabel(storm) {
+    const display = stormDisplayName(storm);
+    if (!storm.category || storm.category === "—") return display;
+    return storm.category + " " + display;
+  }
+
+  // Header subtitle: "2025 Tropical Depression" (year + category).
+  function stormSubtitleDetails(storm) {
+    if (!storm.category || storm.category === "—") return String(storm.year);
+    return storm.year + " " + storm.category;
+  }
+
   function mapRow(row) {
     const name = row.international_name
       ? row.local_name + " (" + row.international_name + ")"
@@ -110,6 +140,7 @@
     }
 
     return {
+      id: row.id != null ? parseInt(row.id, 10) : null,
       name: name,
       year: parseInt(row.year, 10),
       category: category,
@@ -362,6 +393,18 @@
 
       const row = document.createElement("tr");
       row.style.animationDelay = rowIndex * 45 + "ms";
+      row.classList.add("is-clickable");
+      row.tabIndex = 0;
+      if (storm.id != null) row.dataset.cycloneId = storm.id;
+      row.setAttribute("title", "View bulletins for " + stormLabel(storm));
+      row.setAttribute("aria-label", "View bulletins for " + stormLabel(storm));
+      row.addEventListener("click", () => openBulletinModal(storm, row));
+      row.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          openBulletinModal(storm, row);
+        }
+      });
 
       const nameCell = document.createElement("td");
       const nameWrap = document.createElement("span");
@@ -405,6 +448,20 @@
       badge.style.color = meta.color;
       badgeTd.appendChild(badge);
 
+      // Bulletins indicator cell (presentational — the whole row opens the modal)
+      const bulletinTd = document.createElement("td");
+      bulletinTd.className = "bulletin-cell";
+      const action = document.createElement("span");
+      action.className = "bulletin-cell-action";
+      action.textContent = "View PDFs ";
+      const chevron = document.createElement("span");
+      chevron.className = "bulletin-cell-chevron";
+      chevron.textContent = "›";
+      chevron.setAttribute("aria-hidden", "true");
+      action.appendChild(chevron);
+      bulletinTd.appendChild(action);
+      row.appendChild(bulletinTd);
+
       tbody.appendChild(row);
     });
 
@@ -442,6 +499,324 @@
       });
       pageNumbers.appendChild(pageBtn);
     }
+  }
+
+  // ---------------------------------------------------------------------
+  // Bulletin modal: list view + in-modal PDF preview
+  // ---------------------------------------------------------------------
+  const bulletinModal = document.getElementById("bulletinModal");
+  const bulletinModalTitle = document.getElementById("bulletinModalTitle");
+  const bulletinModalSubtitle = document.getElementById("bulletinModalSubtitle");
+  const bulletinList = document.getElementById("bulletinList");
+  const bulletinStatus = document.getElementById("bulletinStatus");
+  const bulletinListView = document.getElementById("bulletinListView");
+  const bulletinPreviewView = document.getElementById("bulletinPreviewView");
+  const bulletinPreviewFrame = document.getElementById("bulletinPreviewFrame");
+  const bulletinPreviewTitle = document.getElementById("bulletinPreviewTitle");
+  const bulletinOpenNewTab = document.getElementById("bulletinOpenNewTab");
+  const bulletinDownload = document.getElementById("bulletinDownload");
+  const bulletinCloseBtn = document.getElementById("bulletinClose");
+  const bulletinBackBtn = document.getElementById("bulletinBackBtn");
+  const bulletinCount = document.getElementById("bulletinCount");
+  const bulletinSearch = document.getElementById("bulletinSearch");
+  const bulletinSearchClear = document.getElementById("bulletinSearchClear");
+  const bulletinSearchWrap = document.getElementById("bulletinSearchWrap");
+
+  let lastFocusedRow = null;
+  let currentBulletins = [];
+  let currentStormName = "";
+  let currentStormLabel = "";
+  let currentStormCategory = "";
+  let bulletinQuery = "";
+
+  const bulletinFileSvg =
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M6 1.8h7.5L19 7.3V22H6V1.8z" fill="#fff" stroke="#D7DEE8" stroke-width="1.2" stroke-linejoin="round"/>' +
+    '<path d="M13.5 1.8v5.5H19" fill="#E9EDF3" stroke="#D7DEE8" stroke-width="1.2" stroke-linejoin="round"/>' +
+    '<rect x="4" y="12.5" width="16" height="6.4" rx="1.4" fill="#E2574C"/>' +
+    '<text x="12" y="17.2" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="4" font-weight="800" fill="#fff" letter-spacing="0.5">PDF</text>' +
+    '<path d="M8.2 5.6h5M8.2 8h5" stroke="#E2E8F0" stroke-width="1.3" stroke-linecap="round"/>' +
+    "</svg>";
+
+  function renderBulletinSkeletons(count) {
+    bulletinList.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const li = document.createElement("li");
+      li.className = "bulletin-skeleton";
+      li.setAttribute("aria-hidden", "true");
+      li.innerHTML =
+        '<span class="sk-icon"></span><span class="sk-lines"></span><span class="sk-btn"></span>';
+      bulletinList.appendChild(li);
+    }
+  }
+
+  function showBulletinListView() {
+    bulletinPreviewView.hidden = true;
+    bulletinListView.hidden = false;
+    if (bulletinSearchWrap) bulletinSearchWrap.hidden = false;
+    // Stop the PDF load when going back to the list.
+    bulletinPreviewFrame.removeAttribute("src");
+  }
+
+  function setBulletinSearchEnabled(enabled) {
+    if (bulletinSearch) bulletinSearch.disabled = !enabled;
+    if (!enabled && bulletinSearchClear) bulletinSearchClear.hidden = true;
+  }
+
+  function showBulletinPreview(bulletin, cycloneName) {
+    bulletinPreviewTitle.textContent =
+      (currentStormLabel || cycloneName) +
+      " — Bulletin " +
+      bulletin.bulletin_number;
+    bulletinPreviewFrame.src = bulletin.r2_url;
+    bulletinOpenNewTab.href = bulletin.r2_url;
+    bulletinDownload.href = bulletin.r2_url;
+    bulletinDownload.setAttribute(
+      "download",
+      "Bulletin-" + bulletin.bulletin_number + ".pdf"
+    );
+    bulletinListView.hidden = true;
+    bulletinPreviewView.hidden = false;
+    if (bulletinSearchWrap) bulletinSearchWrap.hidden = true;
+    if (document.activeElement && bulletinSearchWrap &&
+        bulletinSearchWrap.contains(document.activeElement)) {
+      if (bulletinBackBtn) bulletinBackBtn.focus();
+    }
+  }
+
+  function closeBulletinModal() {
+    if (!bulletinModal || bulletinModal.hidden) return;
+    bulletinModal.hidden = true;
+    bulletinModal.classList.remove("is-open");
+    bulletinPreviewFrame.removeAttribute("src");
+    document.body.style.overflow = "";
+    resetBulletinSearch();
+    currentBulletins = [];
+    currentStormName = "";
+    currentStormLabel = "";
+    currentStormCategory = "";
+    bulletinQuery = "";
+    if (lastFocusedRow && document.contains(lastFocusedRow)) {
+      lastFocusedRow.focus();
+    }
+    lastFocusedRow = null;
+  }
+
+  function bulletinMatchesQuery(b, query) {
+    const q = query.trim().toLowerCase();
+    if (!q) return true;
+    const num = String(b.bulletin_number);
+    const haystacks = [
+      num,
+      "bulletin " + num,
+      "#" + num,
+      ("bulletin " + num + " " + currentStormName).toLowerCase(),
+      currentStormName.toLowerCase(),
+      currentStormLabel.toLowerCase(),
+      currentStormCategory.toLowerCase(),
+    ];
+    return haystacks.some((h) => h.indexOf(q) !== -1);
+  }
+
+  function updateBulletinCount(filtered) {
+    const total = currentBulletins.length;
+    const totalLabel = total + (total === 1 ? " bulletin" : " bulletins");
+    if (bulletinCount) {
+      bulletinCount.textContent =
+        bulletinQuery && filtered.length !== total
+          ? filtered.length + " of " + totalLabel
+          : totalLabel;
+    }
+    return totalLabel;
+  }
+
+  function renderBulletinItems(list) {
+    bulletinList.innerHTML = "";
+    if (list.length === 0) {
+      if (currentBulletins.length > 0) {
+        bulletinStatus.textContent = "No bulletins match your search.";
+      }
+      return;
+    }
+    bulletinStatus.textContent = "";
+    list.forEach((b, index) => {
+      const li = document.createElement("li");
+      li.style.animationDelay = Math.min(index * 30, 300) + "ms";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bulletin-item";
+      btn.setAttribute(
+        "aria-label",
+        "Preview Bulletin " + b.bulletin_number + " for " + currentStormName
+      );
+
+      const icon = document.createElement("span");
+      icon.className = "bulletin-item-icon";
+      icon.innerHTML = bulletinFileSvg;
+
+      const text = document.createElement("span");
+      text.className = "bulletin-item-text";
+      const title = document.createElement("span");
+      title.className = "bulletin-item-title";
+      title.textContent = "Bulletin " + b.bulletin_number;
+      const sub = document.createElement("span");
+      sub.className = "bulletin-item-sub";
+      sub.textContent = "PDF · Click to preview";
+      text.appendChild(title);
+      text.appendChild(sub);
+
+      const previewPill = document.createElement("span");
+      previewPill.className = "bulletin-item-preview";
+      previewPill.textContent = "Preview";
+
+      const openBtn = document.createElement("span");
+      openBtn.className = "bulletin-item-open";
+      openBtn.setAttribute("role", "button");
+      openBtn.setAttribute("tabindex", "0");
+      openBtn.setAttribute(
+        "aria-label",
+        "Open Bulletin " + b.bulletin_number + " in new tab"
+      );
+      openBtn.setAttribute("title", "Open in new tab");
+      openBtn.textContent = "↗";
+      const openInNewTab = (e) => {
+        e.stopPropagation();
+        window.open(b.r2_url, "_blank", "noopener");
+      };
+      openBtn.addEventListener("click", openInNewTab);
+      openBtn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          e.stopPropagation();
+          window.open(b.r2_url, "_blank", "noopener");
+        }
+      });
+
+      const chevron = document.createElement("span");
+      chevron.className = "bulletin-item-chevron";
+      chevron.textContent = "›";
+      chevron.setAttribute("aria-hidden", "true");
+
+      btn.appendChild(icon);
+      btn.appendChild(text);
+      btn.appendChild(previewPill);
+      btn.appendChild(openBtn);
+      btn.appendChild(chevron);
+      btn.addEventListener("click", () =>
+        showBulletinPreview(b, currentStormName)
+      );
+      li.appendChild(btn);
+      bulletinList.appendChild(li);
+    });
+  }
+
+  function applyBulletinFilter() {
+    const filtered = currentBulletins.filter((b) =>
+      bulletinMatchesQuery(b, bulletinQuery)
+    );
+    renderBulletinItems(filtered);
+    updateBulletinCount(filtered);
+  }
+
+  function resetBulletinSearch() {
+    bulletinQuery = "";
+    if (bulletinSearch) bulletinSearch.value = "";
+    if (bulletinSearchClear) bulletinSearchClear.hidden = true;
+  }
+
+  async function openBulletinModal(storm, rowEl) {
+    if (!bulletinModal || storm.id == null) return;
+    lastFocusedRow = rowEl || null;
+    currentStormName = stormDisplayName(storm);
+    currentStormLabel = stormLabel(storm);
+    currentStormCategory = storm.category || "";
+    currentBulletins = [];
+    resetBulletinSearch();
+    setBulletinSearchEnabled(false);
+
+    bulletinModalTitle.textContent = currentStormName + " Bulletins";
+    bulletinModalSubtitle.textContent = stormSubtitleDetails(storm);
+    if (bulletinCount) bulletinCount.textContent = "";
+    renderBulletinSkeletons(6);
+    bulletinStatus.textContent = "Loading bulletins…";
+    bulletinStatus.classList.remove("is-error");
+    showBulletinListView();
+
+    bulletinModal.hidden = false;
+    requestAnimationFrame(() =>
+      bulletinModal.classList.add("is-open")
+    );
+    document.body.style.overflow = "hidden";
+    if (bulletinCloseBtn) bulletinCloseBtn.focus();
+
+    try {
+      const res = await fetch(
+        BULLETIN_API_URL + encodeURIComponent(storm.id)
+      );
+      if (!res.ok) throw new Error("Request failed: " + res.status);
+      const bulletins = await res.json();
+
+      bulletinList.innerHTML = "";
+      if (!Array.isArray(bulletins) || bulletins.length === 0) {
+        if (bulletinCount) bulletinCount.textContent = "0 bulletins";
+        bulletinStatus.textContent =
+          "No bulletins archived for this cyclone yet.";
+        return;
+      }
+
+      currentBulletins = bulletins;
+      const countLabel =
+        bulletins.length + (bulletins.length === 1 ? " bulletin" : " bulletins");
+      if (bulletinCount) bulletinCount.textContent = countLabel;
+      bulletinModalSubtitle.textContent = stormSubtitleDetails(storm);
+      setBulletinSearchEnabled(true);
+      applyBulletinFilter();
+    } catch (err) {
+      console.error("Failed to load bulletins:", err);
+      bulletinList.innerHTML = "";
+      if (bulletinCount) bulletinCount.textContent = "";
+      bulletinStatus.textContent =
+        "Could not load bulletins. Please try again.";
+      bulletinStatus.classList.add("is-error");
+    }
+  }
+
+  function wireBulletinModal() {
+    if (!bulletinModal) return;
+    if (bulletinCloseBtn)
+      bulletinCloseBtn.addEventListener("click", closeBulletinModal);
+    if (bulletinBackBtn)
+      bulletinBackBtn.addEventListener("click", showBulletinListView);
+    bulletinModal.addEventListener("click", (e) => {
+      if (e.target === bulletinModal) closeBulletinModal();
+    });
+    if (bulletinSearch) {
+      bulletinSearch.addEventListener("input", () => {
+        bulletinQuery = bulletinSearch.value;
+        if (bulletinSearchClear)
+          bulletinSearchClear.hidden = bulletinQuery.length === 0;
+        applyBulletinFilter();
+      });
+      bulletinSearch.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && bulletinSearch.value) {
+          e.preventDefault();
+          e.stopPropagation();
+          resetBulletinSearch();
+          applyBulletinFilter();
+          bulletinSearch.focus();
+        }
+      });
+    }
+    if (bulletinSearchClear) {
+      bulletinSearchClear.addEventListener("click", () => {
+        resetBulletinSearch();
+        applyBulletinFilter();
+        if (bulletinSearch) bulletinSearch.focus();
+      });
+    }
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") closeBulletinModal();
+    }, true);
   }
 
   // ---------------------------------------------------------------------
@@ -496,6 +871,7 @@
   async function init() {
     setupReveal();
     buildCategoryList();
+    wireBulletinModal();
 
     await loadData();
 

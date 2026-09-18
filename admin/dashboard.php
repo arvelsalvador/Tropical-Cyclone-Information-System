@@ -5,8 +5,7 @@ require 'helpers.php';
 // ===========================================================================
 // Admin Dashboard — post-login overview.
 //
-// Shows the historical cyclone stats at a glance, the current upcoming storm
-// profile (the single row edited via edit-storm.php), quick links to every
+// Shows the historical cyclone stats at a glance, quick links to every
 // admin section, and the most recently added cyclone records.
 // ===========================================================================
 
@@ -18,7 +17,6 @@ $latestYear = 0;
 $stormsInLatestYear = 0;
 $strongest = null;
 $recent = [];
-$storm = null;
 
 if ($conn->connect_error) {
     $db_error = 'Database connection failed. Please check that MySQL is running.';
@@ -52,9 +50,6 @@ if ($conn->connect_error) {
          LIMIT 5'
     )->fetch_all(MYSQLI_ASSOC);
 
-    // Current upcoming storm profile (single row, edited via edit-storm.php)
-    $storm = $conn->query('SELECT * FROM upcoming_storm ORDER BY id LIMIT 1')->fetch_assoc();
-
     $conn->close();
 }
 
@@ -64,15 +59,6 @@ $categoryLabels = [
     'STS' => 'Severe Tropical Storm',
     'TY'  => 'Typhoon',
     'STY' => 'Super Typhoon',
-];
-
-// Colored status pills for the upcoming-storm card (classes live in admin.css)
-$statusPillMap = [
-    'Approaching'      => 'pill--status-approaching',
-    'Getting Stronger' => 'pill--status-strengthening',
-    'Active'           => 'pill--status-active',
-    'Getting Weaker'   => 'pill--status-weakening',
-    'Gone'             => 'pill--status-gone',
 ];
 
 // "Opong (Bualoi)" style display name
@@ -187,87 +173,77 @@ if ($strongest) {
             <?php endif; ?>
           </div>
         </div>
-        <div class="stat-card" data-reveal style="--reveal-delay: 0.18s">
-          <div class="stat-icon stat-icon--green">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="12" cy="12" r="9" />
-              <path d="M12 8v5l3 2" />
+      </div>
+      <section class="admin-card dash-card upcoming-storm-session-card" data-upcoming-storm-card data-reveal style="--reveal-delay: 0.16s">
+        <div class="upcoming-dash-heading">
+          <div class="upcoming-dash-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
+              <circle cx="12" cy="12" r="2.6" fill="currentColor" />
+              <path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="currentColor" />
+              <path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="currentColor" />
             </svg>
           </div>
-          <div class="stat-label">Profile last updated</div>
-          <div class="stat-value stat-value--small">
-            <?php echo ($storm && !empty($storm['updated_at'])) ? htmlspecialchars(date('M j, Y, g:i A', strtotime($storm['updated_at']))) : '&mdash;'; ?>
+          <div class="upcoming-dash-titlewrap">
+            <h2 class="dash-card-title upcoming-dash-title">Upcoming Storm</h2>
+            <p class="upcoming-dash-sub">Live preview of the visitor session profile</p>
           </div>
-          <div class="stat-sub">Upcoming storm profile changes</div>
+          <span class="upcoming-dash-badge">Session preview</span>
         </div>
-      </div>
-      <!-- Current storm + quick actions -->
+        <div data-upcoming-empty class="upcoming-dash-empty">
+          <div class="upcoming-dash-empty-top">
+            <div class="upcoming-dash-empty-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M20 20l-3.5-3.5" />
+              </svg>
+            </div>
+            <div class="upcoming-dash-empty-copy">
+              <strong>No upcoming storm yet <span class="upcoming-dash-pill upcoming-dash-pill--empty">Empty</span></strong>
+              <span class="upcoming-dash-empty-text">This card mirrors what a visitor enters on Analysis Comparison. It lives in this browser tab only and clears on reload.</span>
+            </div>
+          </div>
+          <ol class="upcoming-dash-steps">
+            <li><span class="upcoming-dash-stepnum">1</span><div><b>Open Analysis Comparison</b><i>Use the button below</i></div></li>
+            <li><span class="upcoming-dash-stepnum">2</span><div><b>Enter name + wind</b><i>E.g. Odin, 160 km/h &rarr; Typhoon Odin</i></div></li>
+            <li><span class="upcoming-dash-stepnum">3</span><div><b>Apply storm</b><i>Preview appears here instantly</i></div></li>
+          </ol>
+        </div>
+        <div data-upcoming-details hidden class="upcoming-dash-details">
+          <div class="upcoming-dash-profile">
+            <div class="upcoming-dash-profile-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
+                <path d="M12 3v18M5 7l7-4 7 4M5 17l7 4 7-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </div>
+            <div class="upcoming-dash-profile-copy">
+              <span class="upcoming-dash-profile-label">Storm name</span>
+              <strong data-upcoming-value="name"></strong>
+            </div>
+            <span class="upcoming-dash-status"><span class="upcoming-dash-dot" aria-hidden="true"></span>Active &middot; Ready for comparison</span>
+          </div>
+          <div class="upcoming-dash-facts">
+            <div class="upcoming-dash-fact">
+              <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" /></svg>Max sustained wind</span>
+              <strong data-upcoming-value="wind"></strong>
+            </div>
+            <div class="upcoming-dash-fact">
+              <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 8.7l5.4-.8z" /></svg>PAGASA category</span>
+              <strong data-upcoming-value="category"></strong>
+            </div>
+          </div>
+          <p class="upcoming-dash-hint">Session-only preview &mdash; clears on reload. Run the full historical comparison on the Analysis page.</p>
+        </div>
+        <div class="upcoming-dash-actions">
+          <a class="upcoming-dash-cta" href="../pages/analysis-comparison.html">Open Analysis Comparison <span aria-hidden="true">&rarr;</span></a>
+          <a class="upcoming-dash-ghost" href="cyclones.php">Manage cyclones</a>
+        </div>
+      </section>
+      <!-- Quick actions -->
       <div class="dash-grid">
-        <section class="admin-card dash-card" data-reveal>
-          <h2 class="dash-card-title">Current Upcoming Storm</h2>
-          <?php if ($storm && empty($storm['is_active'])): ?>
-            <p class="dash-empty">The upcoming storm is set to <strong>NONE</strong> — the profile is hidden from the public site while no storm is active.</p>
-            <a href="edit-storm.php" class="admin-btn admin-btn--inline">Edit / Re-enable Storm</a>
-          <?php elseif ($storm): ?>
-            <div class="dash-storm-head">
-              <span class="dash-storm-name"><?php echo htmlspecialchars(($storm['storm_name'] !== null && $storm['storm_name'] !== '') ? $storm['storm_name'] : 'Unnamed storm'); ?></span>
-              <?php if (!empty($storm['status'])): ?><span class="pill <?php echo $statusPillMap[$storm['status']] ?? 'pill--muted'; ?>"><?php echo htmlspecialchars($storm['status']); ?></span><?php endif; ?>
-              <?php if (!empty($storm['category'])): ?><span class="pill pill--muted"><?php echo htmlspecialchars($storm['category']); ?></span><?php endif; ?>
-            </div>
-            <div class="dash-facts">
-              <?php
-              echo dash_fact('Max Wind', dash_value($storm['max_wind'], ' km/h'));
-
-              // Movement speed + direction combined into one tile
-              $movement = '&mdash;';
-              if (!empty($storm['movement_speed']) || !empty($storm['movement_direction'])) {
-                  $movement = trim(
-                      (!empty($storm['movement_speed']) ? htmlspecialchars($storm['movement_speed']) . ' km/h' : '')
-                      . ' ' . (!empty($storm['movement_direction']) ? htmlspecialchars($storm['movement_direction']) : '')
-                  );
-              }
-              echo dash_fact('Movement', $movement);
-
-              echo dash_fact('Central Pressure', dash_value($storm['central_pressure'], ' hPa'));
-              echo dash_fact('PAGASA Signal', dash_value($storm['pagasa_signal']));
-
-              $landfall = '&mdash;';
-              if (!empty($storm['forecast_landfall_date'])) {
-                  $landfall = htmlspecialchars(date('M j, Y', strtotime($storm['forecast_landfall_date'])));
-                  if (!empty($storm['forecast_landfall_note'])) {
-                      $landfall .= ' <span class="dash-fact-note">' . htmlspecialchars($storm['forecast_landfall_note']) . '</span>';
-                  }
-              }
-              echo dash_fact('Forecast Landfall', $landfall);
-
-              echo dash_fact('Location', dash_value($storm['location_note']));
-              ?>
-            </div>
-            <p class="dash-updated">Last saved: <?php echo htmlspecialchars(date('M j, Y, g:i A', strtotime($storm['updated_at']))); ?></p>
-            <a href="edit-storm.php" class="admin-btn admin-btn--inline">Edit Upcoming Storm</a>
-          <?php else: ?>
-            <p class="dash-empty">No upcoming storm has been saved yet. Set one up so the public home page shows the current profile.</p>
-            <a href="edit-storm.php" class="admin-btn admin-btn--inline">Set Up Upcoming Storm</a>
-          <?php endif; ?>
-        </section>
 
         <section class="admin-card dash-card" data-reveal style="--reveal-delay: 0.08s">
           <h2 class="dash-card-title">Quick Actions</h2>
           <div class="dash-actions">
-            <a class="dash-action" href="edit-storm.php">
-              <div class="dash-action-icon dash-action-icon--blue">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z" />
-                  <line x1="12" y1="9" x2="12" y2="13" />
-                  <line x1="12" y1="17" x2="12.01" y2="17" />
-                </svg>
-              </div>
-              <div class="dash-action-text">
-                <div class="dash-action-title">Upcoming Storm</div>
-                <div class="dash-action-desc">Update the live profile shown on the home page</div>
-              </div>
-              <span class="dash-action-arrow">&rarr;</span>
-            </a>
             <a class="dash-action" href="cyclones.php">
               <div class="dash-action-icon dash-action-icon--purple">
                 <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -278,7 +254,7 @@ if ($strongest) {
               </div>
               <div class="dash-action-text">
                 <div class="dash-action-title">Historical Cyclones</div>
-                <div class="dash-action-desc">Manage the records behind Historical Data &amp; Metrics</div>
+                <div class="dash-action-desc">Manage the records behind Historical Data &amp; Analysis Comparison</div>
               </div>
               <span class="dash-action-arrow">&rarr;</span>
             </a>
@@ -351,5 +327,6 @@ if ($strongest) {
   <?php require 'partials/site-footer.php'; ?>
 
   <script src="../js/main.js" data-root="../"></script>
+<script src="../js/upcoming-storm-state.js"></script>
 </body>
 </html>

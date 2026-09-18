@@ -1,5 +1,5 @@
 /* ==========================================================================
-   Compare Storms page — hero, storm profile, analogues, controls, results
+   Analysis Comparison page — hero, storm profile, analogues, controls, results
    ========================================================================== */
 .cs-hero {
   position: relative;
@@ -265,8 +265,8 @@
   border-bottom-color: var(--border-light);
 }
 
-/* None-mode empty state: JS toggles these when the admin sets the
-   upcoming storm to "NONE" (no active storm right now) */
+/* Sandbox empty state: JS toggles .upcoming-hidden on the Step 1 profile
+   vs. the empty prompt depending on whether a test storm is applied */
 .upcoming-hidden {
   display: none !important;
 }
@@ -289,6 +289,133 @@
   max-width: 420px;
   margin: 0 auto;
   line-height: 1.5;
+}
+
+/* ==========================================================================
+   Step 1 — Test storm sandbox form
+   ========================================================================== */
+.sandbox-form {
+  padding-bottom: 20px;
+  margin-bottom: 20px;
+  border-bottom: 1px solid var(--border-light);
+}
+
+.sandbox-lead {
+  font-size: 13.5px;
+  line-height: 1.6;
+  color: var(--text-body);
+  background: var(--blue-50);
+  border: 1px solid #c7d8f9;
+  border-radius: 10px;
+  padding: 10px 14px;
+  margin-bottom: 14px;
+}
+
+.sandbox-fields {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.sandbox-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sandbox-field > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.sandbox-field input,
+.sandbox-field select {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sandbox-field input:focus,
+.sandbox-field select:focus {
+  outline: none;
+  border-color: var(--blue-600);
+  box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+.sandbox-suggest {
+  font-size: 12.5px;
+  color: var(--blue-600);
+  margin-bottom: 10px;
+}
+
+.sandbox-category-info {
+  font-size: 12.5px;
+  line-height: 1.55;
+  color: var(--text-body);
+  background: var(--bg-soft);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 9px 13px;
+  margin-bottom: 12px;
+}
+
+.sandbox-category-info strong {
+  color: var(--text-dark);
+}
+
+.sandbox-error {
+  font-size: 13px;
+  font-weight: 600;
+  color: #b91c1c;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 9px 13px;
+  margin-bottom: 12px;
+}
+
+.sandbox-suggest[hidden],
+.sandbox-category-info[hidden],
+.sandbox-error[hidden] {
+  display: none;
+}
+
+.sandbox-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+/* Sandbox mode: a custom test storm only carries a name, wind and
+   category, so the admin-fed profile blocks (movement, signal, pressure,
+   landfall, location, advisory, PAGASA link) stay hidden. The survivors —
+   profile head + first stat — reflow into a compact summary. */
+#upcomingStormSection.sandbox-mode .profile-stats {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+#upcomingStormSection.sandbox-mode .profile-stat:nth-child(n + 2),
+#upcomingStormSection.sandbox-mode .profile-details-link,
+#upcomingStormSection.sandbox-mode .profile-advisory {
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .sandbox-fields {
+    grid-template-columns: 1fr;
+  }
 }
 
 .profile-storm-icon {
@@ -494,15 +621,75 @@
   padding: 16px 20px;
 }
 
-.match-group-title {
+.match-group-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #E5E9F0;
+}
+
+.match-group-titlerow {
   display: flex;
   align-items: center;
-  gap: 9px;
-  color: var(--text-dark);
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 12px;
-  text-transform: capitalize;
+  gap: 10px;
+}
+
+.match-group-title {
+  margin: 0;
+  color: var(--navy-900);
+  font-size: 17px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.match-group-trophy {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+  border-radius: 50%;
+  box-shadow: 0 3px 8px rgba(29, 78, 216, 0.35);
+}
+
+.match-group-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--blue-600);
+  background: #eef4ff;
+  border: 1px solid #d8e5fb;
+  border-radius: 999px;
+  padding: 6px 12px;
+  white-space: nowrap;
+}
+
+.match-group-badge svg {
+  flex-shrink: 0;
+}
+
+@media (max-width: 560px) {
+  .match-group-head {
+    flex-direction: column;
+  }
+
+  .match-group-badge {
+    white-space: normal;
+  }
+}
+
+@media (max-width: 560px) {
+  .match-group {
+    padding: 14px;
+  }
 }
 
 .analogue-row {
@@ -520,32 +707,90 @@
 
 .cs-top-grid .analogue-row {
   display: grid;
-  grid-template-columns: 28px minmax(0, 1fr) auto auto;
-  gap: 10px;
+  grid-template-columns: 34px minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "rank info sim action"
+    ". bar bar bar";
+  gap: 10px 16px;
+  align-items: center;
   background: transparent;
   border: 0;
   border-top: 1px solid var(--border-light);
   border-radius: 0;
-  padding: 12px 0 10px;
+  padding: 16px 20px;
+  min-height: 64px;
+  margin-bottom: 4px;
 }
 
-.cs-top-grid .analogue-row.best-match {
-  background: var(--bg-soft);
-  border-color: var(--border-light);
+.cs-top-grid .rank-number {
+  grid-area: rank;
 }
+
+.cs-top-grid .analogue-info {
+  grid-area: info;
+}
+
+.cs-top-grid .analogue-similarity {
+  grid-area: sim;
+  white-space: nowrap;
+}
+
+.cs-top-grid .analogue-row > .match-progress {
+  grid-area: bar;
+  margin-top: 0;
+  min-width: 120px;
+  width: 57%;
+}
+
+.cs-top-grid .analogue-view-btn,
+.cs-top-grid .analogue-action {
+  grid-area: action;
+}
+
+.cs-top-grid .analogue-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cs-top-grid .analogue-subrows {
+  display: flex;
+  flex-direction: column;
+}
+
 
 .rank-number {
-  width: 26px;
-  height: 26px;
-  border-radius: 50%;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: var(--bg-soft);
-  color: var(--text-dark);
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--blue-600);
+  border: 1px solid var(--blue-600);
+  color: #fff;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: 800;
   align-self: center;
+  justify-self: start;
+  flex-shrink: 0;
+  box-shadow: 0 2px 5px rgba(15, 30, 51, 0.22);
+}
+
+/* Rank circles: gold / steel-blue / bronze with white numerals */
+.rank-number.rank-1 {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+  border-color: #b45309;
+}
+
+.rank-number.rank-2 {
+  background: linear-gradient(135deg, #93a9d1, #5b7ec2);
+  border-color: #4a6aa5;
+}
+
+.rank-number.rank-3 {
+  background: linear-gradient(135deg, #d29a6b, #a06a3c);
+  border-color: #8a5a30;
 }
 
 .analogue-row {
@@ -564,9 +809,112 @@
   box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
 }
 
-.analogue-row.best-match {
-  background: var(--blue-50);
-  border-color: #c7d8f9;
+/* Rank progress fills: gold / blue / bronze */
+.cs-top-grid .analogue-row.best-match .match-progress span {
+  background: #eab308;
+}
+
+.cs-top-grid .analogue-row.rank-2 .match-progress span {
+  background: #5b7ec2;
+}
+
+.cs-top-grid .analogue-row.rank-3 .match-progress span {
+  background: #a06a3c;
+}
+
+/* Rank scores */
+.cs-top-grid .analogue-row.best-match .analogue-similarity strong {
+  color: #b45309;
+}
+
+.cs-top-grid .analogue-row.rank-2 .analogue-similarity strong {
+  color: #5b7ec2;
+}
+
+.cs-top-grid .analogue-row.rank-3 .analogue-similarity strong {
+  color: #a06a3c;
+}
+
+/* Overflow note when tied storms exceed the row cap ("+2 more at 100 km/h") */
+.analogue-more {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 10px 0 2px;
+}
+
+/* Collapsible tied-rank group: the header is a real <button>, so keyboard
+   toggling (Enter/Space) works with no extra code. */
+.analogue-row.analogue-group {
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  cursor: pointer;
+}
+
+.cs-top-grid .analogue-row.analogue-group {
+  grid-template-columns: 34px minmax(0, 1fr) auto auto;
+  grid-template-areas:
+    "rank info sim action"
+    ". bar bar bar";
+}
+
+.analogue-tied-pill {
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+  color: var(--blue-600);
+  background: #fff;
+  border: 1px solid #c7d8f9;
+  border-radius: 999px;
+  padding: 3px 9px;
+  align-self: center;
+}
+
+.best-match .analogue-tied-pill {
+  color: #92400e;
+  background: #fef9c3;
+  border-color: #fde68a;
+}
+
+.rank-2 .analogue-tied-pill {
+  color: #4a6aa5;
+  background: #eef2f8;
+  border-color: #b9c6dc;
+}
+
+.rank-3 .analogue-tied-pill {
+  color: #8a5a30;
+  background: #faf0e6;
+  border-color: #e7c9a9;
+}
+
+.analogue-chevron {
+  font-size: 20px;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--text-muted);
+  transition: transform var(--dur-med) var(--ease-out);
+}
+
+.analogue-group[aria-expanded="true"] .analogue-chevron {
+  transform: rotate(90deg);
+}
+
+.analogue-subrows[hidden] {
+  display: none;
+}
+
+.cs-top-grid .analogue-row.is-sub {
+  margin-left: 30px;
+}
+
+@media (max-width: 560px) {
+  .cs-top-grid .analogue-row.is-sub {
+    margin-left: 14px;
+  }
 }
 
 .rank-icon {
@@ -600,18 +948,10 @@
 }
 
 .cs-top-grid .analogue-name {
-  color: var(--text-dark);
-  font-size: 14px;
-}
-
-.analogue-date {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 1px;
-}
-
-.cs-top-grid .analogue-date {
-  color: var(--text-muted);
+  color: var(--navy-900);
+  font-size: 14.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
 }
 
 .analogue-similarity {
@@ -622,13 +962,14 @@
 .analogue-similarity strong {
   display: block;
   font-size: 19px;
-  font-weight: 800;
+  font-weight: 600;
   color: var(--blue-600);
 }
 
 .cs-top-grid .analogue-similarity strong {
   color: var(--blue-600);
-  font-size: 15px;
+  font-size: 16px;
+  font-weight: 800;
 }
 
 .match-progress {
@@ -645,11 +986,6 @@
   background: var(--blue-600);
   border-radius: inherit;
   transition: none !important;
-}
-
-.analogue-similarity small {
-  font-size: 11px;
-  color: var(--text-muted);
 }
 
 .analogue-view-btn {
@@ -671,7 +1007,7 @@
   background: #fff;
   border-color: var(--border-light);
   border-radius: 8px;
-  padding: 6px 11px;
+  padding: 5px 10px;
   align-self: center;
 }
 
@@ -1485,6 +1821,7 @@
   .profile-stat,
   .match-group,
   .analogue-row,
+  .analogue-chevron,
   .results-table tbody tr,
   .mode-btn,
   .results-tab,
@@ -1851,7 +2188,7 @@
 }
 
 /* ==========================================================================
-   Compare Storms Responsive
+   Analysis Comparison Responsive
    ========================================================================== */
 @media (max-width: 760px) {
   .cs-top-grid {

@@ -108,7 +108,7 @@
       .replace(/\/+$/, "");
     if (!currentPath) currentPath = "/";
 
-    // Main nav links (Home, Historical Data, Metrics, Resources, dropdown)
+    // Main nav links (Home, Historical Data, Analysis Comparison, Resources, dropdown)
     // plus the About/Contact icon links in .header-actions.
     document
       .querySelectorAll(".main-nav a[href], .header-actions a.icon-link[href]")

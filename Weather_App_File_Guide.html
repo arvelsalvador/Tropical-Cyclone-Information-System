@@ -65,8 +65,7 @@ Public pages show the information</div>
 <div class="group"><h3>admin/logout.php</h3><p>Clears the admin session, removes the session cookie, and sends the user back to the login page.</p></div>
 <div class="group"><h3>admin/forgot-password.php</h3><p>Starts password recovery. It creates a six-digit code, saves it in the database, and emails it using PHPMailer.</p></div>
 <div class="group"><h3>admin/reset-password.php</h3><p>Checks the six-digit code. If it is valid and not expired, it hashes and saves the new password.</p></div>
-<div class="group"><h3>admin/dashboard.php</h3><p>Shows an admin overview: total cyclones, latest year, strongest storm, recent records, and the current upcoming storm.</p></div>
-<div class="group"><h3>admin/edit-storm.php</h3><p>Lets the admin add or edit the current upcoming storm. The saved values later appear on the public pages.</p></div>
+<div class="group"><h3>admin/dashboard.php</h3><p>Shows an admin overview: total cyclones, latest year, strongest storm, and recent records.</p></div>
 <div class="group"><h3>admin/cyclones.php</h3><p>Shows historical cyclones in a searchable, filterable, paginated table.</p></div>
 <div class="group"><h3>admin/cyclone-form.php</h3><p>Adds a new cyclone or edits an existing one. It validates names, dates, wind speeds, categories, and warning signals before saving.</p></div>
 <div class="group"><h3>admin/cyclone-delete.php</h3><p>Deletes a historical cyclone. It only accepts a POST request, which helps prevent accidental deletion from a normal link.</p></div>
@@ -83,7 +82,7 @@ Public pages show the information</div>
 <h2>Public HTML pages</h2>
 <div class="columns">
 <div class="group"><h3>pages/about.html</h3><p>Explains the platform's purpose, audience, goals, and official data source.</p></div>
-<div class="group"><h3>pages/compare-storms.html</h3><p>Lets users compare an upcoming storm with historical cyclones or another selected storm.</p></div>
+<div class="group"><h3>pages/analysis-comparison.html</h3><p>Lets users compare an upcoming storm with historical cyclones or another selected storm.</p></div>
 <div class="group"><h3>pages/contact.html</h3><p>Shows contact information, emergency guidance, official sources, and a browser-only feedback form.</p></div>
 <div class="group"><h3>pages/historical-data.html</h3><p>Shows historical cyclone records with searching, filters, pagination, statistics, and CSV export.</p></div>
 <div class="group"><h3>pages/resources.html</h3><p>Lists emergency hotlines, government agencies, disaster resources, and useful external websites.</p></div>
@@ -102,11 +101,10 @@ Public pages show the information</div>
 <div class="columns">
 <div class="group"><h3>js/main.js</h3><p>Shared browser behavior: mobile menu, Education dropdown, announcement dismissal, header effects, active links, and reveal animations.</p></div>
 <div class="group"><h3>js/home-overview.js</h3><p>Loads cyclone data and calculates homepage totals, year range, average, strongest storm, busiest year, and newest cyclone.</p></div>
-<div class="group"><h3>js/upcoming-storm.js</h3><p>Loads the active storm from the API and places its values into the public page.</p></div>
-<div class="group"><h3>js/storm-category.js</h3><p>Converts sustained wind speed into a PAGASA-style category such as Tropical Depression, Typhoon, or Super Typhoon.</p></div>
+<div class="group"><h3>js/storm-category.js</h3><p>Converts sustained wind speed into a PAGASA-style category such as Tropical Depression, Typhoon, or Super Typhoon. Used by the admin cyclone form and the public comparison sandbox.</p></div>
 <div class="group"><h3>js/topic-models.js</h3><p>Stores the education topics, titles, icons, summaries, and detailed text.</p></div>
 <div class="group"><h3>js/topic-detail-modal.js</h3><p>Builds and controls the Education Hub popup. It supports closing, Escape, focus restoration, and keyboard navigation.</p></div>
-<div class="group"><h3>js/pages/compare-storms.js</h3><p>Loads storms, finds similar storms, renders storm selectors, compares values, and displays winner or tie results.</p></div>
+<div class="group"><h3>js/pages/analysis-comparison.js</h3><p>Loads storms, finds similar storms, renders storm selectors, compares values, and displays winner or tie results.</p></div>
 <div class="group"><h3>js/pages/historical-data.js</h3><p>Loads records, applies filters, creates the table and pagination, calculates statistics, and exports filtered CSV data.</p></div>
 <div class="group"><h3>js/pages/evacuation-guide.js</h3><p>Creates the evacuation checklist, saves checked items in the browser, updates progress, and supports reset controls.</p></div>
 <div class="group"><h3>js/pages/preparedness-tips.js</h3><p>Creates the preparedness checklist, saves its state in the browser, updates progress, and supports reset controls.</p></div>
@@ -121,7 +119,7 @@ Public pages show the information</div>
 <div class="group"><h3>css/components/footer.css</h3><p>Styles the public and admin footer.</p></div>
 <div class="group"><h3>css/pages/home.css</h3><p>Styles the homepage hero video, feature cards, overview cards, and storm profile.</p></div>
 <div class="group"><h3>css/pages/about.css</h3><p>Styles the About page sections, cards, links, and call-to-action area.</p></div>
-<div class="group"><h3>css/pages/compare-storms.css</h3><p>Styles storm selectors, comparison tables, result panels, controls, and dialogs.</p></div>
+<div class="group"><h3>css/pages/analysis-comparison.css</h3><p>Styles storm selectors, comparison tables, result panels, controls, and dialogs.</p></div>
 <div class="group"><h3>css/pages/contact.css</h3><p>Styles the contact hero, feedback form, emergency note, and official-source panel.</p></div>
 <div class="group"><h3>css/pages/education.css</h3><p>Styles the Education Hub, topic cards, resource tiles, fact panel, and topic modal.</p></div>
 <div class="group"><h3>css/pages/evacuation-guide.css</h3><p>Styles evacuation decisions, reminders, tables, checklists, and progress components.</p></div>
@@ -162,14 +160,13 @@ Public pages show the information</div>
 <div class="group"><h3>vendor/composer/</h3><p>Composer-generated files that help PHP locate and load installed packages.</p></div>
 <p class="small">Vendor files normally should not be edited manually because they are generated or supplied by external packages.</p>
 
-<h2>Example: updating the upcoming storm</h2>
-<p>When an administrator edits the storm:</p>
+<h2>Example: testing a storm on the Analysis Comparison page</h2>
+<p>When a visitor enters an upcoming storm, it is kept in this browser tab while navigating between pages.</p>
 <ol>
-<li><code>admin/edit-storm.php</code> validates and saves the information.</li>
-<li>The information is stored in the MySQL <code>upcoming_storm</code> table.</li>
-<li><code>api/get_upcoming_storm.php</code> reads the active row and returns JSON.</li>
-<li><code>js/upcoming-storm.js</code> receives the JSON in the browser.</li>
-<li>The homepage and comparison page display the new storm information.</li>
+<li>The Step 1 sandbox form validates the name, wind (30–500 km/h), and PAGASA category.</li>
+<li>Typing provides category guidance; pressing <strong>Apply Upcoming Storm</strong> fills the profile and saves the name, wind, and category in tab session storage.</li>
+<li>The Best Match panel ranks historical cyclones by wind closeness to the upcoming storm.</li>
+<li>The public homepage and admin dashboard show the same session value; refreshing the website or pressing Reset clears it.</li>
 </ol>
 </body>
 </html>

@@ -1,4 +1,4 @@
-// Tropical Cyclone Information System — Compare Storms page
+// Tropical Cyclone Information System — Analysis Comparison page
 // Renders the upcoming storm profile's historical analogues, wires the
 // comparison controls, and renders the results table.
 //
@@ -7,9 +7,10 @@
 // they are not currently tracked in the database — comparisons now run
 // on wind speed and PAGASA category only. These can be re-added later
 // once that data is collected.
-// The Best Match panel re-fetches the upcoming storm profile whenever the
-// tab regains focus, so admin edits (e.g. Max Wind) show up immediately
-// without a manual reload.
+// VISITOR PROFILE: there is no admin-managed upcoming storm in this flow.
+// The visitor enters the upcoming storm (name + max wind + category) in the
+// Step 1 form; only pressing Apply fills the UPCOMING profile, Best Match
+// panel, default compare column, and shared same-tab session state.
 //
 // SIMPLIFIED: storm picking is now two plain <select> dropdowns (storm A
 // required, storm B optional). The old searchable/filterable/sortable
@@ -27,18 +28,10 @@
   // Config
   // ---------------------------------------------------------------------
   const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
-  const UPCOMING_API_URL = "/Weather/api/get_upcoming_storm.php"; // adjust path if needed
 
-  // "Upcoming" storm profile. Defaults below act as demo/fallback data; the
-  // live values come from the admin-managed `upcoming_storm` table
-  // (edited via admin/edit-storm.php) and are loaded in loadUpcoming().
-  let UPCOMING = {
-    name: "TY ODIN",
-    year: 2025,
-    wind: 185,
-    peak: null,
-    category: "Typhoon",
-  };
+  // Current upcoming storm profile, filled by the Step 1 form and mirrored
+  // to the shared same-tab session state.
+  let UPCOMING = null;
 
   const CATEGORY_RANK = {
     "Tropical Depression": 1,
@@ -56,10 +49,9 @@
     STY: "Super Typhoon",
   };
 
-  // Whether there is an ACTIVE upcoming storm (the admin's "No active storm"
-  // switch sets is_active = 0). Defaults to true so the demo fallback keeps
-  // working until the API answers; set to false when the storm is hidden.
-  let hasUpcomingStorm = true;
+  // Whether the visitor has applied an upcoming storm in Step 1. Defaults to
+  // false so the page opens in the "no upcoming storm yet" empty state.
+  let hasUpcomingStorm = false;
 
   // Populated by loadData() on startup — replaces the old static STORMS array.
   let STORMS = [];
@@ -107,6 +99,17 @@
   const analogueComparisonStorm = document.getElementById("analogueComparisonStorm");
   const analogueComparisonBody = document.getElementById("analogueComparisonBody");
   const analogueModalExplanation = document.getElementById("analogueModalExplanation");
+  // Step 1 sandbox form refs (wired in setupCustomStorm()).
+  const customStormForm = document.getElementById("customStormForm");
+  const customStormName = document.getElementById("customStormName");
+  const customStormWind = document.getElementById("customStormWind");
+  const customStormCategory = document.getElementById("customStormCategory");
+  const customStormSuggest = document.getElementById("customStormSuggest");
+  const customStormCategoryInfo = document.getElementById("customStormCategoryInfo");
+  const customStormError = document.getElementById("customStormError");
+  const customStormClear = document.getElementById("customStormClear");
+  const upcomingStormSection = document.getElementById("upcomingStormSection");
+  const upcomingEmpty = document.getElementById("upcomingEmpty");
 
   let lastModalTrigger = null;
   // Display precision for match percentages; renderAnalogues() raises it
@@ -178,71 +181,282 @@
     };
   }
 
-  // Applies one API row onto the UPCOMING profile. Only fields present in
-  // the row are overwritten, so a partial row never blanks the profile.
-  function applyUpcomingRow(row) {
-    if (row.storm_name) UPCOMING.name = row.storm_name;
-    if (row.max_wind != null && row.max_wind !== "") {
-      const wind = parseInt(row.max_wind, 10);
-      if (!isNaN(wind)) UPCOMING.wind = wind;
-    }
-    if (row.peak != null && row.peak !== "") {
-      const peak = parseInt(row.peak, 10);
-      if (!isNaN(peak)) UPCOMING.peak = peak;
-    }
-    if (row.category) UPCOMING.category = row.category;
+  // ---------------------------------------------------------------------
+  // Step 1 form — the visitor's upcoming storm (session-only)
+  // ---------------------------------------------------------------------
+  const CUSTOM_WIND_MIN = 30;
+  const CUSTOM_WIND_MAX = 500;
+
+  // Plain category names keyed by the shared classifier's TD…STY keys
+  // (js/storm-category.js exposes getCategoryFromStrength).
+  const CUSTOM_CATEGORY_NAMES = {
+    TD: "Tropical Depression",
+    TS: "Tropical Storm",
+    STS: "Severe Tropical Storm",
+    TY: "Typhoon",
+    STY: "Super Typhoon",
+  };
+
+  // One-line explainer per category: wind range + what it means.
+  const CATEGORY_INFO = {
+    "Tropical Depression": "61–88 km/h · the weakest class — heavy rain, Signals No. 1–2.",
+    "Tropical Storm": "89–117 km/h · damaging winds, possible Signals No. 2–3.",
+    "Severe Tropical Storm": "118–148 km/h · destructive winds, widespread damage, higher signals.",
+    Typhoon: "149–184 km/h · very destructive — major damage, evacuations likely.",
+    "Super Typhoon": "185 km/h and above · catastrophic — the highest PAGASA class.",
+  };
+
+  function suggestedCategoryName(wind) {
+    if (typeof window.getCategoryFromStrength !== "function") return "";
+    const key = window.getCategoryFromStrength(wind);
+    return (key && CUSTOM_CATEGORY_NAMES[key]) || "";
   }
 
-  async function loadUpcoming() {
-    try {
-      const res = await fetch(UPCOMING_API_URL);
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      const row = await res.json();
-      // Zero active storms (admin set it to NONE): hide the profile and
-      // disable analogue matching instead of comparing against the demo.
-      hasUpcomingStorm = !!(row && Object.keys(row).length);
-      if (!hasUpcomingStorm) return;
-      applyUpcomingRow(row);
-    } catch (err) {
-      console.warn("Could not load upcoming storm, keeping demo profile:", err);
+  // Auto-prefix: "odin" + Typhoon -> "Typhoon Odin". Strips any existing
+  // prefix first (short codes TD/TS/STS/TY/STY or full words,
+  // case-insensitive) so re-saving never yields "TY TY ODIN".
+  const STORM_PREFIX_RE =
+    /^(?:super\s+typhoon|severe\s+tropical\s+storm|tropical\s+depression|tropical\s+storm|typhoon|sty|sts|td|ts|ty)[\s\-.]+/i;
+
+  function stripStormPrefix(raw) {
+    let base = String(raw || "").trim().replace(/\s+/g, " ");
+    let prev = null;
+    while (prev !== base) {
+      prev = base;
+      base = base.replace(STORM_PREFIX_RE, "").trim();
+    }
+    // A lone prefix with no actual name (e.g. just "TY" or "Typhoon")
+    // counts as empty so validation rejects it instead of saving "Typhoon Ty".
+    const lone = base.toLowerCase();
+    if (
+      lone === "td" ||
+      lone === "ts" ||
+      lone === "sts" ||
+      lone === "ty" ||
+      lone === "sty" ||
+      lone === "tropical depression" ||
+      lone === "tropical storm" ||
+      lone === "severe tropical storm" ||
+      lone === "typhoon" ||
+      lone === "super typhoon"
+    ) {
+      return "";
+    }
+    return base;
+  }
+
+  function toTitleCaseBase(base) {
+    return String(base || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .split(" ")
+      .filter(Boolean)
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  }
+
+  // Full-word prefix (e.g. "Typhoon Odin"). Final category wins; returns
+  // "" when no usable base name remains (caller treats it as invalid).
+  function formatStormName(rawName, category) {
+    const base = toTitleCaseBase(stripStormPrefix(rawName));
+    if (!base) return "";
+    const prefix = String(category || "").trim();
+    if (!prefix) return base;
+    return prefix + " " + base;
+  }
+
+  function showCustomError(message, focusEl) {
+    if (customStormError) {
+      customStormError.textContent = message;
+      customStormError.hidden = false;
+    }
+    if (focusEl && typeof focusEl.focus === "function") focusEl.focus();
+    return false;
+  }
+
+  function hideCustomError() {
+    if (customStormError) {
+      customStormError.textContent = "";
+      customStormError.hidden = true;
     }
   }
 
-  // Re-fetches the upcoming storm when the tab regains focus, becomes
-  // visible again, or is restored from the back/forward cache. The admin
-  // edits the profile in another tab (admin/edit-storm.php); this keeps
-  // the Best Match panel in sync without a manual reload. The panel is
-  // only re-rendered when a scoring value actually changed.
-  async function refreshUpcoming() {
-    try {
-      const res = await fetch(UPCOMING_API_URL);
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      const row = await res.json();
-      // If the admin just switched the storm to NONE while this tab was
-      // open, re-render so the stale analogues/match panel disappear.
-      const nextHasUpcoming = !!(row && Object.keys(row).length);
-      if (nextHasUpcoming !== hasUpcomingStorm) {
-        hasUpcomingStorm = nextHasUpcoming;
-        renderAnalogues();
-        if (!hasUpcomingStorm) return;
-      }
-      if (!row) return;
+  // Live hint under the wind field: "Suggested category: Typhoon".
+  // Also pre-selects the suggestion so Apply works untouched.
+  function refreshCategorySuggestion() {
+    if (!customStormWind || !customStormCategory || !customStormSuggest) return;
+    const raw = customStormWind.value.trim();
+    const wind = Number(raw);
+    if (raw === "" || isNaN(wind)) {
+      customStormSuggest.hidden = true;
+      return;
+    }
+    const name = suggestedCategoryName(wind);
+    if (!name) {
+      customStormSuggest.hidden = true;
+      return;
+    }
+    customStormCategory.value = name;
+    customStormSuggest.textContent =
+      "Suggested category: " + name + " (based on " + wind + " km/h). You can still change it.";
+    customStormSuggest.hidden = false;
+    renderCategoryInfo();
+  }
 
-      const previous = {
-        wind: UPCOMING.wind,
-        peak: UPCOMING.peak,
-        category: UPCOMING.category,
+  // Paints the applied upcoming storm into the Step 1 profile shell. Only the
+  // name/wind/category blocks are meaningful for a custom storm, so the
+  // admin-fed blocks (movement, signal, pressure, landfall, location,
+  // advisory, PAGASA link) hide via .sandbox-mode (see CSS).
+  function renderCustomProfile() {
+    if (!upcomingStormSection || !upcomingEmpty) return;
+    if (!hasUpcomingStorm || !UPCOMING) {
+      upcomingStormSection.classList.add("upcoming-hidden");
+      upcomingStormSection.classList.remove("sandbox-mode");
+      upcomingEmpty.classList.remove("upcoming-hidden");
+      return;
+    }
+    upcomingEmpty.classList.add("upcoming-hidden");
+    upcomingStormSection.classList.remove("upcoming-hidden");
+    upcomingStormSection.classList.add("sandbox-mode");
+    const set = (key, text) => {
+      const node = upcomingStormSection.querySelector('[data-us="' + key + '"]');
+      if (node) node.textContent = text;
+    };
+    set("storm_name", UPCOMING.name);
+    set("status", "Upcoming storm");
+    set("wind", UPCOMING.wind + " km/h");
+    set("category", UPCOMING.category);
+  }
+
+  function applyCustomStorm() {
+    hideCustomError();
+    const data = readCustomStorm();
+    const problem = validateCustomStorm(data);
+    if (problem) return showCustomError(problem.message, problem.focusEl);
+    commitCustomStorm(data);
+    return true;
+  }
+
+  // Reads the raw form state; category falls back to the wind suggestion.
+  function readCustomStorm() {
+    const name = customStormName ? customStormName.value.trim() : "";
+    const windRaw = customStormWind ? customStormWind.value.trim() : "";
+    const wind = Number(windRaw);
+    let category = customStormCategory ? customStormCategory.value : "";
+    if (!category && windRaw !== "" && !isNaN(wind)) {
+      category = suggestedCategoryName(wind);
+    }
+    return { name, windRaw, wind, category };
+  }
+
+  // Returns { message, focusEl } for the first problem, or null when valid.
+  function validateCustomStorm(data) {
+    if (!stripStormPrefix(data.name)) {
+      return { message: "Give the upcoming storm a name (e.g. Typhoon Odin).", focusEl: customStormName };
+    }
+    if (data.windRaw === "" || isNaN(data.wind)) {
+      return { message: "Enter the max sustained winds in km/h.", focusEl: customStormWind };
+    }
+    if (data.wind < CUSTOM_WIND_MIN || data.wind > CUSTOM_WIND_MAX) {
+      return {
+        message: "Wind must be between " + CUSTOM_WIND_MIN + " and " + CUSTOM_WIND_MAX + " km/h.",
+        focusEl: customStormWind,
       };
-      applyUpcomingRow(row);
+    }
+    if (!data.category) {
+      return { message: "Pick a PAGASA category.", focusEl: customStormCategory };
+    }
+    return null;
+  }
 
-      const changed =
-        previous.wind !== UPCOMING.wind ||
-        previous.peak !== UPCOMING.peak ||
-        previous.category !== UPCOMING.category;
+  function commitCustomStorm(data) {
+    UPCOMING = {
+      name: formatStormName(data.name, data.category),
+      year: null,
+      wind: Math.round(data.wind),
+      peak: null,
+      category: data.category,
+    };
+    hasUpcomingStorm = true;
+    if (window.UpcomingStormState) window.UpcomingStormState.write(UPCOMING);
+    if (window.UpcomingStormState) window.UpcomingStormState.renderCards();
+    renderCustomProfile();
+    renderAnalogues();
+    // Re-run any visible comparison so column B picks up the new storm.
+    runCompareSafe();
+  }
 
-      if (changed) renderAnalogues();
-    } catch (err) {
-      // Silent: a failed refresh keeps the currently displayed profile.
+  function restoreCustomStorm() {
+    if (!window.UpcomingStormState) return;
+    const saved = window.UpcomingStormState.read();
+    if (!saved) return;
+    if (customStormName) customStormName.value = saved.name;
+    if (customStormWind) customStormWind.value = String(saved.wind);
+    if (customStormCategory) customStormCategory.value = saved.category;
+    commitCustomStorm(saved);
+  }
+
+  // Explainer line under the category select.
+  function renderCategoryInfo() {
+    if (!customStormCategory || !customStormCategoryInfo) return;
+    const name = customStormCategory.value;
+    const info = name && CATEGORY_INFO[name];
+    if (!info) {
+      customStormCategoryInfo.hidden = true;
+      return;
+    }
+    // Both halves come from our own static map — safe to inject.
+    customStormCategoryInfo.innerHTML = "<strong>" + name + ":</strong> " + info;
+    customStormCategoryInfo.hidden = false;
+  }
+
+  // Clears the sandbox back to the initial empty state (also used by the
+  // page-level Reset so one click restores a pristine page).
+  function resetCustomStormState() {
+    if (customStormForm) customStormForm.reset();
+    if (customStormSuggest) customStormSuggest.hidden = true;
+    if (customStormCategoryInfo) customStormCategoryInfo.hidden = true;
+    hideCustomError();
+    UPCOMING = null;
+    hasUpcomingStorm = false;
+    if (window.UpcomingStormState) {
+      window.UpcomingStormState.clear();
+      window.UpcomingStormState.renderCards();
+    }
+    renderCustomProfile();
+  }
+
+  function setupCustomStorm() {
+    if (customStormName) {
+      customStormName.addEventListener("input", () => {
+        hideCustomError();
+      });
+    }
+    if (customStormWind) {
+      customStormWind.addEventListener("input", () => {
+        hideCustomError();
+        refreshCategorySuggestion();
+        renderCategoryInfo();
+      });
+    }
+    if (customStormCategory) {
+      customStormCategory.addEventListener("change", () => {
+        hideCustomError();
+        renderCategoryInfo();
+      });
+    }
+    if (customStormForm) {
+      customStormForm.addEventListener("submit", (event) => {
+        event.preventDefault();
+        applyCustomStorm();
+      });
+    }
+    if (customStormClear) {
+      customStormClear.addEventListener("click", () => {
+        resetCustomStormState();
+        renderAnalogues();
+        runCompareSafe();
+      });
     }
   }
 
@@ -265,29 +479,6 @@
   // upcoming one (sustained wind + peak gust + PAGASA category).
   // ---------------------------------------------------------------------
 
-  // Gaussian (bell-curve) similarity: 100% for an exact match, decaying
-  // smoothly towards 0% as the gap grows — no artificial cap or floor.
-  // Gaussian similarity with a tiny directional nudge so two storms
-  // equidistant from the target (e.g. -5 km/h and +5 km/h) don't render
-  // as an exact tie. The nudge is small enough that it never changes
-  // which group ranks closer — it only breaks symmetric-score ties.
-  function gaussScore(value, target, sigma) {
-    if (value == null || target == null) return null;
-    const gap = value - target;
-    const base = 100 * Math.exp(-(gap * gap) / (2 * sigma * sigma));
-
-    // Directional epsilon: storms weaker than the upcoming storm (gap < 0)
-    // get a hair higher score than storms stronger by the same margin
-    // (gap > 0), since a slightly-weaker historical analogue is generally
-    // the more conservative/useful comparison. At 0.1% per 100 km/h of gap
-    // it is orders of magnitude below the Gaussian base difference between
-    // two distinct wind values, so it can only split exact equidistant
-    // ties — it must never reorder storms of different strength.
-    const directionalNudge = -gap * 0.001;
-
-    return Math.max(0, Math.min(100, base + directionalNudge));
-  }
-
   // Returns the intensity rank of a PAGASA category name, or null when
   // the label is unknown. Recognises both plain names ("Typhoon") and the
   // admin dropdown's labelled format ("Typhoon (TY)") via its abbreviation.
@@ -303,19 +494,22 @@
     return null;
   }
 
-  // Wind-closeness match score (0–100): Gaussian similarity of the storm's
-  // sustained wind to the upcoming storm's Max Wind, sigma 100 km/h. The
-  // wide sigma keeps the bell curve spread across the whole historical
-  // wind range, so even an upcoming storm far stronger than anything on
-  // record (e.g. 400 km/h vs a 215 km/h database max) still shows a
-  // meaningful spread between candidates instead of everything reading
-  // ~0%, and the score ordering tracks wind closeness.
+  // Wind-closeness match score (0–100): the closer of the two winds as a
+  // straight percentage of the farther one, e.g. 195 km/h against a
+  // 200 km/h upcoming storm reads 97.5%. Symmetric, so stronger historical
+  // storms can score too — and the score can never exceed 100%, no
+  // clamping needed. Because both the rank order (wind gap, closest
+  // first) and this score are monotonic in the gap, rank and score can
+  // never disagree. Far-stronger upcoming storms degrade gracefully
+  // (215/400 = 53.8%) instead of collapsing every candidate toward 0%.
   // "Best Match · Wind Strength" ranks purely by wind closeness — peak
   // gust and PAGASA category are informational only (shown in the modal)
   // and do not factor into the score.
   function similarity(storm) {
-    const score = gaussScore(storm.wind, UPCOMING.wind, 100);
-    return score == null ? 0 : score;
+    if (storm.wind == null || UPCOMING.wind == null || UPCOMING.wind <= 0) return 0;
+    const lo = Math.min(storm.wind, UPCOMING.wind);
+    const hi = Math.max(storm.wind, UPCOMING.wind);
+    return hi > 0 ? (lo / hi) * 100 : 0;
   }
 
   function animateMatchScore(el, target) {
@@ -353,18 +547,20 @@
     return isNaN(t) ? 0 : t;
   }
 
-  // Picks the display precision for the Top 3: one decimal normally, but
-  // escalates to two when two candidates would render with the same
-  // string, so near-tie ranks still show distinct percentages. The cap
-  // stays at two because a genuine full-precision tie (identical recorded
-  // data) can never be split by decimals — there, the ranking is decided
-  // by the recency/peak tie-breakers instead.
+  // Picks the display precision: one decimal normally, but escalates to
+  // two when two different scores would render with the same string.
+  // Distinctness is judged on unique values only — tied storms share one
+  // wind, so they must share one percentage string too. The cap stays at
+  // two because a genuine full-precision tie can never be split by
+  // decimals — there, the ranking is decided by the recency/peak
+  // tie-breakers instead.
   function displayDecimals(scores) {
+    const unique = Array.from(new Set(scores));
     let decimals = 1;
-    let strings = scores.map((s) => s.toFixed(decimals));
+    let strings = unique.map((s) => s.toFixed(decimals));
     while (new Set(strings).size !== strings.length && decimals < 2) {
       decimals++;
-      strings = scores.map((s) => s.toFixed(decimals));
+      strings = unique.map((s) => s.toFixed(decimals));
     }
     return decimals;
   }
@@ -397,22 +593,18 @@
       .map((entry) => entry.group);
   }
 
-  // Picks ONE representative storm from a wind group. The tie-breaker is
-  // "most recent storm date": storms that share the same wind strength are
-  // presented by the most recent record. Movement speed is not tracked for
-  // historical storms, so recency is the data-backed secondary factor
-  // (higher peak gust and longer duration follow, then alphabetical as a
-  // final deterministic guarantee).
-  function pickRepresentative(group) {
-    return group.storms.slice().sort((a, b) => {
-      const recencyDiff = recentness(b) - recentness(a);
-      if (recencyDiff !== 0) return recencyDiff;
-      const peakDiff = (b.peak ?? 0) - (a.peak ?? 0);
-      if (peakDiff !== 0) return peakDiff;
-      const daysDiff = (b.days ?? 0) - (a.days ?? 0);
-      if (daysDiff !== 0) return daysDiff;
-      return String(a.name).localeCompare(String(b.name));
-    })[0];
+  // Display order for storms that share one wind value: most recent
+  // record first, then higher peak gust, longer duration, alphabetical.
+  // Ties are expanded into their own rows (see renderAnalogues) instead
+  // of keeping a single representative per wind group.
+  function compareTiedStorms(a, b) {
+    const recencyDiff = recentness(b) - recentness(a);
+    if (recencyDiff !== 0) return recencyDiff;
+    const peakDiff = (b.peak ?? 0) - (a.peak ?? 0);
+    if (peakDiff !== 0) return peakDiff;
+    const daysDiff = (b.days ?? 0) - (a.days ?? 0);
+    if (daysDiff !== 0) return daysDiff;
+    return String(a.name).localeCompare(String(b.name));
   }
 
   function renderAnalogues() {
@@ -424,7 +616,7 @@
         '<svg viewBox="0 0 24 24" width="28" height="28" fill="none">' +
         '<path d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
         "</svg>" +
-        "<p>No active upcoming storm is being monitored, so there are no historical analogues to show.</p>" +
+        "<p>No upcoming storm yet — enter a storm name and wind speed in Step 1, then Apply, to see its closest historical matches.</p>" +
         "</div>";
       return;
     }
@@ -432,59 +624,74 @@
     const groupEl = document.createElement("section");
     groupEl.className = "match-group";
 
-    const heading = document.createElement("h3");
-    heading.className = "match-group-title";
-    heading.textContent = "Best match \u00b7 wind strength";
+    const heading = document.createElement("div");
+    heading.className = "match-group-head";
+    heading.innerHTML =
+      '<div>' +
+      '<div class="match-group-titlerow">' +
+      '<span class="match-group-trophy" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none">' +
+      '<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg></span>" +
+      '<h3 class="match-group-title">Best historical matches</h3>' +
+      "</div>" +
+      "</div>" +
+      '<span class="match-group-badge">' +
+      '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" aria-hidden="true">' +
+      '<ellipse cx="12" cy="5.5" rx="8" ry="3" stroke="currentColor" stroke-width="1.8"/>' +
+      '<path d="M4 5.5V12c0 1.7 3.6 3 8 3s8-1.3 8-3V5.5M4 12v6.5c0 1.7 3.6 3 8 3s8-1.3 8-3V12" stroke="currentColor" stroke-width="1.8"/>' +
+      "</svg>Based on PAGASA data</span>";
     groupEl.appendChild(heading);
 
-    // Best Match selection (grouping-based): storms are grouped by their
-    // exact Max Wind value, the groups are ranked by how close they are to
-    // the current storm's Max Wind, and ONE representative is picked from
-    // each of the closest groups. Each representative therefore comes from
-    // a different wind-strength group, so the Top 3 percentages are
-    // naturally distinct.
-    // Rank order = group closeness (rankGroupsByCloseness already returns
-    // groups closest-first, stronger group first on exact ties). The
-    // similarity score is display-only and must never re-order the ranks:
-    // when the upcoming storm sits far outside the historical range the
-    // Gaussian bases all collapse towards 0%, and a score sort would let
-    // the tie-break nudge crown a weaker storm as the "best match".
-    // Only match historical storms that were the same strength or weaker
-    // than the upcoming storm — never stronger.
-    const eligibleStorms = STORMS.filter((storm) => storm.wind <= UPCOMING.wind);
+    // Best Match selection: storms are grouped by their exact Max Wind
+    // value, the groups are ranked by gap to the upcoming storm's Max Wind
+    // (nearest wins — stronger or weaker alike), and the Top 3 distinct
+    // wind values are shown with ties expanded: every storm sharing a top
+    // Each rank keeps every storm sharing its wind (dense ranking:
+    // 1, 1, 1, 2, 3), most recent first. Rank order = group closeness;
+    // the similarity score is display-only and must never re-order ranks.
+    const MAX_SUB_ROWS = 5;
+    const topGroups = rankGroupsByCloseness(groupByWind(STORMS), UPCOMING.wind)
+      .slice(0, 3)
+      .map((group, groupIndex) => ({
+        rank: groupIndex + 1,
+        matches: group.storms
+          .slice()
+          .sort(compareTiedStorms)
+          .map((storm) => ({ storm, score: similarity(storm), rank: groupIndex + 1 })),
+      }));
+    const allMatches = topGroups.flatMap((group) => group.matches);
 
-    const groups = rankGroupsByCloseness(
-      groupByWind(eligibleStorms),
-      UPCOMING.wind,
-    );
-    const matches = groups.slice(0, 3).map((group) => {
-      const storm = pickRepresentative(group);
-      return { storm, score: similarity(storm) };
-    });
+    // One decimal normally; escalate if two different scores would display
+    // the same string. Tied storms share one wind and one string by design.
+    scoreDecimals = displayDecimals(allMatches.map((match) => match.score));
 
-    // One decimal normally; escalate if two of the Top 3 would display
-    // the same string, so each rank shows a distinct percentage.
-    scoreDecimals = displayDecimals(matches.map((match) => match.score));
-
-    matches.forEach((match, index) => {
+    // Builds one storm row: rank badge, name + wind bar, score, View
+    // button. Used for plain rows and tied-group sub-rows alike.
+    const buildStormRow = (match, extraClass) => {
       const rowEl = document.createElement("div");
-      rowEl.className = index === 0 ? "analogue-row best-match" : "analogue-row";
+      rowEl.className = "analogue-row" +
+        (match.rank === 1 ? " best-match" : " rank-" + match.rank) +
+        (extraClass ? " " + extraClass : "");
 
       const rank = document.createElement("span");
-      rank.className = "rank-number";
-      rank.textContent = index + 1;
+      rank.className = "rank-number rank-" + match.rank;
+      rank.textContent = match.rank;
 
       const info = document.createElement("div");
       info.className = "analogue-info";
       info.innerHTML =
-        '<div class="analogue-name">' + match.storm.name + "</div>" +
-        '<div class="analogue-date">' + match.storm.date + "</div>" +
-        '<div class="match-progress"><span style="width:' + match.score + '%"></span></div>';
+        '<div class="analogue-name">' + match.storm.name + "</div>";
 
       const sim = document.createElement("div");
       sim.className = "analogue-similarity";
       sim.innerHTML = "<strong>0%</strong>";
       const scoreEl = sim.querySelector("strong");
+
+      const bar = document.createElement("div");
+      bar.className = "match-progress";
+      bar.innerHTML = "<span style=\"width:" + match.score + '%"></span>';
 
       const btn = document.createElement("button");
       btn.type = "button";
@@ -497,9 +704,93 @@
       rowEl.appendChild(rank);
       rowEl.appendChild(info);
       rowEl.appendChild(sim);
+      rowEl.appendChild(bar);
       rowEl.appendChild(btn);
-      groupEl.appendChild(rowEl);
       animateMatchScore(scoreEl, match.score);
+      return rowEl;
+    };
+
+    // A rank shared by 2+ storms collapses into one bar: the most-recent
+    // storm plus a "+N tied" pill, expanding to its storms (capped, the
+    // overflow note tucked inside). A lone storm renders as a plain row —
+    // so the panel is always exactly the top 3 ranks and nothing can be
+    // pushed off it. Re-renders reset every group to collapsed.
+    topGroups.forEach((topGroup) => {
+      if (topGroup.matches.length === 1) {
+        groupEl.appendChild(buildStormRow(topGroup.matches[0]));
+        return;
+      }
+
+      const rep = topGroup.matches[0];
+      const shownSubs = topGroup.matches.slice(0, MAX_SUB_ROWS);
+      const hiddenSubCount = topGroup.matches.length - shownSubs.length;
+      const subId = "analogue-sub-" + rep.storm.wind;
+
+      const header = document.createElement("button");
+      header.type = "button";
+      header.className = "analogue-row analogue-group" + (topGroup.rank === 1 ? " best-match" : " rank-" + topGroup.rank);
+      header.setAttribute("aria-expanded", "false");
+      header.setAttribute("aria-controls", subId);
+
+      const rank = document.createElement("span");
+      rank.className = "rank-number rank-" + topGroup.rank;
+      rank.textContent = topGroup.rank;
+
+      const info = document.createElement("div");
+      info.className = "analogue-info";
+      info.innerHTML =
+        '<div class="analogue-name">' + rep.storm.name + "</div>";
+
+      const sim = document.createElement("div");
+      sim.className = "analogue-similarity";
+      sim.innerHTML = "<strong>0%</strong>";
+
+      const bar = document.createElement("div");
+      bar.className = "match-progress";
+      bar.innerHTML = "<span style=\"width:" + rep.score + '%"></span>';
+
+      const action = document.createElement("div");
+      action.className = "analogue-action";
+      const pill = document.createElement("span");
+      pill.className = "analogue-tied-pill";
+      pill.textContent = "\u2191 +" + topGroup.matches.length + " tied as top " + topGroup.rank;
+
+      const chevron = document.createElement("span");
+      chevron.className = "analogue-chevron";
+      chevron.setAttribute("aria-hidden", "true");
+      chevron.textContent = "\u203a";
+      action.appendChild(pill);
+      action.appendChild(chevron);
+
+      const sub = document.createElement("div");
+      sub.className = "analogue-subrows";
+      sub.id = subId;
+      sub.hidden = true;
+      shownSubs.forEach((match) => {
+        sub.appendChild(buildStormRow(match, "is-sub"));
+      });
+      if (hiddenSubCount > 0) {
+        const moreEl = document.createElement("div");
+        moreEl.className = "analogue-more";
+        moreEl.textContent = "+" + hiddenSubCount + " more at " + rep.storm.wind + " km/h";
+        sub.appendChild(moreEl);
+      }
+
+      header.appendChild(rank);
+      header.appendChild(info);
+      header.appendChild(sim);
+      header.appendChild(bar);
+      header.appendChild(action);
+      let expanded = false;
+      header.addEventListener("click", () => {
+        expanded = !expanded;
+        header.setAttribute("aria-expanded", String(expanded));
+        sub.hidden = !expanded;
+      });
+
+      groupEl.appendChild(header);
+      groupEl.appendChild(sub);
+      animateMatchScore(sim.querySelector("strong"), rep.score);
     });
 
     analogueList.appendChild(groupEl);
@@ -532,6 +823,11 @@
       '<span class="analogue-kicker-icon">&#9670;</span>Best match \u00b7 wind strength';
     analogueModalTitle.textContent = storm.name;
     analogueModalSummary.textContent = storm.date + " · " + storm.category;
+    // The modal's "Compared with …" headings name the upcoming storm; they
+    // used to be filled by upcoming-storm.js, now we set them directly.
+    analogueModal.querySelectorAll('[data-us="storm_name"]').forEach((node) => {
+      node.textContent = UPCOMING.name;
+    });
     analogueModalStats.innerHTML =
       statMarkup("Maximum winds", storm.wind + " km/h", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7c3 0 3-4 0-4M3 12h13c3 0 3-4 0-4M3 16h9c3 0 3-4 0-4M3 20h5"/></svg>') +
       statMarkup("PAGASA Category", storm.category, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>');
@@ -595,7 +891,7 @@
 
   // Trophy icon (the banner's default) and an "=" icon for ties — the
   // banner swaps between them so a tie doesn't show a single winner's
-  // trophy. Mirror of the inline SVG in compare-storms.html.
+  // trophy. Mirror of the inline SVG in analysis-comparison.html.
   const TROPHY_ICON =
     '<svg viewBox="0 0 24 24" width="30" height="30" fill="none">' +
     '<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />' +
@@ -610,7 +906,7 @@
   // "win" (decisive result), "tie" (equal strength) or "idle" (nothing
   // compared yet). The banner itself only glows once a tone is set: idle
   // keeps the dim, unlit indicator light; wins glow soft green and ties
-  // glow soft blue (see .is-win / .is-tie in compare-storms.css).
+  // glow soft blue (see .is-win / .is-tie in analysis-comparison.css).
   function updateWinnerBanner(label, names, detail, tone) {
     winnerBannerLabel.textContent = label;
     winnerBannerName.textContent = names;
@@ -640,7 +936,7 @@
     const b = nameB ? STORMS.find((s) => s.name === nameB) : null;
     if (!a) return;
 
-    // With no active upcoming storm, comparing against "Upcoming" (the B
+    // With no upcoming storm applied, comparing against "Upcoming" (the B
     // column when none is chosen) has no meaning — ask for a second storm.
     if (!hasUpcomingStorm && !b) {
       updateWinnerBanner("Comparison", "", "", "idle");
@@ -651,7 +947,7 @@
       tableBody.innerHTML =
         '<tr class="empty-row"><td colspan="3">' +
         '<div class="empty-state">' +
-        "<p>No active upcoming storm is being monitored right now, so there is nothing to compare against. Select a second historical storm above.</p>" +
+        "<p>No upcoming storm has been applied yet, so there is nothing to compare against. Apply one in Step 1 or select a second historical storm above.</p>" +
         "</div></td></tr>";
       return;
     }
@@ -708,7 +1004,12 @@
     colBHead.innerHTML =
       '<span class="th-flex"><span class="col-badge ' + badgeB + '">B</span>' +
       compareB.name + ' <span class="col-year">· ' +
-      (b ? compareB.year : "Upcoming") + "</span></span>";
+      (b ? compareB.year : "Upcoming storm") + "</span></span>";
+
+    // An upcoming storm has no year, so its banner label is name-only.
+    const upcomingLabel = UPCOMING.year
+      ? UPCOMING.name + " · " + UPCOMING.year
+      : UPCOMING.name;
 
     if (isTie) {
       updateWinnerBanner(
@@ -721,10 +1022,10 @@
     } else if (!b) {
       updateWinnerBanner(
         "Overall Winner",
-        winner.name + " · " + winner.year,
-        (winner === UPCOMING
+        winner === UPCOMING ? upcomingLabel : winner.name + " · " + winner.year,
+          (winner === UPCOMING
           ? "is stronger than the selected historical storm."
-          : "is stronger than the incoming storm.") +
+          : "is stronger than the upcoming storm.") +
           " Based on PAGASA best track data.",
         "win"
       );
@@ -770,7 +1071,7 @@
         '<path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />' +
         "</svg>" +
         "<p>Select a historical storm from the dropdown above, then click " +
-        "<strong>Compare Storms</strong> to see results here.</p>" +
+        "<strong>Analysis Comparison</strong> to see results here.</p>" +
         "</div></td></tr>";
       colAHead.textContent = "—";
       colBHead.textContent = "—";
@@ -779,12 +1080,16 @@
     runCompare();
   }
 
-  function resetControls() {
+  function resetControls(clearUpcoming) {
     selection.stormA = "";
     selection.stormB = "";
     if (stormASelect) stormASelect.value = "";
     if (stormBSelect) stormBSelect.value = "";
     syncPickerToggles();
+    // The page Reset button clears the upcoming storm; initial setup only
+    // resets the historical selections so a stored storm can be restored.
+    if (clearUpcoming !== false) resetCustomStormState();
+    renderAnalogues();
     runCompareSafe();
   }
 
@@ -797,7 +1102,7 @@
   // storm, closes the panel and fires the same change flow the old native
   // <select> used. A hidden <select> (kept in sync) remains the single
   // source of truth for the compare logic below.
-  const PLACEHOLDER = { stormA: "Select a storm\u2026", stormB: "None (compare with upcoming)" };
+  const PLACEHOLDER = { stormA: "Select a storm\u2026", stormB: "None (compare with upcoming storm)" };
 
   function pickerContainer(which) {
     return document.querySelector('[data-picker="' + which + '"]');
@@ -984,12 +1289,13 @@
   // ---------------------------------------------------------------------
   async function init() {
     await loadData();
-    await loadUpcoming();
     populateStormSelects();
     setupPicker("stormA");
     setupPicker("stormB");
     syncPickerToggles();
+    setupCustomStorm();
     updateResultsSubtitle();
+    renderCustomProfile();
     renderAnalogues();
 
     compareBtn.addEventListener("click", runCompareSafe);
@@ -1006,18 +1312,8 @@
       });
     }
 
-    // Keep the Best Match panel in sync with admin edits made in another
-    // tab: re-fetch the upcoming profile when this tab regains focus, is
-    // restored from the back/forward cache, or becomes visible again.
-    // renderAnalogues() only re-runs when a scoring value actually changed.
-    window.addEventListener("focus", refreshUpcoming);
-    window.addEventListener("pageshow", (event) => {
-      if (event.persisted) refreshUpcoming();
-    });
-    document.addEventListener("visibilitychange", () => {
-      if (document.visibilityState === "visible") refreshUpcoming();
-    });
-
+    // The shared state script clears the stored profile on a browser reload;
+    // ordinary navigation restores it when this page is opened again.
     analogueModal.querySelectorAll("[data-modal-close]").forEach((el) =>
       el.addEventListener("click", closeAnalogueDetails)
     );
@@ -1036,7 +1332,8 @@
       });
     });
 
-    resetControls();
+    restoreCustomStorm();
+    resetControls(false);
   }
 
   if (document.readyState === "loading") {

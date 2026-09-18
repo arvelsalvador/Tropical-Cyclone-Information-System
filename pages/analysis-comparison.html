@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Metrics — Tropical Cyclone Information System</title>
+    <title>Analysis Comparison — Tropical Cyclone Information System</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
@@ -13,7 +13,8 @@
     <link rel="stylesheet" href="../css/components/header.css" />
     <link rel="stylesheet" href="../css/components/buttons.css" />
     <link rel="stylesheet" href="../css/components/footer.css" />
-    <link rel="stylesheet" href="../css/pages/compare-storms.css?v=7" />
+    <link rel="stylesheet" href="../css/pages/analysis-comparison.css?v=9" />
+    <script src="../js/upcoming-storm-state.js"></script>
   </head>
   <body>
     <div id="site-header"><div class="announcement-bar">
@@ -36,7 +37,7 @@
     <nav class="main-nav">
       <a href="../index.html" class="nav-link">Home</a>
       <a href="../pages/historical-data.html" class="nav-link">Historical Data</a>
-      <a href="../pages/compare-storms.html" class="nav-link">Metrics</a>
+      <a href="../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
         <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
           Education
@@ -104,7 +105,7 @@
             </svg>
           </div>
           <div>
-            <h1>Metrics</h1>
+            <h1>Analysis Comparison</h1>
             <p>
               Explore how an incoming typhoon compares with historical storms
               in Camarines Norte.
@@ -133,7 +134,7 @@
           <div>
             <strong>How it works</strong>
             <p>
-              Select an incoming storm and up to 2 historical storms. We'll
+              Enter an upcoming storm and up to 2 historical storms. We'll
               compare their key characteristics and impacts.
             </p>
           </div>
@@ -148,6 +149,67 @@
           <h2 class="cs-card-title">
             <span class="step-badge">1</span> Upcoming Storm Profile
           </h2>
+
+          <form id="customStormForm" class="sandbox-form" novalidate>
+            <p class="sandbox-lead">
+              No live feed here — enter the upcoming storm below to compare.
+              Nothing is saved; refreshing the page resets everything.
+            </p>
+            <div class="sandbox-fields">
+              <label class="sandbox-field" for="customStormName">
+                <span>Storm name</span>
+                <input
+                  type="text"
+                  id="customStormName"
+                  maxlength="40"
+                   placeholder="e.g. Typhoon Odin"
+                  autocomplete="off"
+                />
+              </label>
+              <label class="sandbox-field" for="customStormWind">
+                <span>Max sustained winds (km/h)</span>
+                <input
+                  type="number"
+                  id="customStormWind"
+                  min="30"
+                  max="500"
+                  step="1"
+                  placeholder="e.g. 185"
+                />
+              </label>
+              <label class="sandbox-field" for="customStormCategory">
+                <span>PAGASA category</span>
+                <select id="customStormCategory">
+                  <option value="">Auto-suggest from wind…</option>
+                  <option value="Tropical Depression">Tropical Depression</option>
+                  <option value="Tropical Storm">Tropical Storm</option>
+                  <option value="Severe Tropical Storm">Severe Tropical Storm</option>
+                  <option value="Typhoon">Typhoon</option>
+                  <option value="Super Typhoon">Super Typhoon</option>
+                </select>
+              </label>
+            </div>
+            <p class="sandbox-suggest" id="customStormSuggest" hidden></p>
+            <p class="sandbox-category-info" id="customStormCategoryInfo" hidden></p>
+            <p class="sandbox-error" id="customStormError" role="alert" hidden></p>
+            <div class="sandbox-actions">
+              <button type="submit" class="compare-now-btn" id="customStormApply">
+                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
+                  <path
+                    d="M4 20V10M10 20V4M16 20v-7M22 20V8"
+                    stroke="#fff"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                  />
+                </svg>
+                Apply Upcoming Storm
+                <span class="compare-arrow" aria-hidden="true">&rarr;</span>
+              </button>
+              <button type="button" class="reset-btn" id="customStormClear">
+                Clear
+              </button>
+            </div>
+          </form>
 
           <div id="upcomingStormSection" class="upcoming-hidden">
           <div class="profile-head">
@@ -166,7 +228,7 @@
             </div>
             <div>
               <div class="profile-name-row">
-                <h3 data-us="storm_name">TY ODIN</h3>
+                <h3 data-us="storm_name">Typhoon Odin</h3>
                 <span class="badge-approaching" data-us="status">Approaching</span>
               </div>
               <p class="profile-meta">&nbsp;</p>
@@ -319,8 +381,8 @@
         </div>
 
           <div class="upcoming-empty upcoming-hidden" id="upcomingEmpty">
-            <div class="upcoming-empty-title">No active tropical cyclone</div>
-            <p class="upcoming-empty-sub">No tropical cyclone is currently being monitored in the Philippine Area of Responsibility. Check back later for updates.</p>
+            <div class="upcoming-empty-title">No upcoming storm yet</div>
+            <p class="upcoming-empty-sub">Enter the storm name and wind speed above, then Apply — its closest historical matches will appear in Step 2.</p>
           </div>
         </section>
 
@@ -351,9 +413,9 @@
               </svg>
             </span>
             <div>
-              <h2 class="cs-section-title">Storm Comparison</h2>
+              <h2 class="cs-section-title">Storm Analysis Comparison</h2>
               <p class="controls-head-sub">
-                Compare historical storms with upcoming storms to find similar
+                Compare historical storms with the upcoming storm to find similar
                 patterns and impacts.
               </p>
             </div>
@@ -396,7 +458,7 @@
               <small>Optional — pick another past storm</small>
             </label>
             <button type="button" class="picker-toggle" id="stormB" aria-haspopup="listbox" aria-expanded="false">
-              <span class="picker-toggle-label">None (compare with upcoming)</span>
+              <span class="picker-toggle-label">None (compare with upcoming storm)</span>
               <svg class="picker-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </button>
             <div class="picker-panel" hidden>
@@ -404,7 +466,7 @@
               <div class="picker-list" role="listbox" tabindex="-1"></div>
             </div>
             <select id="stormB-select" hidden aria-hidden="true" tabindex="-1">
-              <option value="">None (compare with upcoming)</option>
+              <option value="">None (compare with upcoming storm)</option>
             </select>
           </div>
         </div>
@@ -419,7 +481,7 @@
                 stroke-linecap="round"
               />
             </svg>
-            Compare Storms
+            Run Analysis
             <span class="compare-arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="reset-btn" id="resetBtn">
@@ -522,14 +584,14 @@
         <p class="analogue-modal-summary" id="analogueModalSummary"></p>
         <div class="analogue-modal-stats" id="analogueModalStats"></div>
         <div class="analogue-modal-comparison">
-          <h3>Compared with <span data-us="storm_name">TY ODIN</span></h3>
+          <h3>Compared with <span data-us="storm_name">Typhoon Odin</span></h3>
           <div class="analogue-comparison-table-wrap">
             <table class="analogue-comparison-table">
               <thead>
                 <tr>
                   <th>Metric</th>
                   <th id="analogueComparisonStorm"></th>
-                  <th data-us="storm_name">TY ODIN</th>
+                  <th data-us="storm_name">Typhoon Odin</th>
                 </tr>
               </thead>
               <tbody id="analogueComparisonBody"></tbody>
@@ -550,7 +612,7 @@
       <h4>Explore</h4>
       <a href="../index.html">Home</a>
       <a href="../pages/historical-data.html">Historical Data</a>
-      <a href="../pages/compare-storms.html">Metrics</a>
+      <a href="../pages/analysis-comparison.html">Analysis Comparison</a>
       <a href="../pages/resources.html">Resources</a>
     </div>
     <div class="footer-col">
@@ -565,7 +627,7 @@
 </footer></div>
 
     <script src="../js/main.js" data-root="../"></script>
-    <script src="../js/upcoming-storm.js" defer></script>
-    <script src="../js/pages/compare-storms.js?v=10" defer></script>
+    <script src="../js/storm-category.js" defer></script>
+    <script src="../js/pages/analysis-comparison.js?v=11" defer></script>
   </body>
 </html>

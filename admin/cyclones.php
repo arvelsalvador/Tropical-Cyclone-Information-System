@@ -6,7 +6,7 @@ require 'helpers.php';
 // Historical Cyclones — list page.
 //
 // Paginated, searchable table of every record in the `cyclones` table — the
-// same records that power the public Historical Data and Metrics pages.
+// same records that power the public Historical Data and Analysis Comparison pages.
 // Add/edit happens in cyclone-form.php; delete posts to cyclone-delete.php.
 // ===========================================================================
 
@@ -215,7 +215,7 @@ function signal_chip(array $row) {
       </div>
       <div>
         <h1 class="admin-hero-title">Historical Cyclones</h1>
-        <p class="admin-hero-sub">These records power the public Historical Data and Metrics pages.</p>
+        <p class="admin-hero-sub">These records power the public Historical Data and Analysis Comparison pages.</p>
       </div>
       <a href="cyclone-form.php" class="admin-btn admin-btn--inline admin-hero-action">
         <svg viewBox="0 0 24 24" width="15" height="15" fill="none">

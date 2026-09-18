@@ -36,7 +36,7 @@
     <nav class="main-nav">
       <a href="../../index.html" class="nav-link">Home</a>
       <a href="../../pages/historical-data.html" class="nav-link">Historical Data</a>
-      <a href="../../pages/compare-storms.html" class="nav-link">Metrics</a>
+      <a href="../../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
         <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
           Education
@@ -225,9 +225,14 @@
       </p>
 
       <section class="eg-decision-list">
-        <article class="eg-decision stay" data-reveal>
+        <article class="eg-decision stay" data-reveal data-ghost="01">
           <div class="eg-decision-badge">
-            <span class="eg-decision-label">Stay Home</span>
+            <span class="eg-journey-node" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+                <path d="M4 11l8-7 8 7" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M6 9.5V20h12V9.5" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+              </svg>
+            </span>
             <span class="eg-decision-scope">Signal No. 1–2</span>
           </div>
           <div class="eg-decision-body">
@@ -242,9 +247,16 @@
           </div>
         </article>
 
-        <article class="eg-decision ready" data-reveal>
+        <article class="eg-decision ready" data-reveal data-ghost="02">
           <div class="eg-decision-badge">
-            <span class="eg-decision-label">Be Ready to Leave</span>
+            <span class="eg-journey-node" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+                <path d="M6 17.5h12l-1.2-4.5H7.2L6 17.5z" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M9.5 13a2.5 2.5 0 015 0" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M3 10a8 8 0 012.4-3" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M21 10a8 8 0 00-2.4-3" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
             <span class="eg-decision-scope">Signal No. 3</span>
           </div>
           <div class="eg-decision-body">
@@ -259,9 +271,15 @@
           </div>
         </article>
 
-        <article class="eg-decision go" data-reveal>
+        <article class="eg-decision go" data-reveal data-ghost="03">
           <div class="eg-decision-badge">
-            <span class="eg-decision-label">Evacuate Now</span>
+            <span class="eg-journey-node" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+                <path d="M12 4l9 16H3l9-16z" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M12 10v4.5" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" />
+                <path d="M12 17.2v.3" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" />
+              </svg>
+            </span>
             <span class="eg-decision-scope">Signal No. 4–5</span>
           </div>
           <div class="eg-decision-body">
@@ -276,9 +294,14 @@
           </div>
         </article>
 
-        <article class="eg-decision order" data-reveal>
+        <article class="eg-decision order" data-reveal data-ghost="04">
           <div class="eg-decision-badge">
-            <span class="eg-decision-label">Mandatory Order</span>
+            <span class="eg-journey-node" aria-hidden="true">
+              <svg viewBox="0 0 24 24" width="28" height="28" fill="none">
+                <path d="M6 9.5a6 6 0 0112 0c0 4.5 1.8 5.8 1.8 5.8H4.2S6 14 6 9.5" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
+                <path d="M10 19.5a2.2 2.2 0 004 0" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" />
+              </svg>
+            </span>
             <span class="eg-decision-scope">Any signal</span>
           </div>
           <div class="eg-decision-body">
@@ -380,7 +403,7 @@
       <h4>Explore</h4>
       <a href="../../index.html">Home</a>
       <a href="../../pages/historical-data.html">Historical Data</a>
-      <a href="../../pages/compare-storms.html">Metrics</a>
+      <a href="../../pages/analysis-comparison.html">Analysis Comparison</a>
       <a href="../../pages/resources.html">Resources</a>
     </div>
     <div class="footer-col">
