@@ -1,6 +1,6 @@
 <?php
 require 'auth.php';
-require 'helpers.php';
+require_once 'helpers.php';
 
 // ===========================================================================
 // Admin Dashboard — post-login overview.
@@ -61,11 +61,22 @@ $categoryLabels = [
     'STY' => 'Super Typhoon',
 ];
 
-// "Opong (Bualoi)" style display name
+// Category badge artwork (transparent PNG storm glyphs in assets/Icons) shown
+// inside the category pill in the recent-cyclones table.
+$categoryIcons = [
+    'TD'  => '../assets/Icons/Green_Storm.png',
+    'TS'  => '../assets/Icons/Yellow_Storm.png',
+    'STS' => '../assets/Icons/Orange_Storm.png',
+    'TY'  => '../assets/Icons/Red_Storm.png',
+    'STY' => '../assets/Icons/Purple_Storm.png',
+];
+
+// "Opong (Bualoi)" style display name (local part Title-Cased)
 function cyclone_display_name(array $row) {
+    $local = cyclone_name($row['local_name']);
     return $row['international_name']
-        ? $row['local_name'] . ' (' . $row['international_name'] . ')'
-        : $row['local_name'];
+        ? $local . ' (' . $row['international_name'] . ')'
+        : $local;
 }
 
 // Builds one small fact tile; $value is already-escaped HTML or '&mdash;'.
@@ -98,6 +109,7 @@ if ($strongest) {
     rel="stylesheet"
   />
   <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
 </head>
@@ -107,22 +119,14 @@ if ($strongest) {
   <main class="admin-main">
     <?php if ($db_error !== ''): ?>
       <div class="alert alert-error">
-        <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-          <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
-          <path d="M12 11v5M12 7.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-        </svg>
+        <i class="fa-solid fa-circle-exclamation"></i>
         <span><?php echo htmlspecialchars($db_error); ?></span>
       </div>
     <?php else: ?>
 
     <section class="admin-hero" data-reveal>
       <div class="admin-hero-icon">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7" rx="1.5" />
-          <rect x="14" y="3" width="7" height="7" rx="1.5" />
-          <rect x="3" y="14" width="7" height="7" rx="1.5" />
-          <rect x="14" y="14" width="7" height="7" rx="1.5" />
-        </svg>
+        <i class="fa-solid fa-table-cells-large"></i>
       </div>
       <div>
         <h1 class="admin-hero-title">Dashboard</h1>
@@ -134,11 +138,7 @@ if ($strongest) {
       <div class="stat-grid">
         <div class="stat-card" data-reveal>
           <div class="stat-icon stat-icon--blue">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <circle cx="12" cy="12" r="2.6" fill="#fff" />
-              <path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="#fff" />
-              <path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="#fff" />
-            </svg>
+            <i class="fa-solid fa-hurricane"></i>
           </div>
           <div class="stat-label">Cyclones tracked</div>
           <div class="stat-value"><?php echo $totalCyclones; ?></div>
@@ -146,12 +146,7 @@ if ($strongest) {
         </div>
         <div class="stat-card" data-reveal style="--reveal-delay: 0.06s">
           <div class="stat-icon stat-icon--purple">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" />
-              <line x1="16" y1="2" x2="16" y2="6" />
-              <line x1="8" y1="2" x2="8" y2="6" />
-              <line x1="3" y1="10" x2="21" y2="10" />
-            </svg>
+            <i class="fa-solid fa-calendar-days"></i>
           </div>
           <div class="stat-label">Storms in <?php echo $latestYear > 0 ? $latestYear : '&mdash;'; ?></div>
           <div class="stat-value"><?php echo $stormsInLatestYear; ?></div>
@@ -159,9 +154,7 @@ if ($strongest) {
         </div>
         <div class="stat-card" data-reveal style="--reveal-delay: 0.12s">
           <div class="stat-icon stat-icon--red">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" />
-            </svg>
+            <i class="fa-solid fa-wind"></i>
           </div>
           <div class="stat-label">Strongest on record</div>
           <div class="stat-value"><?php echo $strongest ? $strongestSustained . ' km/h' : '&mdash;'; ?></div>
@@ -174,83 +167,13 @@ if ($strongest) {
           </div>
         </div>
       </div>
-      <section class="admin-card dash-card upcoming-storm-session-card" data-upcoming-storm-card data-reveal style="--reveal-delay: 0.16s">
-        <div class="upcoming-dash-heading">
-          <div class="upcoming-dash-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <circle cx="12" cy="12" r="2.6" fill="currentColor" />
-              <path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="currentColor" />
-              <path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="currentColor" />
-            </svg>
-          </div>
-          <div class="upcoming-dash-titlewrap">
-            <h2 class="dash-card-title upcoming-dash-title">Upcoming Storm</h2>
-            <p class="upcoming-dash-sub">Live preview of the visitor session profile</p>
-          </div>
-          <span class="upcoming-dash-badge">Session preview</span>
-        </div>
-        <div data-upcoming-empty class="upcoming-dash-empty">
-          <div class="upcoming-dash-empty-top">
-            <div class="upcoming-dash-empty-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="7" />
-                <path d="M20 20l-3.5-3.5" />
-              </svg>
-            </div>
-            <div class="upcoming-dash-empty-copy">
-              <strong>No upcoming storm yet <span class="upcoming-dash-pill upcoming-dash-pill--empty">Empty</span></strong>
-              <span class="upcoming-dash-empty-text">This card mirrors what a visitor enters on Analysis Comparison. It lives in this browser tab only and clears on reload.</span>
-            </div>
-          </div>
-          <ol class="upcoming-dash-steps">
-            <li><span class="upcoming-dash-stepnum">1</span><div><b>Open Analysis Comparison</b><i>Use the button below</i></div></li>
-            <li><span class="upcoming-dash-stepnum">2</span><div><b>Enter name + wind</b><i>E.g. Odin, 160 km/h &rarr; Typhoon Odin</i></div></li>
-            <li><span class="upcoming-dash-stepnum">3</span><div><b>Apply storm</b><i>Preview appears here instantly</i></div></li>
-          </ol>
-        </div>
-        <div data-upcoming-details hidden class="upcoming-dash-details">
-          <div class="upcoming-dash-profile">
-            <div class="upcoming-dash-profile-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M12 3v18M5 7l7-4 7 4M5 17l7 4 7-4" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </div>
-            <div class="upcoming-dash-profile-copy">
-              <span class="upcoming-dash-profile-label">Storm name</span>
-              <strong data-upcoming-value="name"></strong>
-            </div>
-            <span class="upcoming-dash-status"><span class="upcoming-dash-dot" aria-hidden="true"></span>Active &middot; Ready for comparison</span>
-          </div>
-          <div class="upcoming-dash-facts">
-            <div class="upcoming-dash-fact">
-              <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9.59 4.59A2 2 0 1 1 11 8H2m10.59 11.41A2 2 0 1 0 14 16H2m15.73-8.27A2.5 2.5 0 1 1 19.5 12H2" /></svg>Max sustained wind</span>
-              <strong data-upcoming-value="wind"></strong>
-            </div>
-            <div class="upcoming-dash-fact">
-              <span><svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3l2.4 4.9 5.4.8-3.9 3.8.9 5.4-4.8-2.5-4.8 2.5.9-5.4L4.2 8.7l5.4-.8z" /></svg>PAGASA category</span>
-              <strong data-upcoming-value="category"></strong>
-            </div>
-          </div>
-          <p class="upcoming-dash-hint">Session-only preview &mdash; clears on reload. Run the full historical comparison on the Analysis page.</p>
-        </div>
-        <div class="upcoming-dash-actions">
-          <a class="upcoming-dash-cta" href="../pages/analysis-comparison.html">Open Analysis Comparison <span aria-hidden="true">&rarr;</span></a>
-          <a class="upcoming-dash-ghost" href="cyclones.php">Manage cyclones</a>
-        </div>
-      </section>
       <!-- Quick actions -->
-      <div class="dash-grid">
-
         <section class="admin-card dash-card" data-reveal style="--reveal-delay: 0.08s">
           <h2 class="dash-card-title">Quick Actions</h2>
           <div class="dash-actions">
             <a class="dash-action" href="cyclones.php">
               <div class="dash-action-icon dash-action-icon--purple">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="21 8 21 21 3 21 3 8" />
-                  <rect x="1" y="3" width="22" height="5" />
-                  <line x1="10" y1="12" x2="14" y2="12" />
-                </svg>
+                <i class="fa-solid fa-box-archive"></i>
               </div>
               <div class="dash-action-text">
                 <div class="dash-action-title">Historical Cyclones</div>
@@ -260,10 +183,7 @@ if ($strongest) {
             </a>
             <a class="dash-action" href="cyclone-form.php">
               <div class="dash-action-icon dash-action-icon--green">
-                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <circle cx="12" cy="12" r="9" />
-                  <path d="M12 8v8M8 12h8" />
-                </svg>
+                <i class="fa-solid fa-circle-plus"></i>
               </div>
               <div class="dash-action-text">
                 <div class="dash-action-title">Add New Cyclone</div>
@@ -273,7 +193,6 @@ if ($strongest) {
             </a>
           </div>
         </section>
-      </div>
       <!-- Recently added records -->
       <section class="admin-card admin-card--page" data-reveal>
         <div class="dash-card-row">
@@ -294,19 +213,24 @@ if ($strongest) {
             </thead>
             <tbody>
               <?php foreach ($recent as $row): ?>
+              <?php $cat = $row['highest_category']; ?>
               <tr>
                 <td>
-                  <div class="cell-strong"><?php echo htmlspecialchars($row['local_name']); ?></div>
-                  <?php if ($row['international_name']): ?>
-                    <div class="cell-sub"><?php echo htmlspecialchars($row['international_name']); ?></div>
-                  <?php endif; ?>
+                  <div class="admin-cyclone-cell">
+                    <?php if (!empty($categoryIcons[$cat])): ?>
+                      <span class="admin-cyclone-icon"><img src="<?php echo $categoryIcons[$cat]; ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
+                    <?php endif; ?>
+                    <div>
+                      <div class="cell-strong"><?php echo htmlspecialchars(cyclone_name($row['local_name'])); ?></div>
+                      <?php if ($row['international_name']): ?>
+                        <div class="cell-sub"><?php echo htmlspecialchars($row['international_name']); ?></div>
+                      <?php endif; ?>
+                    </div>
+                  </div>
                 </td>
                 <td><?php echo htmlspecialchars((string) $row['year']); ?></td>
                 <td>
-                  <?php $cat = $row['highest_category']; ?>
-                  <span class="pill <?php echo isset($categoryLabels[$cat]) ? 'pill--' . htmlspecialchars($cat) : 'pill--muted'; ?>">
-                    <?php echo htmlspecialchars($categoryLabels[$cat] ?? '&mdash;'); ?>
-                  </span>
+                  <?php echo htmlspecialchars($categoryLabels[$cat] ?? '—'); ?>
                 </td>
                 <td><?php echo ($row['highest_strength'] !== null && $row['highest_strength'] !== '')
                     ? htmlspecialchars(str_replace('/', ' / ', $row['highest_strength'])) . ' km/h' : '&mdash;'; ?></td>
@@ -327,6 +251,5 @@ if ($strongest) {
   <?php require 'partials/site-footer.php'; ?>
 
   <script src="../js/main.js" data-root="../"></script>
-<script src="../js/upcoming-storm-state.js"></script>
 </body>
 </html>

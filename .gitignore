@@ -1,5 +1,20 @@
-# Composer dependencies (installed locally, not part of the source)
-vendor/
+# Secrets / environment config (never commit real credentials)
+/config.php
+/config.local.php
+config/*.local.php
+.env
+.env.local
 
-# Local scratch scripts
+# Composer dependencies (installed locally, not part of the source)
+/vendor/
+
+# Local scratch scripts (one-off codemods, verify harnesses — never ship)
 tmp_data_scan.ps1
+scripts/tmp_*.js
+scripts/tmp_*.ps1
+scripts/verify-*.tmp.js
+scripts/make-logo-transparent.js
+scripts/check-logo-alpha.js
+scripts/__seed_admin.php
+admin/Weather.code-workspace
+.vscode/

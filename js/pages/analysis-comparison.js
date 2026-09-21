@@ -25,9 +25,10 @@
   "use strict";
 
   // ---------------------------------------------------------------------
-  // Config
+  // Config (endpoints + shared helpers via js/api-client.js)
   // ---------------------------------------------------------------------
-  const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
+  const API_URL = (window.TCIS_API && window.TCIS_API.CYCLONES_URL) || "/Weather/api/get_cyclones.php";
+  const BULLETIN_API_URL = (window.TCIS_API && window.TCIS_API.BULLETINS_URL) || "/Weather/api/get_bulletins.php?cyclone_id=";
 
   // Current upcoming storm profile, filled by the Step 1 form and mirrored
   // to the shared same-tab session state.
@@ -41,13 +42,35 @@
     "Super Typhoon": 5,
   };
 
-  const CATEGORY_MAP = {
+  const CATEGORY_MAP = (window.TCIS_API && window.TCIS_API.CATEGORY_MAP) || {
     TD: "Tropical Depression",
     TS: "Tropical Storm",
     STS: "Severe Tropical Storm",
     TY: "Typhoon",
     STY: "Super Typhoon",
   };
+
+  // Category badge artwork (transparent PNG storm glyphs in assets/Icons),
+  // keyed by the full PAGASA category name. Shares its color ramp with the
+  // Historical Data page and the admin pills.
+  const CATEGORY_ICONS = {
+    "Tropical Depression": "../assets/Icons/Green_Storm.png",
+    "Tropical Storm": "../assets/Icons/Yellow_Storm.png",
+    "Severe Tropical Storm": "../assets/Icons/Orange_Storm.png",
+    Typhoon: "../assets/Icons/Red_Storm.png",
+    "Super Typhoon": "../assets/Icons/Purple_Storm.png",
+  };
+
+  // Builds the <img> markup for a category badge, or "" when the category is
+  // unrecognised (callers keep their own fallback glyph).
+  function categoryIconMarkup(category, size) {
+    const src = CATEGORY_ICONS[category];
+    if (!src) return "";
+    return (
+      '<img src="' + src + '" alt="" width="' + size + '" height="' + size +
+      '" loading="lazy" decoding="async">'
+    );
+  }
 
   // Whether the visitor has applied an upcoming storm in Step 1. Defaults to
   // false so the page opens in the "no upcoming storm yet" empty state.
@@ -56,17 +79,13 @@
   // Populated by loadData() on startup — replaces the old static STORMS array.
   let STORMS = [];
 
-  // Selected storm per dropdown (by name — the identity runCompare uses).
+  // Selected storm per dropdown (stable DB id when available — the identity
+  // runCompare resolves via findStorm(); display name is the fallback).
   const selection = { stormA: "", stormB: "" };
 
   // Comparison modes drive both the results subtitle and the tab labels;
-  // add new modes here first, then their metric logic in renderStrength.
-  // The subtitle is generated from the active mode's context string, so a
-  // new mode only needs its own entry — nothing is hardcoded per result.
-  const COMPARISON_MODES = {
-    strength: { subtitle: "Comparing cyclones by strength" },
-  };
-  const activeMode = "strength";
+  // single strength mode only (kept as a constant for future extension).
+  const COMPARISON_SUBTITLE = "Comparing cyclones by strength";
 
   // ---------------------------------------------------------------------
   // Element references
@@ -99,6 +118,31 @@
   const analogueComparisonStorm = document.getElementById("analogueComparisonStorm");
   const analogueComparisonBody = document.getElementById("analogueComparisonBody");
   const analogueModalExplanation = document.getElementById("analogueModalExplanation");
+  const analogueModalReason = document.getElementById("analogueModalReason");
+  const analogueModalExplanationBody = document.getElementById("analogueModalExplanationBody");
+  // Bulletin overlay refs — verbatim reuse of the Historical Data bulletin
+  // viewer (same markup + css/pages/bulletin-modal.css), opened as an
+  // overlay above the analogue modal.
+  const analogueBulletinsBtn = document.getElementById("analogueBulletinsBtn");
+  const analogueBulletinsHint = document.getElementById("analogueBulletinsHint");
+  const bulletinModal = document.getElementById("bulletinModal");
+  const bulletinModalTitle = document.getElementById("bulletinModalTitle");
+  const bulletinModalSubtitle = document.getElementById("bulletinModalSubtitle");
+  const bulletinModalCatIcon = document.getElementById("bulletinModalCatIcon");
+  const bulletinCloseBtn = document.getElementById("bulletinClose");
+  const bulletinList = document.getElementById("bulletinList");
+  const bulletinStatus = document.getElementById("bulletinStatus");
+  const bulletinListView = document.getElementById("bulletinListView");
+  const bulletinPreviewView = document.getElementById("bulletinPreviewView");
+  const bulletinPreviewFrame = document.getElementById("bulletinPreviewFrame");
+  const bulletinPreviewTitle = document.getElementById("bulletinPreviewTitle");
+  const bulletinOpenNewTab = document.getElementById("bulletinOpenNewTab");
+  const bulletinDownload = document.getElementById("bulletinDownload");
+  const bulletinBackBtn = document.getElementById("bulletinBackBtn");
+  const bulletinCount = document.getElementById("bulletinCount");
+  const bulletinSearch = document.getElementById("bulletinSearch");
+  const bulletinSearchClear = document.getElementById("bulletinSearchClear");
+  const bulletinSearchWrap = document.getElementById("bulletinSearchWrap");
   // Step 1 sandbox form refs (wired in setupCustomStorm()).
   const customStormForm = document.getElementById("customStormForm");
   const customStormName = document.getElementById("customStormName");
@@ -123,6 +167,7 @@
   // Data loading + mapping
   // ---------------------------------------------------------------------
   function formatDateRange(startStr, endStr) {
+    if (window.TCIS_API) return window.TCIS_API.formatDateRange(startStr, endStr, true);
     if (!startStr) return "—";
     const opts = { month: "short", day: "numeric" };
     const start = new Date(startStr + "T00:00:00");
@@ -142,15 +187,17 @@
       ? row.local_name + " (" + row.international_name + ")"
       : row.local_name;
 
-    const category = CATEGORY_MAP[row.highest_category] || row.highest_category || "—";
+    const category = window.TCIS_API ? window.TCIS_API.categoryFull(row.highest_category) : (CATEGORY_MAP[row.highest_category] || row.highest_category || "—");
 
     // highest_strength is stored as "sustained/gust" (e.g. "185/240").
-    let wind = null;
+    let wind = window.TCIS_API ? window.TCIS_API.parseSustained(row.highest_strength) : null;
     let peak = null;
     if (row.highest_strength) {
       const parts = String(row.highest_strength).split("/");
-      const sustained = parseInt(parts[0], 10);
-      if (!isNaN(sustained)) wind = sustained;
+      if (wind === null) {
+        const sustained = parseInt(parts[0], 10);
+        if (!isNaN(sustained)) wind = sustained;
+      }
       if (parts.length > 1) {
         const peakVal = parseInt(parts[1], 10);
         if (!isNaN(peakVal)) peak = peakVal;
@@ -168,6 +215,9 @@
     }
 
     return {
+      // Stable DB identity — selection/lookup keys on this first, with the
+      // display name as fallback for rows missing an id.
+      id: row.id != null ? String(row.id) : null,
       name: name,
       year: parseInt(row.year, 10),
       category: category,
@@ -405,8 +455,9 @@
       customStormCategoryInfo.hidden = true;
       return;
     }
-    // Both halves come from our own static map — safe to inject.
-    customStormCategoryInfo.innerHTML = "<strong>" + name + ":</strong> " + info;
+    // Both halves come from our own static map — still escape the key.
+    const esc = window.TCIS_API ? window.TCIS_API.escapeHtml : function (s) { return String(s); };
+    customStormCategoryInfo.innerHTML = "<strong>" + esc(name) + ":</strong> " + info;
     customStormCategoryInfo.hidden = false;
   }
 
@@ -462,9 +513,13 @@
 
   async function loadData() {
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      const rows = await res.json();
+      const rows = window.TCIS_API
+        ? await window.TCIS_API.fetchCyclones()
+        : await fetch(API_URL).then(function (res) {
+            if (!res.ok) throw new Error("Request failed: " + res.status);
+            return res.json();
+          });
+      if (!Array.isArray(rows)) throw new Error("Unexpected API response");
       STORMS = rows.map(mapRow).filter((s) => s.wind != null);
     } catch (err) {
       console.error("Failed to load cyclone data:", err);
@@ -681,8 +736,10 @@
 
       const info = document.createElement("div");
       info.className = "analogue-info";
+      // DB names are untrusted — escape before innerHTML.
+      var escName = window.TCIS_API ? window.TCIS_API.escapeHtml(match.storm.name) : String(match.storm.name);
       info.innerHTML =
-        '<div class="analogue-name">' + match.storm.name + "</div>";
+        '<div class="analogue-name">' + escName + "</div>";
 
       const sim = document.createElement("div");
       sim.className = "analogue-similarity";
@@ -691,7 +748,8 @@
 
       const bar = document.createElement("div");
       bar.className = "match-progress";
-      bar.innerHTML = "<span style=\"width:" + match.score + '%"></span>';
+      // Score is numeric (similarity()) — coerce to float, never raw text.
+      bar.innerHTML = '<span style="width:' + Number(match.score) + '%"></span>';
 
       const btn = document.createElement("button");
       btn.type = "button";
@@ -710,11 +768,12 @@
       return rowEl;
     };
 
-    // A rank shared by 2+ storms collapses into one bar: the most-recent
-    // storm plus a "+N tied" pill, expanding to its storms (capped, the
-    // overflow note tucked inside). A lone storm renders as a plain row —
-    // so the panel is always exactly the top 3 ranks and nothing can be
-    // pushed off it. Re-renders reset every group to collapsed.
+    // A rank shared by 2+ storms collapses into one bar: "Top X · N
+    // cyclones tied" plus a "Click to view" hint, expanding to all its
+    // storms (capped, the overflow note tucked inside). A lone storm
+    // renders as a plain row — so the panel is always exactly the top 3
+    // ranks and nothing can be pushed off it. Re-renders reset every
+    // group to collapsed.
     topGroups.forEach((topGroup) => {
       if (topGroup.matches.length === 1) {
         groupEl.appendChild(buildStormRow(topGroup.matches[0]));
@@ -739,7 +798,8 @@
       const info = document.createElement("div");
       info.className = "analogue-info";
       info.innerHTML =
-        '<div class="analogue-name">' + rep.storm.name + "</div>";
+        '<div class="analogue-name">Top ' + topGroup.rank + " \u00b7 " + topGroup.matches.length + ' cyclones tied</div>' +
+        '<span class="analogue-match-label">Click to view</span>';
 
       const sim = document.createElement("div");
       sim.className = "analogue-similarity";
@@ -747,25 +807,22 @@
 
       const bar = document.createElement("div");
       bar.className = "match-progress";
-      bar.innerHTML = "<span style=\"width:" + rep.score + '%"></span>';
+      bar.innerHTML = '<span style="width:' + Number(rep.score) + '%"></span>';
 
       const action = document.createElement("div");
       action.className = "analogue-action";
-      const pill = document.createElement("span");
-      pill.className = "analogue-tied-pill";
-      pill.textContent = "\u2191 +" + topGroup.matches.length + " tied as top " + topGroup.rank;
-
       const chevron = document.createElement("span");
       chevron.className = "analogue-chevron";
       chevron.setAttribute("aria-hidden", "true");
       chevron.textContent = "\u203a";
-      action.appendChild(pill);
       action.appendChild(chevron);
 
       const sub = document.createElement("div");
       sub.className = "analogue-subrows";
       sub.id = subId;
       sub.hidden = true;
+      sub.setAttribute("role", "group");
+      sub.setAttribute("aria-label", "Tied storms at " + rep.storm.wind + " km/h");
       shownSubs.forEach((match) => {
         sub.appendChild(buildStormRow(match, "is-sub"));
       });
@@ -800,15 +857,19 @@
     });
   }
 
+  function esc(s) {
+    return window.TCIS_API ? window.TCIS_API.escapeHtml(s) : String(s == null ? "" : s);
+  }
+
   function statMarkup(label, value, icon) {
     return '<div class="analogue-modal-stat"><span class="analogue-stat-icon">' +
-      icon + '</span><div><span>' + label +
-      '</span><strong>' + value + "</strong></div></div>";
+      icon + '</span><div><span>' + esc(label) +
+      '</span><strong>' + esc(value) + "</strong></div></div>";
   }
 
   function comparisonRow(label, historicalValue, upcomingValue) {
-    return "<tr><th scope=\"row\">" + label + "</th><td>" +
-      historicalValue + "</td><td>" + upcomingValue + "</td></tr>";
+    return "<tr><th scope=\"row\">" + esc(label) + "</th><td>" +
+      esc(historicalValue) + "</td><td>" + esc(upcomingValue) + "</td></tr>";
   }
 
   function openAnalogueDetails(storm, score, trigger) {
@@ -830,16 +891,42 @@
     });
     analogueModalStats.innerHTML =
       statMarkup("Maximum winds", storm.wind + " km/h", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7c3 0 3-4 0-4M3 12h13c3 0 3-4 0-4M3 16h9c3 0 3-4 0-4M3 20h5"/></svg>') +
-      statMarkup("PAGASA Category", storm.category, '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>');
+      statMarkup("PAGASA Category", storm.category,
+        categoryIconMarkup(storm.category, 22) ||
+          '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>');
     analogueComparisonStorm.textContent = storm.name;
     analogueComparisonBody.innerHTML =
       comparisonRow("Maximum winds", storm.wind + " km/h", UPCOMING.wind + " km/h") +
       comparisonRow("PAGASA Category", storm.category, UPCOMING.category);
-    analogueModalExplanation.innerHTML =
-      "<h3>Why this is a match</h3><p>" + scoreReason +
-      "</p><div class=\"analogue-match-breakdown\"><div class=\"analogue-score-ring\" style=\"--score: " +
+    // Reason paragraph + breakdown render separately — the heading and
+    // the compact bulletins button live statically in the HTML above,
+    // so writing innerHTML here never wipes the button or its listener.
+    if (analogueModalReason) {
+      analogueModalReason.textContent = scoreReason;
+    }
+    const explanationTarget = analogueModalExplanationBody || analogueModalExplanation;
+    explanationTarget.innerHTML =
+      "<div class=\"analogue-match-breakdown\"><div class=\"analogue-score-ring\" style=\"--score: " +
       displayScore + "%\"><strong>" + displayScore + "%</strong><span>WIND<br>MATCH</span></div><div class=\"analogue-match-checks\"><span><b>✓</b>Wind closeness: " + displayScore +
       "% (" + (windDelta >= 0 ? "+" : "") + windDelta + " km/h)</span></div></div>";
+
+    // Fresh bulletin state per storm; the PDFs lazy-load when the visitor
+    // opens the bulletin overlay.
+    resetAnalogueBulletins();
+    bulletinStorm = storm;
+    if (analogueBulletinsHint) {
+      analogueBulletinsHint.textContent =
+        "Inspect archived PAGASA bulletins for " + storm.name;
+    }
+    // Compact button: full hint lives in the tooltip / screen-reader label.
+    if (analogueBulletinsBtn) {
+      analogueBulletinsBtn.setAttribute(
+        "aria-label",
+        "View bulletins — inspect archived PAGASA bulletins for " + storm.name
+      );
+      analogueBulletinsBtn.title =
+        "Inspect archived PAGASA bulletins for " + storm.name;
+    }
 
     lastModalTrigger = trigger;
     analogueModal.hidden = false;
@@ -849,9 +936,345 @@
 
   function closeAnalogueDetails() {
     if (analogueModal.hidden) return;
+    resetAnalogueBulletins();
     analogueModal.hidden = true;
     document.body.classList.remove("modal-open");
     if (lastModalTrigger) lastModalTrigger.focus();
+  }
+
+  // ---------------------------------------------------------------------
+  // Analogue bulletins — archived PAGASA PDFs for the historical storm in
+  // the details modal. Same list + in-modal preview UX as Historical Data.
+  // ---------------------------------------------------------------------
+  let bulletinStorm = null;
+  let bulletinItems = [];
+  let bulletinQuery = "";
+  let bulletinLoadedFor = null;
+  let bulletinRequest = 0;
+
+  const bulletinFileSvg =
+    '<svg viewBox="0 0 24 24" aria-hidden="true">' +
+    '<path d="M6 1.8h7.5L19 7.3V22H6V1.8z" fill="#fff" stroke="#D7DEE8" stroke-width="1.2" stroke-linejoin="round"/>' +
+    '<path d="M13.5 1.8v5.5H19" fill="#E9EDF3" stroke="#D7DEE8" stroke-width="1.2" stroke-linejoin="round"/>' +
+    '<rect x="4" y="12.5" width="16" height="6.4" rx="1.4" fill="#E2574C"/>' +
+    '<text x="12" y="17.2" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="4" font-weight="800" fill="#fff" letter-spacing="0.5">PDF</text>' +
+    '<path d="M8.2 5.6h5M8.2 8h5" stroke="#E2E8F0" stroke-width="1.3" stroke-linecap="round"/>' +
+    "</svg>";
+
+  function renderBulletinSkeletons(count) {
+    if (!bulletinList) return;
+    bulletinList.innerHTML = "";
+    for (let i = 0; i < count; i++) {
+      const li = document.createElement("li");
+      li.className = "bulletin-skeleton";
+      li.setAttribute("aria-hidden", "true");
+      li.innerHTML =
+        '<span class="sk-icon"></span><span class="sk-lines"></span><span class="sk-btn"></span>';
+      bulletinList.appendChild(li);
+    }
+  }
+
+  function showBulletinListView() {
+    if (!bulletinPreviewView || !bulletinListView) return;
+    bulletinPreviewView.hidden = true;
+    bulletinListView.hidden = false;
+    if (bulletinSearchWrap) bulletinSearchWrap.hidden = false;
+    // Stop the PDF load when going back to the list.
+    if (bulletinPreviewFrame) bulletinPreviewFrame.removeAttribute("src");
+  }
+
+  function setBulletinSearchEnabled(enabled) {
+    if (bulletinSearch) bulletinSearch.disabled = !enabled;
+    if (!enabled && bulletinSearchClear) bulletinSearchClear.hidden = true;
+  }
+
+  function showBulletinPreview(bulletin) {
+    if (!bulletinPreviewView || !bulletinListView || !bulletinStorm) return;
+    if (window.TCIS_API && !window.TCIS_API.isSafeBulletinUrl(bulletin.r2_url)) {
+      if (bulletinStatus) {
+        bulletinStatus.textContent = "This bulletin link looks invalid and was blocked.";
+        bulletinStatus.classList.add("is-error");
+      }
+      return;
+    }
+    bulletinPreviewTitle.textContent =
+      bulletinStorm.name + " — Bulletin " + bulletin.bulletin_number;
+    bulletinPreviewFrame.src = bulletin.r2_url;
+    bulletinOpenNewTab.href = bulletin.r2_url;
+    bulletinDownload.href = bulletin.r2_url;
+    bulletinDownload.setAttribute(
+      "download",
+      "Bulletin-" + bulletin.bulletin_number + ".pdf"
+    );
+    bulletinListView.hidden = true;
+    bulletinPreviewView.hidden = false;
+    if (bulletinSearchWrap) bulletinSearchWrap.hidden = true;
+    if (bulletinBackBtn) bulletinBackBtn.focus();
+  }
+
+  // Hides the overlay and clears all bulletin state. In-flight fetches are
+  // invalidated via bulletinRequest so a slow response for a previous storm
+  // can never overwrite the current one. The analogue modal underneath is
+  // left untouched (it keeps the body's modal-open scroll lock).
+  function resetAnalogueBulletins() {
+    bulletinRequest++;
+    bulletinStorm = null;
+    bulletinItems = [];
+    bulletinQuery = "";
+    bulletinLoadedFor = null;
+    if (bulletinSearch) bulletinSearch.value = "";
+    if (bulletinSearchClear) bulletinSearchClear.hidden = true;
+    if (bulletinList) bulletinList.innerHTML = "";
+    if (bulletinStatus) {
+      bulletinStatus.textContent = "";
+      bulletinStatus.classList.remove("is-error");
+    }
+    if (bulletinCount) bulletinCount.textContent = "";
+    showBulletinListView();
+    if (bulletinModal) {
+      bulletinModal.hidden = true;
+      bulletinModal.classList.remove("is-open");
+    }
+  }
+
+  function closeAnalogueBulletins() {
+    if (!bulletinModal || bulletinModal.hidden) return;
+    resetAnalogueBulletins();
+    if (analogueBulletinsBtn) analogueBulletinsBtn.focus();
+  }
+
+  function bulletinMatchesQuery(b, query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q) return true;
+    const num = String(b.bulletin_number);
+    const stormName = (bulletinStorm ? bulletinStorm.name : "").toLowerCase();
+    const haystacks = [
+      num,
+      "bulletin " + num,
+      "#" + num,
+      ("bulletin " + num + " " + stormName).toLowerCase(),
+      stormName,
+    ];
+    return haystacks.some((h) => h.indexOf(q) !== -1);
+  }
+
+  function updateBulletinCount(filtered) {
+    const total = bulletinItems.length;
+    const totalLabel = total + (total === 1 ? " bulletin" : " bulletins");
+    if (bulletinCount) {
+      bulletinCount.textContent =
+        bulletinQuery && filtered.length !== total
+          ? filtered.length + " of " + totalLabel
+          : totalLabel;
+    }
+  }
+
+  function renderBulletinItems(list) {
+    if (!bulletinList) return;
+    bulletinList.innerHTML = "";
+    if (list.length === 0) {
+      if (bulletinItems.length > 0 && bulletinStatus) {
+        bulletinStatus.textContent = "No bulletins match your search.";
+      }
+      return;
+    }
+    if (bulletinStatus) bulletinStatus.textContent = "";
+    list.forEach((b, index) => {
+      const li = document.createElement("li");
+      li.style.animationDelay = Math.min(index * 30, 300) + "ms";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "bulletin-item";
+      btn.setAttribute(
+        "aria-label",
+        "Preview Bulletin " + b.bulletin_number + " for " + bulletinStorm.name
+      );
+
+      const icon = document.createElement("span");
+      icon.className = "bulletin-item-icon";
+      icon.innerHTML = bulletinFileSvg;
+
+      const text = document.createElement("span");
+      text.className = "bulletin-item-text";
+      const title = document.createElement("span");
+      title.className = "bulletin-item-title";
+      title.textContent = "Bulletin " + b.bulletin_number;
+      const sub = document.createElement("span");
+      sub.className = "bulletin-item-sub";
+      sub.textContent = "PDF · Click to preview";
+      text.appendChild(title);
+      text.appendChild(sub);
+
+      const previewPill = document.createElement("span");
+      previewPill.className = "bulletin-item-preview";
+      previewPill.textContent = "Preview";
+
+      // Decorative affordance only (aria-hidden): the outer button owns
+      // activation. A nested role=button/tabindex here would create an
+      // invalid nested interactive with a double tab stop, so the
+      // open-in-new-tab action lives in the preview view instead.
+      const openBtn = document.createElement("span");
+      openBtn.className = "bulletin-item-open";
+      openBtn.setAttribute("aria-hidden", "true");
+      openBtn.textContent = "↗";
+
+      const chevron = document.createElement("span");
+      chevron.className = "bulletin-item-chevron";
+      chevron.textContent = "›";
+      chevron.setAttribute("aria-hidden", "true");
+
+      btn.appendChild(icon);
+      btn.appendChild(text);
+      btn.appendChild(previewPill);
+      btn.appendChild(openBtn);
+      btn.appendChild(chevron);
+      btn.addEventListener("click", () => showBulletinPreview(b));
+      li.appendChild(btn);
+      bulletinList.appendChild(li);
+    });
+  }
+
+  function applyBulletinFilter() {
+    const filtered = bulletinItems.filter((b) =>
+      bulletinMatchesQuery(b, bulletinQuery)
+    );
+    renderBulletinItems(filtered);
+    updateBulletinCount(filtered);
+  }
+
+  function resetBulletinSearch() {
+    bulletinQuery = "";
+    if (bulletinSearch) bulletinSearch.value = "";
+    if (bulletinSearchClear) bulletinSearchClear.hidden = true;
+  }
+
+  async function loadAnalogueBulletins(storm) {
+    const request = ++bulletinRequest;
+    resetBulletinSearch();
+    setBulletinSearchEnabled(false);
+    if (bulletinCount) bulletinCount.textContent = "";
+    renderBulletinSkeletons(4);
+    if (bulletinStatus) {
+      bulletinStatus.textContent = "Loading bulletins…";
+      bulletinStatus.classList.remove("is-error");
+    }
+    showBulletinListView();
+
+    // Rows without a DB id (shouldn't happen — the API returns ids) have
+    // no bulletin feed to query.
+    if (storm.id == null) {
+      if (request !== bulletinRequest) return;
+      if (bulletinList) bulletinList.innerHTML = "";
+      if (bulletinStatus) bulletinStatus.textContent = "Bulletins are not available for this storm.";
+      return;
+    }
+
+    try {
+      const bulletins = window.TCIS_API
+        ? await window.TCIS_API.fetchBulletins(storm.id)
+        : await fetch(BULLETIN_API_URL + encodeURIComponent(storm.id)).then(function (res) {
+            if (!res.ok) throw new Error("Request failed: " + res.status);
+            return res.json();
+          });
+      if (request !== bulletinRequest) return;
+
+      if (bulletinList) bulletinList.innerHTML = "";
+      if (!Array.isArray(bulletins) || bulletins.length === 0) {
+        if (bulletinCount) bulletinCount.textContent = "0 bulletins";
+        if (bulletinStatus) {
+          bulletinStatus.textContent = "No bulletins archived for this cyclone yet.";
+        }
+        bulletinLoadedFor = storm.id;
+        return;
+      }
+
+      bulletinItems = bulletins;
+      bulletinLoadedFor = storm.id;
+      setBulletinSearchEnabled(true);
+      applyBulletinFilter();
+    } catch (err) {
+      if (request !== bulletinRequest) return;
+      console.error("Failed to load bulletins:", err);
+      if (bulletinList) bulletinList.innerHTML = "";
+      if (bulletinCount) bulletinCount.textContent = "";
+      if (bulletinStatus) {
+        bulletinStatus.textContent = "Could not load bulletins. Please try again.";
+        bulletinStatus.classList.add("is-error");
+      }
+    }
+  }
+
+  // Header mirrors the Historical Data viewer: "<Name> Bulletins" over the
+  // "year + category" subtitle with the category badge.
+  function setBulletinModalHeader(storm) {
+    if (bulletinModalTitle) bulletinModalTitle.textContent = storm.name + " Bulletins";
+    if (bulletinModalSubtitle) {
+      bulletinModalSubtitle.textContent =
+        storm.category && storm.category !== "—"
+          ? storm.year + " " + storm.category
+          : String(storm.year);
+    }
+    if (bulletinModalCatIcon) {
+      const markup = categoryIconMarkup(storm.category, 22);
+      bulletinModalCatIcon.innerHTML = markup;
+      bulletinModalCatIcon.hidden = markup === "";
+    }
+  }
+
+  function openAnalogueBulletins() {
+    if (!bulletinModal || !bulletinStorm) return;
+    setBulletinModalHeader(bulletinStorm);
+    bulletinModal.hidden = false;
+    // Next frame so the pop-in animation runs (same pattern as Historical).
+    requestAnimationFrame(() => {
+      if (bulletinModal) bulletinModal.classList.add("is-open");
+    });
+    if (bulletinCloseBtn) bulletinCloseBtn.focus();
+    if (bulletinLoadedFor !== bulletinStorm.id) {
+      loadAnalogueBulletins(bulletinStorm);
+    }
+  }
+
+  function setupAnalogueBulletins() {
+    if (analogueBulletinsBtn) {
+      analogueBulletinsBtn.addEventListener("click", openAnalogueBulletins);
+    }
+    if (bulletinCloseBtn) {
+      bulletinCloseBtn.addEventListener("click", closeAnalogueBulletins);
+    }
+    if (bulletinModal) {
+      bulletinModal.addEventListener("click", (e) => {
+        if (e.target === bulletinModal) closeAnalogueBulletins();
+      });
+    }
+    if (bulletinBackBtn) {
+      bulletinBackBtn.addEventListener("click", showBulletinListView);
+    }
+    if (bulletinSearch) {
+      bulletinSearch.addEventListener("input", () => {
+        bulletinQuery = bulletinSearch.value;
+        if (bulletinSearchClear) {
+          bulletinSearchClear.hidden = bulletinQuery.length === 0;
+        }
+        applyBulletinFilter();
+      });
+      bulletinSearch.addEventListener("keydown", (e) => {
+        if (e.key === "Escape" && bulletinSearch.value) {
+          e.preventDefault();
+          e.stopPropagation();
+          resetBulletinSearch();
+          applyBulletinFilter();
+          bulletinSearch.focus();
+        }
+      });
+    }
+    if (bulletinSearchClear) {
+      bulletinSearchClear.addEventListener("click", () => {
+        resetBulletinSearch();
+        applyBulletinFilter();
+        if (bulletinSearch) bulletinSearch.focus();
+      });
+    }
   }
 
   // ---------------------------------------------------------------------
@@ -872,8 +1295,8 @@
         '<path d="M3 8l4 3 5-7 5 7 4-3-2 10H5L3 8z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>' +
         "</svg>Stronger</span>"
       : "";
-    return '<div class="metric-value ' + colorClass + '"><div class="metric-value-main"><strong>' +
-      value + "</strong>" + bar + "</div>" + badge + "</div>";
+    return '<div class="metric-value ' + esc(colorClass) + '"><div class="metric-value-main"><strong>' +
+      esc(value) + "</strong>" + bar + "</div>" + badge + "</div>";
   }
 
   function row(label, valueA, valueB, winner, classA, classB, barA, barB) {
@@ -883,7 +1306,7 @@
     return (
       '<tr><td>' + metricCellHtml(valueA, classA, barA, winner === 1) +
       '</td><th scope="row" class="metric-col"><span class="metric-icon">' +
-      metricIcon(label) + '</span><span>' + label + '</span></th><td>' +
+      esc(metricIcon(label)) + '</span><span>' + esc(label) + '</span></th><td>' +
       metricCellHtml(valueB, classB, barB, winner === 2) +
       "</td></tr>"
     );
@@ -919,30 +1342,65 @@
     }
   }
 
-  // Results-header subtitle: describes what is being compared based on
-  // the active comparison mode, not any particular result.
+  // Results-header subtitle: single strength mode (was COMPARISON_MODES
+  // scaffolding — one static string now, no over-engineering).
   function updateResultsSubtitle() {
     if (!resultsSubtitle) return;
-    const mode = COMPARISON_MODES[activeMode];
-    resultsSubtitle.textContent = mode ? mode.subtitle : "Select a storm above to start a comparison.";
+    resultsSubtitle.textContent = COMPARISON_SUBTITLE;
+  }
+
+  // Stable storm identity: selections store the DB id (as a string) when
+  // available, falling back to the display name for rows without one.
+  // Matches by id first, then by exact display name.
+  function stormKey(storm) {
+    return storm && storm.id != null ? String(storm.id) : (storm ? storm.name : "");
+  }
+
+  function findStorm(ref) {
+    if (ref == null || ref === "") return null;
+    const byId = STORMS.find((s) => s.id != null && String(s.id) === String(ref));
+    if (byId) return byId;
+    return STORMS.find((s) => s.name === ref) || null;
+  }
+
+  function lookupErrorRow(message) {
+    updateWinnerBanner("Comparison", "", "", "idle");
+    colAHead.textContent = "—";
+    colBHead.textContent = "—";
+    tableBody.innerHTML =
+      '<tr class="empty-row"><td colspan="3">' +
+      '<div class="empty-state"><p>' + message + "</p></div></td></tr>";
   }
 
   function runCompare() {
-    const nameA = selection.stormA;
-    const nameB = selection.stormB;
-    if (!nameA) return;
+    const refA = selection.stormA;
+    const refB = selection.stormB;
+    if (!refA) return;
 
-    const a = STORMS.find((s) => s.name === nameA);
-    const b = nameB ? STORMS.find((s) => s.name === nameB) : null;
-    if (!a) return;
+    // The cyclone list failed to load — nothing can be resolved.
+    if (!STORMS.length) {
+      lookupErrorRow("Could not load cyclone data from the server. Check that XAMPP (Apache + MySQL) is running, then reload the page.");
+      return;
+    }
+
+    const a = findStorm(refA);
+    const b = refB ? findStorm(refB) : null;
+    if (!a) {
+      lookupErrorRow("The selected storm (A) could not be found. The list may have changed — please re-select it and run the analysis again.");
+      return;
+    }
+    if (refB && !b) {
+      lookupErrorRow("The selected storm (B) could not be found. The list may have changed — please re-select it and run the analysis again.");
+      return;
+    }
 
     // With no upcoming storm applied, comparing against "Upcoming" (the B
     // column when none is chosen) has no meaning — ask for a second storm.
     if (!hasUpcomingStorm && !b) {
       updateWinnerBanner("Comparison", "", "", "idle");
       colAHead.innerHTML =
-        '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + a.name +
-        ' <span class="col-year">· ' + a.year + "</span></span>";
+        '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + esc(a.name) +
+        ' <span class="col-year">· ' + esc(a.year) + "</span></span>";
       colBHead.textContent = "—";
       tableBody.innerHTML =
         '<tr class="empty-row"><td colspan="3">' +
@@ -971,6 +1429,12 @@
     // comparison against the upcoming storm, so a tied pair could show an
     // unrelated storm as the "winner".)
     const compareB = b || UPCOMING;
+    // Defensive: without a B column there is nothing to render — the caller
+    // guards this, but never crash the results table on a null storm.
+    if (!compareB) {
+      lookupErrorRow("There is nothing to compare against. Apply an upcoming storm in Step 1 or select a second historical storm above.");
+      return;
+    }
     const rankOf = (storm) => categoryRank(storm.category);
     const windDiff = a.wind - compareB.wind;
     const catDiff = (rankOf(a) ?? 0) - (rankOf(compareB) ?? 0);
@@ -999,17 +1463,20 @@
       : winner === compareB ? "metric-green" : "metric-red";
 
     colAHead.innerHTML =
-      '<span class="th-flex"><span class="col-badge ' + badgeA + '">A</span>' +
-      a.name + ' <span class="col-year">· ' + a.year + "</span></span>";
+      '<span class="th-flex"><span class="col-badge ' + esc(badgeA) + '">A</span>' +
+      esc(a.name) + ' <span class="col-year">· ' + esc(a.year) + "</span></span>";
     colBHead.innerHTML =
-      '<span class="th-flex"><span class="col-badge ' + badgeB + '">B</span>' +
-      compareB.name + ' <span class="col-year">· ' +
-      (b ? compareB.year : "Upcoming storm") + "</span></span>";
+      '<span class="th-flex"><span class="col-badge ' + esc(badgeB) + '">B</span>' +
+      esc(compareB.name) + ' <span class="col-year">· ' +
+      esc(b ? compareB.year : "Upcoming storm") + "</span></span>";
 
     // An upcoming storm has no year, so its banner label is name-only.
-    const upcomingLabel = UPCOMING.year
-      ? UPCOMING.name + " · " + UPCOMING.year
-      : UPCOMING.name;
+    // Computed lazily — UPCOMING is null for pure historical A-vs-B
+    // comparisons, and touching UPCOMING.year there threw a TypeError that
+    // aborted the render before the results table was filled.
+    const upcomingLabel = !b && UPCOMING
+      ? (UPCOMING.year ? UPCOMING.name + " · " + UPCOMING.year : UPCOMING.name)
+      : (!b ? "" : null);
 
     if (isTie) {
       updateWinnerBanner(
@@ -1100,8 +1567,9 @@
   // option list. Clicking the toggle opens the panel and focuses its
   // search box; typing filters the list; clicking an option picks the
   // storm, closes the panel and fires the same change flow the old native
-  // <select> used. A hidden <select> (kept in sync) remains the single
-  // source of truth for the compare logic below.
+  // <select> used. The `selection` object is the single source of truth for
+  // the compare logic; a hidden <select> (kept in sync) mirrors it for the
+  // verify harness and as a fallback.
   const PLACEHOLDER = { stormA: "Select a storm\u2026", stormB: "None (compare with upcoming storm)" };
 
   function pickerContainer(which) {
@@ -1144,14 +1612,17 @@
     let shown = 0;
     ordered.forEach((storm) => {
       if (query && !stormMatchesQuery(storm, query)) return;
+      const key = stormKey(storm);
+      const isChosen = selection[picker.which] !== "" &&
+        (selection[picker.which] === key || selection[picker.which] === storm.name);
       const opt = document.createElement("button");
       opt.type = "button";
       opt.className = "picker-option";
       opt.setAttribute("role", "option");
-      opt.setAttribute("data-value", storm.name);
-      opt.setAttribute("aria-selected", String(selection[picker.which] === storm.name));
+      opt.setAttribute("data-value", key);
+      opt.setAttribute("aria-selected", String(isChosen));
       opt.textContent = storm.name + " \u00b7 " + storm.year;
-      if (selection[picker.which] === storm.name) opt.classList.add("is-selected");
+      if (isChosen) opt.classList.add("is-selected");
       picker.list.appendChild(opt);
       shown++;
     });
@@ -1168,10 +1639,17 @@
     Object.keys(pickers).forEach((which) => {
       const picker = pickers[which];
       const hiddenSelect = picker.root.querySelector("select");
-      const chosen = hiddenSelect ? hiddenSelect.value : "";
+      // selection is the source of truth (hidden <select> mirrors it, but
+      // reads "" when its options were rebuilt without the chosen value).
+      const raw = selection[which] || (hiddenSelect ? hiddenSelect.value : "");
+      let label = "";
+      if (raw) {
+        const found = findStorm(raw);
+        label = found ? found.name + " \u00b7 " + found.year : raw;
+      }
       picker.toggle.querySelector(".picker-toggle-label").textContent =
-        chosen || PLACEHOLDER[which];
-      picker.toggle.classList.toggle("has-value", !!chosen);
+        label || PLACEHOLDER[which];
+      picker.toggle.classList.toggle("has-value", !!raw);
     });
   }
 
@@ -1226,8 +1704,10 @@
       else closePicker(picker, true);
     });
 
-    // Type-to-filter; the list re-renders on every keystroke.
-    search.addEventListener("input", () => renderPickerOptions(picker));
+    // Type-to-filter; debounced so every keystroke doesn't re-sort the table.
+    search.addEventListener("input", window.TCIS_API
+      ? window.TCIS_API.debounce(() => renderPickerOptions(picker), 150)
+      : () => renderPickerOptions(picker));
 
     // Click an option to choose it (delegated — the list re-renders often).
     list.addEventListener("click", (event) => {
@@ -1277,7 +1757,7 @@
 
       ordered.forEach((storm) => {
         const option = document.createElement("option");
-        option.value = storm.name;
+        option.value = stormKey(storm);
         option.textContent = storm.name + " · " + storm.year;
         select.appendChild(option);
       });
@@ -1317,8 +1797,21 @@
     analogueModal.querySelectorAll("[data-modal-close]").forEach((el) =>
       el.addEventListener("click", closeAnalogueDetails)
     );
+    setupAnalogueBulletins();
     document.addEventListener("keydown", (event) => {
-      if (event.key === "Escape") closeAnalogueDetails();
+      if (event.key !== "Escape") return;
+      // Escape unwinds topmost-first: PDF preview → bulletin overlay →
+      // analogue modal. The analogue modal underneath keeps the body's
+      // scroll lock until it closes too.
+      if (bulletinModal && !bulletinModal.hidden) {
+        if (bulletinPreviewView && !bulletinPreviewView.hidden) {
+          showBulletinListView();
+          return;
+        }
+        closeAnalogueBulletins();
+        return;
+      }
+      if (!analogueModal.hidden) closeAnalogueDetails();
     });
 
     // Click-away closes any open picker; Escape closes it and refocuses

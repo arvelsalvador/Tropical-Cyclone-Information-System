@@ -9,7 +9,7 @@
   --blue-50: #eef4ff;
   --text-dark: #0f1e33;
   --text-body: #4b5a6e;
-  --text-muted: #7c8aa0;
+  --text-muted: #64748b; /* slate-500: ≥4.5:1 on white (AA). Was #7c8aa0 (~3.5:1, fails small text). Matches the LPA palette already used in JS. */
   --border-light: #e6eaf0;
   --bg-page: #ffffff;
   --bg-soft: #f7f9fc;
@@ -50,12 +50,23 @@
   --dur-fast: 0.15s;
   --dur-med: 0.3s;
   --dur-slow: 0.6s;
+
+  /* Shared responsive breakpoints (documented standard — CSS vars can't
+     drive @media, so keep these literals in sync across page styles):
+     1100px desktop-narrow · 900px tablet-landscape (universal anchor) ·
+     768px tablet-portrait · 480px phones */
 }
 
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+img,
+video {
+  max-width: 100%;
+  height: auto;
 }
 
 html {
@@ -139,83 +150,6 @@ button:focus-visible {
   }
 }
 
-/* Slide-up entrance for above-the-fold content (hero) that should
-   animate on page load, no scroll trigger needed. */
-.slide-top {
-  -webkit-animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-  animation: slide-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@-webkit-keyframes slide-top {
-  0% {
-    -webkit-transform: translateY(30px);
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  100% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-@keyframes slide-top {
-  0% {
-    -webkit-transform: translateY(30px);
-    transform: translateY(30px);
-    opacity: 0;
-  }
-  100% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-.text-pop-up-top {
-  -webkit-animation: text-pop-up-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94)
-    both;
-  animation: text-pop-up-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
-}
-
-@-webkit-keyframes text-pop-up-top {
-  0% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-    text-shadow: none;
-  }
-  100% {
-    -webkit-transform: translateY(-10px);
-    transform: translateY(-10px);
-    text-shadow:
-      0 1px 0 #cccccc,
-      0 2px 0 #c9c9c9,
-      0 3px 0 #bbbbbb,
-      0 4px 1px rgba(0, 0, 0, 0.1),
-      0 0 5px rgba(0, 0, 0, 0.1),
-      0 1px 3px rgba(0, 0, 0, 0.3),
-      0 3px 5px rgba(0, 0, 0, 0.2);
-  }
-}
-@keyframes text-pop-up-top {
-  0% {
-    -webkit-transform: translateY(0);
-    transform: translateY(0);
-    text-shadow: none;
-  }
-  100% {
-    -webkit-transform: translateY(-10px);
-    transform: translateY(-10px);
-    text-shadow:
-      0 1px 0 #cccccc,
-      0 2px 0 #c9c9c9,
-      0 3px 0 #bbbbbb,
-      0 4px 1px rgba(0, 0, 0, 0.1),
-      0 0 5px rgba(0, 0, 0, 0.1),
-      0 1px 3px rgba(0, 0, 0, 0.3),
-      0 3px 5px rgba(0, 0, 0, 0.2);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
@@ -289,4 +223,30 @@ button:focus-visible {
   .page-section {
     padding: 24px;
   }
+}
+
+/* ==========================================================================
+   Font Awesome 7 Free (local) — sizing shim so FA glyphs match card icons
+   ========================================================================== */
+.stat-card-icon i.fa-solid,
+.stat-card-icon i.fa-regular,
+.stat-icon i.fa-solid,
+.stat-icon i.fa-regular {
+  font-size: 22px;
+  line-height: 1;
+}
+/* Light-tint containers: dark glyphs so they stay visible (see screenshot) */
+.stat-icon-blue i,
+.stat-icon-blue-outline i {
+  color: #1d4ed8;
+}
+.stat-icon-green i {
+  color: #059669;
+}
+/* Solid admin gradients: white glyphs */
+.stat-icon--blue i,
+.stat-icon--red i,
+.stat-icon--purple i,
+.stat-icon--green i {
+  color: #fff;
 }

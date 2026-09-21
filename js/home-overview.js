@@ -11,8 +11,9 @@
 (function () {
   "use strict";
 
-  // Config — same endpoint and row mapping as js/pages/historical-data.js
-  const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
+  // Config — same endpoint and row mapping as js/pages/historical-data.js.
+  // Endpoint + helpers come from js/api-client.js (window.TCIS_API).
+  const API_URL = (window.TCIS_API && window.TCIS_API.CYCLONES_URL) || "/Weather/api/get_cyclones.php";
 
   // ---------------------------------------------------------------------
   // Element references
@@ -42,9 +43,10 @@
       : local;
 
     let wind = null;
-    if (row.highest_strength) {
-      // Stored as "sustained/gust", e.g. "185/230" — the sustained value is
-      // what the Historical Data page's Max Wind stat shows.
+    if (window.TCIS_API) {
+      wind = window.TCIS_API.parseSustained(row.highest_strength);
+    } else if (row.highest_strength) {
+      // Fallback when api-client.js failed to load.
       const parsed = parseInt(String(row.highest_strength).split("/")[0], 10);
       if (!isNaN(parsed)) wind = parsed;
     }
@@ -59,9 +61,13 @@
   }
 
   // ---------------------------------------------------------------------
-  // Count-up animation (same easing as js/pages/historical-data.js)
+  // Count-up animation (shared via js/api-client.js)
   // ---------------------------------------------------------------------
   function animateStat(el, target, decimals) {
+    if (window.TCIS_API) {
+      window.TCIS_API.animateStat(el, target, decimals);
+      return;
+    }
     if (!el) return;
     if (prefersReducedMotion) {
       el._value = target;
@@ -193,9 +199,12 @@
   // ---------------------------------------------------------------------
   async function load() {
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      const rows = await res.json();
+      const rows = window.TCIS_API
+        ? await window.TCIS_API.fetchCyclones()
+        : await fetch(API_URL).then(function (res) {
+            if (!res.ok) throw new Error("Request failed: " + res.status);
+            return res.json();
+          });
       if (!Array.isArray(rows)) throw new Error("Unexpected API response");
       return rows
         .map(mapRow)

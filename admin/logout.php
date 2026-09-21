@@ -1,5 +1,7 @@
 <?php
-session_start();
+require_once __DIR__ . '/helpers.php';
+
+admin_session_start();
 
 // Clear every admin-related session value (login state, username, and any
 // leftover password-reset state), then invalidate the session cookie.

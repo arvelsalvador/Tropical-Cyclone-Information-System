@@ -9,7 +9,7 @@
       rgba(5, 23, 43, 0.45) 46%,
       rgba(5, 23, 43, 0.12) 100%
     ),
-    url("../../assets/images/evacuation-guide-background-color.png") center
+    url("../../assets/images/evacuation-guide-background-color.jpg") center
       bottom / cover no-repeat;
   min-height: 430px;
   display: flex;
@@ -681,6 +681,13 @@
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+}
+
+.eg-cta-icon i.fa-solid,
+.eg-cta-icon i.fa-regular {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .eg-cta-left h2 {

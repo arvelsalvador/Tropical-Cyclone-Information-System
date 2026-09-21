@@ -1,6 +1,6 @@
 <?php
 require 'auth.php';
-require 'helpers.php';
+require_once 'helpers.php';
 
 // Historical Cyclones — add / edit form (no ?id= = add, ?id=N = edit).
 // PHP is the validation authority; the client script re-checks the same rules.
@@ -33,6 +33,7 @@ if ($conn->connect_error) {
     }
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+        csrf_check();
         $local_name = trim($_POST['local_name'] ?? '');
         $international_name = trim($_POST['international_name'] ?? '');
         $year = trim($_POST['year'] ?? '');
@@ -40,6 +41,7 @@ if ($conn->connect_error) {
         $date_end = trim($_POST['date_end'] ?? '');
         $highest_category = $_POST['highest_category'] ?? '';
         $highest_strength = trim($_POST['highest_strength'] ?? '');
+        $rainfall_category = trim($_POST['rainfall_category'] ?? '');
         $tcws_country = $_POST['tcws_country'] ?? '';
         $tcws_slprsd_area = $_POST['tcws_slprsd_area'] ?? '';
         $tcws_region5 = $_POST['tcws_region5'] ?? '';
@@ -66,6 +68,10 @@ if ($conn->connect_error) {
         if ($highest_strength !== '' && !preg_match('/^\d{1,3}\s*\/\s*\d{1,3}$/', $highest_strength)) {
             $errors['highest_strength'] = 'Use the format sustained/gust, e.g. 185/230.';
         }
+        $rainfallLevels = array('Not detected', 'Light to Moderate', 'Moderate to Heavy', 'Heavy to Intense', 'Intense to Torrential');
+        if ($rainfall_category !== '' && !in_array($rainfall_category, $rainfallLevels, true)) {
+            $errors['rainfall_category'] = 'Choose a rainfall intensity, or None.';
+        }
         $signalFields = [
             'tcws_country'         => 'National',
             'tcws_slprsd_area'     => 'SLPRSD Area',
@@ -86,6 +92,7 @@ if ($conn->connect_error) {
             $date_end = $date_end !== '' ? $date_end : null;
             $highest_category = $highest_category !== '' ? $highest_category : null;
             $highest_strength = $highest_strength !== '' ? preg_replace('/\s+/', '', $highest_strength) : null;
+            $rainfall_category = $rainfall_category !== '' ? $rainfall_category : null;
             foreach ($signalFields as $sigField => $sigLabel) {
                 $$sigField = $$sigField !== '' ? (int) $$sigField : null;
             }
@@ -100,6 +107,7 @@ if ($conn->connect_error) {
                 'date_end'             => ['s', $date_end],
                 'highest_category'     => ['s', $highest_category],
                 'highest_strength'     => ['s', $highest_strength],
+                'rainfall_category'    => ['s', $rainfall_category],
                 'tcws_country'         => ['i', $tcws_country],
                 'tcws_slprsd_area'     => ['i', $tcws_slprsd_area],
                 'tcws_region5'         => ['i', $tcws_region5],
@@ -148,6 +156,7 @@ $signalLabels = [
     '4' => 'Signal No. 4',
     '5' => 'Signal No. 5',
 ];
+$rainfallChoices = array('Not detected', 'Light to Moderate', 'Moderate to Heavy', 'Heavy to Intense', 'Intense to Torrential');
 
 if ($db_error === '') {
     $conn->close();
@@ -165,6 +174,7 @@ if ($db_error === '') {
     rel="stylesheet"
   />
   <link rel="stylesheet" href="../css/base.css" />
+  <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
 </head>
@@ -172,18 +182,19 @@ if ($db_error === '') {
   <?php require 'nav.php'; ?>
 
   <main class="admin-main">
+    <a class="admin-back" href="cyclones.php">
+      <i class="fa-solid fa-arrow-left" aria-hidden="true"></i>
+      Back to Historical Cyclones
+    </a>
     <section class="admin-hero" data-reveal>
       <div class="admin-hero-icon admin-hero-icon--purple">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
-        </svg>
+        <i class="fa-solid fa-pen"></i>
       </div>
       <div>
         <h1 class="admin-hero-title"><?php echo $id > 0 ? 'Edit Historical Cyclone' : 'Add Historical Cyclone'; ?></h1>
         <p class="admin-hero-sub">
           <?php if ($id > 0): ?>
-            Updating <strong><?php echo htmlspecialchars($current['local_name']); ?> (<?php echo htmlspecialchars((string) $current['year']); ?>)</strong> — this record appears on the public Historical Data and Analysis Comparison pages.
+            Updating <strong><?php echo htmlspecialchars(cyclone_name($current['local_name'])); ?> (<?php echo htmlspecialchars((string) $current['year']); ?>)</strong> — this record appears on the public Historical Data and Analysis Comparison pages.
           <?php else: ?>
             New records appear immediately on the public Historical Data and Analysis Comparison pages.
           <?php endif; ?>
@@ -194,16 +205,14 @@ if ($db_error === '') {
     <section class="admin-card admin-card--form" data-reveal style="--reveal-delay: 0.08s">
       <?php if ($db_error !== ''): ?>
         <div class="alert alert-error">
-          <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
-            <path d="M12 11v5M12 7.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-          </svg>
+          <i class="fa-solid fa-circle-exclamation"></i>
           <span><?php echo htmlspecialchars($db_error); ?></span>
         </div>
         <a class="admin-btn admin-btn--inline" href="cyclones.php">Back to list</a>
       <?php else: ?>
 
       <form method="POST" novalidate>
+        <?php echo csrf_field(); ?>
         <div class="form-section-title">Identity</div>
         <div class="form-grid">
           <div>
@@ -252,6 +261,14 @@ if ($db_error === '') {
                    value="<?php echo val('highest_strength'); ?>" placeholder="e.g. 185/230">
             <div class="field-hint">Format: sustained/gust — e.g. 185/230.</div>
             <?php echo err('highest_strength'); ?>
+          </div>
+          <div>
+            <label for="f_rainfall">Rainfall Intensity</label>
+            <select id="f_rainfall" name="rainfall_category"<?php echo cls('rainfall_category'); ?>>
+              <?php echo options('rainfall_category', $rainfallChoices, 'None'); ?>
+            </select>
+            <?php echo err('rainfall_category'); ?>
+            <p class="field-hint">PAGASA rainfall scale — blank saves as no data.</p>
           </div>
         </div>
         <div class="form-section-title">Highest Signals Raised</div>

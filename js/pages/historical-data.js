@@ -10,11 +10,36 @@
   "use strict";
 
   // ---------------------------------------------------------------------
-  // Config
+  // Config (endpoints + shared helpers via js/api-client.js)
   // ---------------------------------------------------------------------
-  const API_URL = "/Weather/api/get_cyclones.php"; // adjust path if needed
-  const BULLETIN_API_URL = "/Weather/api/get_bulletins.php?cyclone_id=";
+  const API_URL = (window.TCIS_API && window.TCIS_API.CYCLONES_URL) || "/Weather/api/get_cyclones.php";
+  const BULLETIN_API_URL = (window.TCIS_API && window.TCIS_API.BULLETINS_URL) || "/Weather/api/get_bulletins.php?cyclone_id=";
 
+  // Storm badge artwork: transparent PNG glyphs in assets/Icons, one per
+  // intensity. Same color ramp as the pill palette used on the admin pages.
+  const CATEGORY_ICONS = {
+    "Super Typhoon": "../assets/Icons/Purple_Storm.png",
+    Typhoon: "../assets/Icons/Red_Storm.png",
+    "Severe Tropical Storm": "../assets/Icons/Orange_Storm.png",
+    "Tropical Storm": "../assets/Icons/Yellow_Storm.png",
+    "Tropical Depression": "../assets/Icons/Green_Storm.png",
+    "Low Pressure Area": "../assets/Icons/Grey_Storm.png",
+  };
+
+  // Builds the <img> markup for a category badge, or "" when the category has
+  // no artwork. Callers fall back to text-only rendering when it is empty.
+  function categoryIconMarkup(category, size) {
+    const src = CATEGORY_ICONS[category];
+    if (!src) return "";
+    return (
+      '<img src="' + src + '" alt="" width="' + size + '" height="' + size +
+      '" loading="lazy" decoding="async">'
+    );
+  }
+
+  // Categories offered in the filter list, most intense first; only the keys
+  // are read at runtime. The hex values document the shared severity palette
+  // (mirrored by the badge artwork above and the admin .pill--* classes).
   const CATEGORIES = {
     "Super Typhoon": { color: "#7c3aed", bg: "#ede9fe" },
     Typhoon: { color: "#dc2626", bg: "#fee2e2" },
@@ -25,12 +50,31 @@
   };
 
   // Maps the abbreviations stored in the database to full display names.
-  const CATEGORY_MAP = {
+  // Canonical map lives in js/api-client.js (window.TCIS_API.CATEGORY_MAP).
+  const CATEGORY_MAP = (window.TCIS_API && window.TCIS_API.CATEGORY_MAP) || {
     TD: "Tropical Depression",
     TS: "Tropical Storm",
     STS: "Severe Tropical Storm",
     TY: "Typhoon",
     STY: "Super Typhoon",
+  };
+
+  // Rainfall intensity (cyclones.rainfall_category ENUM) badge colors.
+  // NULL / empty maps to "—" and uses the muted fallback in renderTable.
+  const RAINFALL_LEVELS = [
+    "Not detected",
+    "Light to Moderate",
+    "Moderate to Heavy",
+    "Heavy to Intense",
+    "Intense to Torrential",
+  ];
+
+  const RAINFALL_STYLES = {
+    "Not detected": { color: "#64748b", bg: "#f1f5f9" },
+    "Light to Moderate": { color: "#0284c7", bg: "#e0f2fe" },
+    "Moderate to Heavy": { color: "#ca8a04", bg: "#fef9c3" },
+    "Heavy to Intense": { color: "#ea580c", bg: "#ffedd5" },
+    "Intense to Torrential": { color: "#dc2626", bg: "#fee2e2" },
   };
 
   const PAGE_SIZE = 10;
@@ -72,17 +116,11 @@
     window.matchMedia &&
     window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const hurricaneSvg =
-    '<svg viewBox="0 0 24 24" width="15" height="15" fill="none">' +
-    '<circle cx="12" cy="12" r="2.6" fill="#fff"/>' +
-    '<path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="#fff"/>' +
-    '<path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="#fff"/>' +
-    "</svg>";
-
   // ---------------------------------------------------------------------
   // Data loading + mapping (NEW)
   // ---------------------------------------------------------------------
   function formatDateRange(startStr, endStr) {
+    if (window.TCIS_API) return window.TCIS_API.formatDateRange(startStr, endStr, false);
     if (!startStr) return "—";
     const opts = { month: "short", day: "numeric" };
     const start = new Date(startStr + "T00:00:00");
@@ -131,13 +169,18 @@
       ? row.local_name + " (" + row.international_name + ")"
       : row.local_name;
 
-    const category = CATEGORY_MAP[row.highest_category] || row.highest_category || "—";
+    const category = (window.TCIS_API ? window.TCIS_API.categoryFull(row.highest_category) : (CATEGORY_MAP[row.highest_category] || row.highest_category || "—"));
 
-    let wind = null;
-    if (row.highest_strength) {
+    let wind = window.TCIS_API ? window.TCIS_API.parseSustained(row.highest_strength) : null;
+    if (wind === null && !window.TCIS_API && row.highest_strength) {
       const parsed = parseInt(String(row.highest_strength).split("/")[0], 10);
       if (!isNaN(parsed)) wind = parsed;
     }
+
+    // rainfall_category ENUM may be NULL (not yet encoded) — show "—".
+    // "Not detected" is an explicit recorded value, keep it as a badge.
+    const rainfallRaw = (row.rainfall_category || "").trim();
+    const rainfall = RAINFALL_LEVELS.indexOf(rainfallRaw) !== -1 ? rainfallRaw : "—";
 
     return {
       id: row.id != null ? parseInt(row.id, 10) : null,
@@ -147,14 +190,19 @@
       date: formatDateRange(row.date_start, row.date_end),
       dateStart: row.date_start || null,
       wind: wind,
+      rainfall: rainfall,
     };
   }
 
   async function loadData() {
     try {
-      const res = await fetch(API_URL);
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      const rows = await res.json();
+      const rows = window.TCIS_API
+        ? await window.TCIS_API.fetchCyclones()
+        : await fetch(API_URL).then(function (res) {
+            if (!res.ok) throw new Error("Request failed: " + res.status);
+            return res.json();
+          });
+      if (!Array.isArray(rows)) throw new Error("Unexpected API response");
       STORMS = rows.map(mapRow);
 
       // Most recent first: newest year on top, then the latest date within
@@ -176,7 +224,7 @@
       console.error("Failed to load cyclone data:", err);
       STORMS = [];
       tbody.innerHTML =
-        '<tr class="empty-row"><td colspan="6">Could not load data from the server. Check that XAMPP (Apache + MySQL) is running.</td></tr>';
+        '<tr class="empty-row"><td colspan="7">Could not load data from the server. Check that XAMPP (Apache + MySQL) is running.</td></tr>';
     }
   }
 
@@ -184,6 +232,11 @@
   // Animations: count-up numbers, scroll reveal
   // ---------------------------------------------------------------------
   function animateStat(el, target, decimals) {
+    if (window.TCIS_API) {
+      window.TCIS_API.animateStat(el, target, decimals);
+      return;
+    }
+    if (!el) return;
     if (prefersReducedMotion) {
       el._value = target;
       el.textContent = target.toFixed(decimals);
@@ -218,7 +271,8 @@
     });
 
     if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-      targets.forEach((el) => el.classList.add("is-revealed"));
+      // Unify with js/main.js: add both classes (is-visible is canonical).
+      targets.forEach((el) => el.classList.add("is-revealed", "is-visible"));
       return;
     }
 
@@ -226,7 +280,7 @@
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
-            entry.target.classList.add("is-revealed");
+            entry.target.classList.add("is-revealed", "is-visible");
             observer.unobserve(entry.target);
           }
         });
@@ -243,7 +297,6 @@
   function buildCategoryList() {
     categoryList.innerHTML = "";
     Object.keys(CATEGORIES).forEach((cat) => {
-      const meta = CATEGORIES[cat];
       const label = document.createElement("label");
       label.className = "category-item";
 
@@ -253,8 +306,7 @@
 
       const icon = document.createElement("span");
       icon.className = "category-icon";
-      icon.style.background = meta.color;
-      icon.innerHTML = hurricaneSvg;
+      icon.innerHTML = categoryIconMarkup(cat, 28);
 
       const text = document.createElement("span");
       text.textContent = cat;
@@ -266,6 +318,7 @@
     });
   }
 
+  // ---------------------------------------------------------------------
   function updateRangeUI() {
     let min = parseInt(yearMinInput.value, 10);
     let max = parseInt(yearMaxInput.value, 10);
@@ -313,7 +366,18 @@
         filters.categories.indexOf(storm.category) === -1
       )
         return false;
-      if (q && storm.name.toLowerCase().indexOf(q) === -1) return false;
+      if (q) {
+        const haystack = (
+          storm.name +
+          " " +
+          storm.category +
+          " " +
+          storm.rainfall +
+          " " +
+          storm.year
+        ).toLowerCase();
+        if (haystack.indexOf(q) === -1) return false;
+      }
       return true;
     });
   }
@@ -373,7 +437,7 @@
       const emptyRow = document.createElement("tr");
       emptyRow.className = "empty-row";
       emptyRow.innerHTML =
-        '<td colspan="6">No cyclones match the selected filters.</td>';
+        '<td colspan="7">No cyclones match the selected filters.</td>';
       tbody.appendChild(emptyRow);
       updatePagination(filtered);
       return;
@@ -386,11 +450,6 @@
     const pageRows = filtered.slice(start, start + PAGE_SIZE);
 
     pageRows.forEach((storm, rowIndex) => {
-      const meta = CATEGORIES[storm.category] || {
-        color: "#64748b",
-        bg: "#f1f5f9",
-      };
-
       const row = document.createElement("tr");
       row.style.animationDelay = rowIndex * 45 + "ms";
       row.classList.add("is-clickable");
@@ -411,13 +470,7 @@
       nameWrap.className = "storm-name-cell";
       const dot = document.createElement("span");
       dot.className = "storm-dot";
-      dot.style.background = meta.bg;
-      dot.innerHTML =
-        '<svg viewBox="0 0 24 24" width="15" height="15" fill="none">' +
-        '<circle cx="12" cy="12" r="2.6" fill="' + meta.color + '"/>' +
-        '<path d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z" fill="' + meta.color + '"/>' +
-        '<path d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z" fill="' + meta.color + '"/>' +
-        "</svg>";
+      dot.innerHTML = categoryIconMarkup(storm.category, 36);
       const nameText = document.createElement("span");
       nameText.textContent = storm.name;
       nameWrap.appendChild(dot);
@@ -425,12 +478,14 @@
       nameCell.appendChild(nameWrap);
       row.appendChild(nameCell);
 
-      // Year, Category (placeholder, filled below), Date, Wind
+      // Year, Category (placeholder, filled below), Date, Wind,
+      // Rainfall (placeholder, filled below)
       const cells = [
         storm.year,
         null,
         storm.date,
         storm.wind != null ? storm.wind + " km/h" : "—",
+        null,
       ];
 
       cells.forEach((value) => {
@@ -439,14 +494,13 @@
         row.appendChild(td);
       });
 
-      // Category badge
+      // Category shows plain text label; rainfall stays plain
+      // table text (no pill background).
       const badgeTd = row.children[2];
-      const badge = document.createElement("span");
-      badge.className = "category-badge";
-      badge.textContent = storm.category;
-      badge.style.background = meta.bg;
-      badge.style.color = meta.color;
-      badgeTd.appendChild(badge);
+      badgeTd.textContent = storm.category;
+
+      const rainfallTd = row.children[5];
+      rainfallTd.textContent = storm.rainfall;
 
       // Bulletins indicator cell (presentational — the whole row opens the modal)
       const bulletinTd = document.createElement("td");
@@ -507,6 +561,7 @@
   const bulletinModal = document.getElementById("bulletinModal");
   const bulletinModalTitle = document.getElementById("bulletinModalTitle");
   const bulletinModalSubtitle = document.getElementById("bulletinModalSubtitle");
+  const bulletinModalCatIcon = document.getElementById("bulletinModalCatIcon");
   const bulletinList = document.getElementById("bulletinList");
   const bulletinStatus = document.getElementById("bulletinStatus");
   const bulletinListView = document.getElementById("bulletinListView");
@@ -564,6 +619,11 @@
   }
 
   function showBulletinPreview(bulletin, cycloneName) {
+    if (window.TCIS_API && !window.TCIS_API.isSafeBulletinUrl(bulletin.r2_url)) {
+      bulletinStatus.textContent = "This bulletin link looks invalid and was blocked.";
+      bulletinStatus.classList.add("is-error");
+      return;
+    }
     bulletinPreviewTitle.textContent =
       (currentStormLabel || cycloneName) +
       " — Bulletin " +
@@ -669,28 +729,14 @@
       previewPill.className = "bulletin-item-preview";
       previewPill.textContent = "Preview";
 
+      // Decorative affordance only (aria-hidden): the outer button owns
+      // activation. A nested role=button/tabindex here would create an
+      // invalid nested interactive with a double tab stop, so the
+      // open-in-new-tab action lives in the preview view instead.
       const openBtn = document.createElement("span");
       openBtn.className = "bulletin-item-open";
-      openBtn.setAttribute("role", "button");
-      openBtn.setAttribute("tabindex", "0");
-      openBtn.setAttribute(
-        "aria-label",
-        "Open Bulletin " + b.bulletin_number + " in new tab"
-      );
-      openBtn.setAttribute("title", "Open in new tab");
+      openBtn.setAttribute("aria-hidden", "true");
       openBtn.textContent = "↗";
-      const openInNewTab = (e) => {
-        e.stopPropagation();
-        window.open(b.r2_url, "_blank", "noopener");
-      };
-      openBtn.addEventListener("click", openInNewTab);
-      openBtn.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          e.stopPropagation();
-          window.open(b.r2_url, "_blank", "noopener");
-        }
-      });
 
       const chevron = document.createElement("span");
       chevron.className = "bulletin-item-chevron";
@@ -724,6 +770,15 @@
     if (bulletinSearchClear) bulletinSearchClear.hidden = true;
   }
 
+  // The modal header shows the cyclone's category badge beside the
+  // "2025 Typhoon" subtitle; categories without artwork hide the node.
+  function setBulletinModalCategoryIcon(category) {
+    if (!bulletinModalCatIcon) return;
+    const markup = categoryIconMarkup(category, 22);
+    bulletinModalCatIcon.innerHTML = markup;
+    bulletinModalCatIcon.hidden = markup === "";
+  }
+
   async function openBulletinModal(storm, rowEl) {
     if (!bulletinModal || storm.id == null) return;
     lastFocusedRow = rowEl || null;
@@ -736,6 +791,7 @@
 
     bulletinModalTitle.textContent = currentStormName + " Bulletins";
     bulletinModalSubtitle.textContent = stormSubtitleDetails(storm);
+    setBulletinModalCategoryIcon(storm.category);
     if (bulletinCount) bulletinCount.textContent = "";
     renderBulletinSkeletons(6);
     bulletinStatus.textContent = "Loading bulletins…";
@@ -750,11 +806,12 @@
     if (bulletinCloseBtn) bulletinCloseBtn.focus();
 
     try {
-      const res = await fetch(
-        BULLETIN_API_URL + encodeURIComponent(storm.id)
-      );
-      if (!res.ok) throw new Error("Request failed: " + res.status);
-      const bulletins = await res.json();
+      const bulletins = window.TCIS_API
+        ? await window.TCIS_API.fetchBulletins(storm.id)
+        : await fetch(BULLETIN_API_URL + encodeURIComponent(storm.id)).then(function (res) {
+            if (!res.ok) throw new Error("Request failed: " + res.status);
+            return res.json();
+          });
 
       bulletinList.innerHTML = "";
       if (!Array.isArray(bulletins) || bulletins.length === 0) {
@@ -823,13 +880,14 @@
   // CSV export
   // ---------------------------------------------------------------------
   function downloadCsv() {
-    const header = ["Name", "Year", "PAGASA Category", "Inclusive Date", "Max Wind (km/h)"];
+    const header = ["Name", "Year", "PAGASA Category", "Inclusive Date", "Max Wind (km/h)", "Rainfall Intensity"];
     const rows = lastFiltered.map((s) => [
       s.name,
       s.year,
       s.category,
       s.date,
       s.wind != null ? s.wind : "",
+      s.rainfall && s.rainfall !== "—" ? s.rainfall : "",
     ]);
     const csv = [header].concat(rows)
       .map((row) =>
@@ -896,10 +954,15 @@
     categoryList.addEventListener("change", runFilters);
     clearBtn.addEventListener("click", clearFilters);
 
-    searchInput.addEventListener("input", () => {
-      searchQuery = searchInput.value;
-      runFilters();
-    });
+    searchInput.addEventListener("input", window.TCIS_API
+      ? window.TCIS_API.debounce(() => {
+          searchQuery = searchInput.value;
+          runFilters();
+        }, 150)
+      : () => {
+          searchQuery = searchInput.value;
+          runFilters();
+        });
 
     prevBtn.addEventListener("click", () => {
       if (currentPage > 1) {

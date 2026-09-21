@@ -425,6 +425,7 @@ body {
 
 .dash-card {
   width: 100%;
+  margin-bottom: 20px;
 }
 
 .dash-card-title {
@@ -1005,12 +1006,22 @@ body {
    ========================================================================== */
 
 .pill {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   padding: 3px 10px;
   border-radius: var(--radius-full);
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
+}
+
+/* Storm category badge inside a category pill */
+.pill img {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  object-fit: contain;
 }
 
 .pill--muted {
@@ -1025,6 +1036,20 @@ body {
 .pill--STS { background: var(--orange-50); color: #ea580c; }
 .pill--TS  { background: #fef9c3; color: var(--amber-500); }
 .pill--TD  { background: var(--signal-1-bg); color: var(--signal-1-fg); }
+
+/* Category badge artwork (PNG storm glyphs) in table cells */
+.cat-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cat-cell img {
+  width: 18px;
+  height: 18px;
+  flex-shrink: 0;
+  object-fit: contain;
+}
 
 /* Upcoming-storm status colors */
 .pill--status-approaching   { background: var(--status-approaching-bg); color: var(--status-approaching-fg); }
@@ -1099,6 +1124,30 @@ body {
   font-size: 12px;
   color: var(--text-muted);
   margin-top: 2px;
+}
+
+/* Cyclone name cell with category icon (mirrors public Historical Data
+   .storm-name-cell / .storm-dot, 36px artwork, two-line name kept) */
+.admin-cyclone-cell {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-cyclone-icon {
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-cyclone-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
 }
 
 .admin-empty {
@@ -1183,6 +1232,33 @@ body {
   width: auto;
 }
 
+.admin-btn--danger {
+  background: var(--red-fg);
+  color: #fff;
+}
+
+.admin-btn--danger:hover {
+  background: #b91c1c;
+  box-shadow: 0 6px 16px rgba(220, 38, 38, 0.28);
+}
+
+/* Back link above admin hero (e.g. Add/Edit/Delete pages) */
+.admin-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-decoration: none;
+  margin-bottom: 16px;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.admin-back:hover {
+  color: var(--blue-600);
+}
+
 .admin-btn-sm {
   display: inline-flex;
   align-items: center;
@@ -1227,6 +1303,105 @@ body {
 
 .row-actions form {
   margin: 0;
+}
+
+/* Fixed column widths for the cyclone list table */
+.admin-table .col-dates {
+  min-width: 150px;
+  white-space: nowrap;
+}
+
+.admin-table .col-signal {
+  min-width: 130px;
+  white-space: nowrap;
+}
+
+.admin-table .col-actions {
+  width: 64px;
+  text-align: right;
+  white-space: nowrap;
+}
+
+/* 3-dot row menu (Edit / Delete dropdown) */
+.row-menu {
+  position: relative;
+  display: inline-flex;
+  justify-content: flex-end;
+}
+
+.row-menu-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: 1px solid var(--border-light);
+  background: #fff;
+  color: var(--text-body);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition:
+    background var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.row-menu-btn:hover {
+  background: var(--bg-soft);
+  color: var(--text-dark);
+}
+
+.row-menu-list {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 150px;
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 12px;
+  box-shadow: var(--shadow-card);
+  padding: 6px;
+  z-index: 60;
+  text-align: left;
+}
+
+.row-menu.is-up .row-menu-list {
+  top: auto;
+  bottom: calc(100% + 6px);
+}
+
+.row-menu-list form {
+  margin: 0;
+}
+
+.row-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-dark);
+  text-decoration: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-family: inherit;
+  text-align: left;
+  white-space: nowrap;
+}
+
+.row-menu-item:hover {
+  background: var(--bg-soft);
+}
+
+.row-menu-item--danger {
+  color: var(--red-fg);
+}
+
+.row-menu-item--danger:hover {
+  background: var(--red-50);
 }
 
 .form-cancel {

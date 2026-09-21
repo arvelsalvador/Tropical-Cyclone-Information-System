@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Warning Signals — Tropical Cyclone Information System</title>
+    <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../../css/base.css" />
+    <link rel="stylesheet" href="../../assets/vendor/fontawesome/css/all.min.css" />
     <link rel="stylesheet" href="../../css/components/header.css" />
     <link rel="stylesheet" href="../../css/components/buttons.css" />
     <link rel="stylesheet" href="../../css/components/footer.css" />
@@ -38,45 +40,36 @@
       <a href="../../pages/historical-data.html" class="nav-link">Historical Data</a>
       <a href="../../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
-        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false"
+                aria-haspopup="menu"
+                aria-controls="education-menu">
           Education
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
         </button>
-        <div class="dropdown-menu">
-          <a href="../../pages/education/index.html">Education Hub</a>
-          <a href="../../pages/education/warning-signals.html">Warning Signals</a>
-          <a href="../../pages/education/evacuation-guide.html">Evacuation Guide</a>
-          <a href="../../pages/education/preparedness-tips.html">Preparedness Tips</a>
+        <div class="dropdown-menu" id="education-menu" role="menu">
+          <a role="menuitem" href="../../pages/education/index.html">Education Hub</a>
+          <a role="menuitem" href="../../pages/education/warning-signals.html">Warning Signals</a>
+          <a role="menuitem" href="../../pages/education/evacuation-guide.html">Evacuation Guide</a>
+          <a role="menuitem" href="../../pages/education/preparedness-tips.html">Preparedness Tips</a>
         </div>
       </div>
       <a href="../../pages/resources.html" class="nav-link">Resources</a>
     </nav>
     <div class="header-actions">
       <a href="../../pages/about.html" class="icon-link">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="10" />
-          <line x1="12" y1="16" x2="12" y2="12" />
-          <line x1="12" y1="8" x2="12.01" y2="8" />
-        </svg>
+        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
         About
       </a>
       <a href="../../pages/contact.html" class="icon-link">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-          <polyline points="22,6 12,13 2,6" />
-        </svg>
+        <i class="fa-solid fa-envelope" aria-hidden="true"></i>
         Contact
       </a>
       <a href="../../admin/login.php" class="btn-prepared">
-        <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
-        </svg>
+        <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
         Log-in
       </a>
     </div>
-    <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-header"><span></span><span></span><span></span></button>
   </div>
 </header></div>
 
@@ -97,15 +90,7 @@
           <div class="ws-hero-actions slide-top" style="animation-delay: 0.24s">
             <a href="#how-signals" class="ws-btn ws-btn-primary">
               How Signals Work
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path
-                  d="M12 5v14M6 13l6 6 6-6"
-                  stroke="#fff"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              <i class="fa-solid fa-arrow-down" aria-hidden="true"></i>
             </a>
           </div>
         </div>
@@ -155,10 +140,7 @@
       <!-- How the signals work -->
       <section class="ws-card ws-how" id="how-signals" data-reveal>
         <div class="ws-how-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-            <circle cx="12" cy="12" r="9" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
-            <path d="M12 11v5M12 7.5v.5" stroke="#1d4ed8" stroke-width="2" stroke-linecap="round" />
-          </svg>
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
         </div>
         <div>
           <h2>How the signals work</h2>
@@ -385,10 +367,7 @@
         <div class="ws-reminder-grid">
           <div class="ws-reminder" data-reveal style="--reveal-delay: 0s">
             <span class="ws-reminder-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M12 4l9 16H3l9-16z" stroke="#d97706" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-                <path d="M12 10v4.5M12 17.2v.3" stroke="#d97706" stroke-width="2" stroke-linecap="round" />
-              </svg>
+              <i class="fa-solid fa-triangle-exclamation" aria-hidden="true"></i>
             </span>
             <div>
               <h3>Signals are about wind, not rain</h3>
@@ -397,10 +376,7 @@
           </div>
           <div class="ws-reminder" data-reveal style="--reveal-delay: 0.06s">
             <span class="ws-reminder-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <circle cx="12" cy="12" r="8" stroke="#1d4ed8" stroke-width="1.8" fill="none" />
-                <path d="M12 7v5l3.5 2" stroke="#1d4ed8" stroke-width="1.8" stroke-linecap="round" fill="none" />
-              </svg>
+              <i class="fa-solid fa-clock" aria-hidden="true"></i>
             </span>
             <div>
               <h3>Signals change — keep updated</h3>
@@ -409,11 +385,7 @@
           </div>
           <div class="ws-reminder" data-reveal style="--reveal-delay: 0.12s">
             <span class="ws-reminder-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <circle cx="9" cy="8" r="3" stroke="#059669" stroke-width="1.8" fill="none" />
-                <path d="M4 19c0-3 2.2-5 5-5s5 2 5 5" stroke="#059669" stroke-width="1.8" stroke-linecap="round" fill="none" />
-                <path d="M17 8h5M17 12h5" stroke="#059669" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
+              <i class="fa-solid fa-users" aria-hidden="true"></i>
             </span>
             <div>
               <h3>Act early, not when it's strong</h3>
@@ -422,10 +394,7 @@
           </div>
           <div class="ws-reminder" data-reveal style="--reveal-delay: 0.18s">
             <span class="ws-reminder-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M12 3l8 3v6c0 5-3.5 8.5-8 11-4.5-2.5-8-6-8-11V6l8-3z" stroke="#7c3aed" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-                <path d="M9 12l2 2 4-4" stroke="#7c3aed" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
             </span>
             <div>
               <h3>Follow local officials</h3>
@@ -439,10 +408,7 @@
       <section class="ws-cta" data-reveal>
         <div class="ws-cta-left">
           <div class="ws-cta-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <path d="M4 4h16v13H8l-4 3V4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-              <path d="M8 9h8M8 12.5h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
+            <i class="fa-solid fa-comments" aria-hidden="true"></i>
           </div>
           <div>
             <h2>Know the signal? Know your route.</h2>

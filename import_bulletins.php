@@ -1,39 +1,49 @@
 <?php
 /**
- * One-time import script.
+ * One-time import script — NOW LOCKED DOWN (Step 1 security).
+ * Requires an admin login (admin/auth.php) and a POSTed CSRF token.
+ * GET shows instructions only and performs NO database writes.
+ *
  * Scans the local "Weather Data" folder, matches each PDF to a cyclone
  * in the database (by name + year), and inserts a row into `bulletins`
  * pointing to the file's public R2 URL.
- *
- * HOW TO RUN:
- * 1. Save this file inside C:\xampp\htdocs\Weather\  (e.g. as import_bulletins.php)
- * 2. Open your browser and go to: http://localhost/Weather/import_bulletins.php
- * 3. Read the output — it will list what was imported and flag anything
- *    that couldn't be matched.
- * 4. Delete this file afterwards (or move it out of htdocs) since it's a
- *    one-time tool, not something that should stay live on your site.
  */
+
+require_once __DIR__ . '/admin/auth.php';
+require_once __DIR__ . '/admin/helpers.php';
 
 header('Content-Type: text/plain'); // plain text output, easy to read
 
-// ---------------------------------------------------------------------
-// CONFIG — adjust these two values if needed
-// ---------------------------------------------------------------------
+if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+    echo "Admin-only import tool.\n";
+    echo "Submit a POST request with a valid CSRF token to run the import.\n";
+    echo "CSRF token: " . csrf_token() . "\n";
+    exit;
+}
 
-// Local folder that contains the year folders (2022, 2023, 2024, 2025...)
-$localBasePath = 'C:\Users\Arvel\Desktop\Weather Data';
+csrf_check();
 
-// Your R2 public URL prefix (bucket root — object keys are
-// <year>/<CycloneName>/<file>.pdf, no extra prefix).
-// Public URL pattern:
-$r2PublicBase = 'https://pub-d18dd40b0f164c4eab0bcc9308b66340.r2.dev';
+// ---------------------------------------------------------------------
+// CONFIG — from config.php / environment (never hardcoded secrets here)
+// ---------------------------------------------------------------------
+$localBasePath = (string) app_config('LOCAL_DATA_PATH', '');
+$r2PublicBase = (string) app_config('R2_PUBLIC_BASE', '');
+
+if ($localBasePath === '' || $r2PublicBase === '') {
+    http_response_code(500);
+    echo "Import is disabled: set LOCAL_DATA_PATH and R2_PUBLIC_BASE in config.php first.\n";
+    exit;
+}
 
 // ---------------------------------------------------------------------
 // DB CONNECTION
 // ---------------------------------------------------------------------
-$conn = new mysqli('localhost', 'root', '', 'cyclone_db');
+$conn = app_db_open();
 if ($conn->connect_error) {
-    die("Database connection failed: " . $conn->connect_error);
+    app_log('import_bulletins db connect failed');
+    http_response_code(500);
+    echo "Database connection failed.\n";
+    exit;
 }
 
 // Load all cyclones into memory for matching: key = "lowername|year"
@@ -58,6 +68,14 @@ $checkStmt = $conn->prepare(
     "SELECT id FROM bulletins WHERE cyclone_id = ? AND bulletin_number = ?"
 );
 
+if ($stmt === false || $checkStmt === false || $res === false) {
+    app_log('import_bulletins prepare/query failed');
+    http_response_code(500);
+    echo "Import failed to initialize.\n";
+    $conn->close();
+    exit;
+}
+
 $imported = 0;
 $skipped = 0;
 $skippedList = [];
@@ -66,12 +84,18 @@ $skippedList = [];
 // WALK THE LOCAL FOLDER: Weather Data / <year> / <CycloneName> / *.pdf
 // ---------------------------------------------------------------------
 $yearDirs = glob($localBasePath . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
+if ($yearDirs === false) {
+    $yearDirs = [];
+}
 
 foreach ($yearDirs as $yearDir) {
     $year = basename($yearDir);
     if (!ctype_digit($year)) continue; // skip anything that isn't a year folder
 
     $cycloneDirs = glob($yearDir . DIRECTORY_SEPARATOR . '*', GLOB_ONLYDIR);
+    if ($cycloneDirs === false) {
+        continue;
+    }
 
     foreach ($cycloneDirs as $cycloneDir) {
         $cycloneName = basename($cycloneDir); // e.g. "Agaton"
@@ -86,6 +110,9 @@ foreach ($yearDirs as $yearDir) {
         $cycloneId = $cyclones[$matchKey];
 
         $pdfFiles = glob($cycloneDir . DIRECTORY_SEPARATOR . '*.pdf');
+        if ($pdfFiles === false) {
+            continue;
+        }
 
         foreach ($pdfFiles as $pdfPath) {
             $fileName = basename($pdfPath); // e.g. "Agaton Bulletin 1.pdf"

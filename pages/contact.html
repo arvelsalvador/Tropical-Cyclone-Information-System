@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Contact — Tropical Cyclone Information System</title>
+    <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
     <link rel="stylesheet" href="../css/components/header.css" />
     <link rel="stylesheet" href="../css/components/buttons.css" />
     <link rel="stylesheet" href="../css/components/footer.css" />
@@ -38,17 +40,17 @@
       <a href="../pages/historical-data.html" class="nav-link">Historical Data</a>
       <a href="../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
-        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false"
+                aria-haspopup="menu"
+                aria-controls="education-menu">
           Education
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
         </button>
-        <div class="dropdown-menu">
-          <a href="../pages/education/index.html">Education Hub</a>
-          <a href="../pages/education/warning-signals.html">Warning Signals</a>
-          <a href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
-          <a href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
+        <div class="dropdown-menu" id="education-menu" role="menu">
+          <a role="menuitem" href="../pages/education/index.html">Education Hub</a>
+          <a role="menuitem" href="../pages/education/warning-signals.html">Warning Signals</a>
+          <a role="menuitem" href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
+          <a role="menuitem" href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
         </div>
       </div>
       <a href="../pages/resources.html" class="nav-link">Resources</a>
@@ -56,28 +58,19 @@
     </nav>
     <div class="header-actions">
         <a href="../pages/about.html" class="icon-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
           About
         </a>
         <a href="../pages/contact.html" class="icon-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
+          <i class="fa-solid fa-envelope" aria-hidden="true"></i>
           Contact
         </a>
         <a href="../admin/login.php" class="btn-prepared">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
+          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
           Log-in
         </a>
     </div>
-    <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-header"><span></span><span></span><span></span></button>
   </div>
 </header></div>
 
@@ -86,16 +79,7 @@
       <div class="ct-hero-inner">
         <div class="ct-hero-left slide-top">
           <div class="ct-hero-icon">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
-              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" />
-              <path
-                d="M3 7l9 6 9-6"
-                stroke="#fff"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <i class="fa-solid fa-envelope" aria-hidden="true"></i>
           </div>
           <div>
             <h1>Contact</h1>
@@ -108,14 +92,7 @@
 
         <div class="ct-hero-note slide-top" style="animation-delay: 0.24s">
           <div class="ct-hero-note-icon">
-            <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-              <path
-                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.25 1L8.14 9.92a12.04 12.04 0 005.94 5.94l2.64-2.64a1 1 0 011-.25l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2C10.07 21 3 13.93 3 5z"
-                stroke="#bfdbfe"
-                stroke-width="1.8"
-                fill="none"
-              />
-            </svg>
+            <i class="fa-solid fa-phone" aria-hidden="true"></i>
           </div>
           <div>
             <strong>Not for emergencies</strong>
@@ -191,15 +168,7 @@
 
           <div class="ct-success" id="ctSuccess" hidden data-reveal>
             <div class="ct-success-icon">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
-                <path
-                  d="M5 13l4 4L19 7"
-                  stroke="#059669"
-                  stroke-width="2.4"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                />
-              </svg>
+              <i class="fa-solid fa-circle-check" aria-hidden="true"></i>
             </div>
             <h3>Thank you!</h3>
             <p>
@@ -222,27 +191,19 @@
             <nav class="ct-side-links">
               <a href="education/warning-signals.html">
                 <span>Understanding PAGASA warning signals</span>
-                <svg class="ct-side-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <i class="fa-solid fa-chevron-right ct-side-arrow" aria-hidden="true"></i>
               </a>
               <a href="education/evacuation-guide.html">
                 <span>Step-by-step evacuation guide</span>
-                <svg class="ct-side-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <i class="fa-solid fa-chevron-right ct-side-arrow" aria-hidden="true"></i>
               </a>
               <a href="education/preparedness-tips.html">
                 <span>Household preparedness tips</span>
-                <svg class="ct-side-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <i class="fa-solid fa-chevron-right ct-side-arrow" aria-hidden="true"></i>
               </a>
               <a href="resources.html">
                 <span>Downloadable resources</span>
-                <svg class="ct-side-arrow" viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-                </svg>
+                <i class="fa-solid fa-chevron-right ct-side-arrow" aria-hidden="true"></i>
               </a>
             </nav>
           </div>
@@ -259,10 +220,7 @@
               rel="noopener"
               class="ct-side-source"
             >
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M14 4h6v6M20 4l-9 9" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M18 13v6a1 1 0 01-1 1H5a1 1 0 01-1-1V7a1 1 0 011-1h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
               pagasa.dost.gov.ph
             </a>
           </div>

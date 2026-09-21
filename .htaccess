@@ -1,0 +1,47 @@
+# Step 3 performance: cache static assets hard, never cache API/HTML by default
+# (API endpoints send their own Cache-Control/ETag from PHP).
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresDefault "access plus 1 day"
+  ExpiresByType image/jpeg "access plus 1 year"
+  ExpiresByType image/png "access plus 1 year"
+  ExpiresByType image/webp "access plus 1 year"
+  ExpiresByType image/svg+xml "access plus 1 year"
+  ExpiresByType video/mp4 "access plus 1 year"
+  ExpiresByType font/woff2 "access plus 1 year"
+  ExpiresByType text/css "access plus 1 month"
+  ExpiresByType application/javascript "access plus 1 month"
+  ExpiresByType text/html "access plus 0 seconds"
+</IfModule>
+<IfModule mod_headers.c>
+  <FilesMatch "\.(jpg|jpeg|png|webp|mp4|woff2)$">
+    Header set Cache-Control "public, max-age=31536000, immutable"
+  </FilesMatch>
+  <FilesMatch "\.(css|js)$">
+    Header set Cache-Control "public, max-age=2592000"
+  </FilesMatch>
+</IfModule>
+<IfModule mod_deflate.c>
+  AddOutputFilterByType DEFLATE text/html text/css application/javascript application/json image/svg+xml
+</IfModule>
+
+# Step 5 deployment: never serve secrets, local config, or SQL migrations.
+<FilesMatch "^(config\.php|config\.local\.php|\.env.*|composer\.(json|lock))$">
+  Require all denied
+</FilesMatch>
+<FilesMatch "\.sql$">
+  Require all denied
+</FilesMatch>
+# Test/seed helpers must never execute on the web host (CLI-only guard
+# exists in code; this is defense in depth).
+<Files "__seed_admin.php">
+  Require all denied
+</Files>
+
+# Step 5 deployment: baseline security headers (Cloudflare adds HSTS/HTTPS).
+<IfModule mod_headers.c>
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set X-Frame-Options "SAMEORIGIN"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set X-Robots-Tag "noindex, nofollow" "expr=%{REQUEST_URI} =~ m#/(admin|scripts)/#"
+</IfModule>

@@ -18,7 +18,7 @@
   position: absolute;
   inset: 0;
   z-index: 0;
-  background: url("../../assets/images/education-hub-background-v3-color.png")
+  background: url("../../assets/images/education-hub-background-v3-color.jpg")
     center 30% / cover no-repeat;
   filter: saturate(1.32) contrast(1.07) brightness(1.02);
 }
@@ -234,6 +234,13 @@ button.topic-card {
 .topic-icon svg {
   width: 24px;
   height: 24px;
+}
+
+.topic-icon i.fa-solid,
+.topic-icon i.fa-regular {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .topic-card:hover .topic-icon {
@@ -595,6 +602,13 @@ button.topic-card {
   stroke-width: 2;
   stroke-linecap: round;
   stroke-linejoin: round;
+}
+
+.edu-cta-icon i.fa-solid,
+.edu-cta-icon i.fa-regular {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
 }
 
 .edu-cta-left h2 {

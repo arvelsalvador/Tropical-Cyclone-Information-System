@@ -76,9 +76,17 @@
     var mobileToggle = document.querySelector(".mobile-menu-toggle");
     var siteHeader = document.querySelector(".site-header");
     if (mobileToggle && siteHeader) {
+      var syncToggle = function () {
+        mobileToggle.setAttribute(
+          "aria-expanded",
+          siteHeader.classList.contains("nav-open") ? "true" : "false"
+        );
+      };
+      syncToggle();
       mobileToggle.addEventListener("click", function (e) {
         e.stopPropagation();
         siteHeader.classList.toggle("nav-open");
+        syncToggle();
       });
 
       // Close mobile menu when clicking outside the header
@@ -88,6 +96,7 @@
           !siteHeader.contains(e.target)
         ) {
           siteHeader.classList.remove("nav-open");
+          syncToggle();
         }
       });
     }

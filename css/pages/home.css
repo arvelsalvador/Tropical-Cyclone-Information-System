@@ -120,6 +120,13 @@
     box-shadow var(--dur-med) var(--ease-out);
 }
 
+.feature-icon i.fa-solid,
+.feature-icon i.fa-regular {
+  color: #fff;
+  font-size: 20px;
+  line-height: 1;
+}
+
 .feature-card:hover .feature-icon {
   transform: translateY(-2px) scale(1.08) rotate(-4deg);
   box-shadow: 0 8px 18px rgba(15, 30, 51, 0.22);

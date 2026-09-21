@@ -141,6 +141,26 @@
   line-height: 1.2;
 }
 
+/* Storm category badge sitting to the left of the modal subtitle */
+.bulletin-cat-icon {
+  display: inline-flex;
+  width: 22px;
+  height: 22px;
+  margin-right: 8px;
+  vertical-align: -5px;
+}
+
+.bulletin-cat-icon[hidden] {
+  display: none;
+}
+
+.bulletin-cat-icon img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
 .bulletin-modal-titles p {
   font-size: 14px;
   line-height: 1.5;

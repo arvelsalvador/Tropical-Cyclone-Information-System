@@ -47,7 +47,7 @@ window.TOPIC_MODELS = [
       {
         heading: "How typhoons are classified",
         paragraphs: [
-          "PAGASA classifies tropical cyclones by their maximum sustained winds near the center: <strong>Tropical Depression</strong> (up to 61 km/h), <strong>Tropical Storm</strong> (62–88 km/h), <strong>Severe Tropical Storm</strong> (89–117 km/h), <strong>Typhoon</strong> (118–184 km/h) and <strong>Super Typhoon</strong> (185 km/h or more). The classification drives the public storm signals that follow.",
+          "PAGASA classifies tropical cyclones by their maximum sustained winds near the center: <strong>Tropical Depression</strong> (61–88 km/h), <strong>Tropical Storm</strong> (89–117 km/h), <strong>Severe Tropical Storm</strong> (118–148 km/h), <strong>Typhoon</strong> (149–184 km/h) and <strong>Super Typhoon</strong> (185 km/h or more). The classification drives the public storm signals that follow.",
         ],
       },
     ],

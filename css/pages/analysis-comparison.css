@@ -1375,6 +1375,12 @@
   box-shadow: 0 4px 10px rgba(47, 128, 237, 0.28);
 }
 
+.controls-head-icon i {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .controls-head-sub {
   font-size: 12.5px;
   color: var(--text-muted);
@@ -1509,6 +1515,12 @@
   flex-shrink: 0;
   background: var(--blue-600);
   border-radius: 50%;
+}
+
+.results-trophy-icon i {
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
 }
 
 .results-tabs {
@@ -1998,6 +2010,12 @@
   border-radius: 9px;
 }
 
+.analogue-stat-icon img {
+  width: 22px;
+  height: 22px;
+  object-fit: contain;
+}
+
 .analogue-stat-icon svg {
   width: 22px;
   height: 22px;
@@ -2163,6 +2181,21 @@
   font-size: 15px;
 }
 
+/* Reason line row: "Its wind speed is close to …" text left, compact
+   bulletins button pinned to the end of the same line (right). */
+.analogue-explanation-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 6px;
+}
+
+.analogue-explanation-row p {
+  flex: 1;
+  min-width: 0;
+  margin-top: 0;
+}
+
 .analogue-modal-explanation p {
   margin-top: 6px;
 }
@@ -2182,15 +2215,172 @@
   font-size: 19px;
 }
 
+/* ==========================================================================
+   Analogue modal — "View PDF bulletins" entry button.
+   The viewer itself is a verbatim reuse of the Historical Data bulletin
+   modal (same markup + css/pages/bulletin-modal.css), opened as an overlay
+   above the analogue modal — no viewer restyling lives here.
+   ========================================================================== */
+.analogue-bulletins-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+  padding: 8px 12px;
+  text-align: left;
+  cursor: pointer;
+  background: linear-gradient(180deg, #f8faff 0%, #eef3fd 100%);
+  border: 1px solid #d4e0f7;
+  border-radius: 999px;
+  box-shadow: 0 1px 2px rgba(15, 30, 51, 0.05);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.analogue-bulletins-btn:hover {
+  border-color: var(--blue-600);
+  box-shadow: 0 4px 12px rgba(29, 78, 216, 0.14);
+  transform: translateY(-1px);
+}
+
+.analogue-bulletins-btn:active {
+  transform: translateY(0) scale(0.99);
+}
+
+.analogue-bulletins-btn:focus-visible {
+  outline: 2px solid var(--blue-600);
+  outline-offset: 2px;
+}
+
+.analogue-bulletins-btn-icon {
+  display: grid;
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(135deg, #ef6a5c 0%, #d63d2f 100%);
+  border-radius: 50%;
+  font-size: 13px;
+  box-shadow: inset 0 -2px 0 rgba(0, 0, 0, 0.12);
+}
+
+/* Pin the glyph itself to white (covers both webfont <i> and SVG-replaced
+   Font Awesome rendering, beating any inherited button/icon colors). */
+.analogue-bulletins-btn-icon > i,
+.analogue-bulletins-btn-icon > svg {
+  color: #fff;
+  fill: #fff;
+}
+
+.analogue-bulletins-btn-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.analogue-bulletins-btn-text strong {
+  color: var(--text-dark);
+  font-size: 13px;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analogue-bulletins-btn-text small {
+  color: var(--text-muted);
+  font-size: 11.5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.analogue-bulletins-btn > span[aria-hidden="true"] {
+  flex-shrink: 0;
+  color: var(--blue-600);
+  font-size: 16px;
+  line-height: 1;
+  transition: transform 0.15s ease;
+}
+
+.analogue-bulletins-btn:hover > span[aria-hidden="true"] {
+  transform: translateX(2px);
+}
+
+/* Compact variant — small icon button docked at the end of the
+   "Why this is a match" heading row. Width shrinks to content, hint
+   text hides (kept in title/aria-label), icon shrinks. */
+.analogue-bulletins-btn.is-compact {
+  width: auto;
+  flex-shrink: 0;
+  gap: 7px;
+  margin-top: 0;
+  padding: 5px 11px 5px 5px;
+  font-size: 12px;
+}
+
+.analogue-bulletins-btn.is-compact .analogue-bulletins-btn-icon {
+  width: 22px;
+  height: 22px;
+  font-size: 10px;
+}
+
+.analogue-bulletins-btn.is-compact .analogue-bulletins-btn-text {
+  flex: none;
+  align-items: center;
+}
+
+.analogue-bulletins-btn.is-compact .analogue-bulletins-btn-text strong {
+  font-size: 12px;
+}
+
+/* Hide the long hint in compact mode — it lives in title/aria-label. */
+.analogue-bulletins-btn.is-compact .analogue-bulletins-btn-text small {
+  display: none;
+}
+
+.analogue-bulletins-btn.is-compact > span[aria-hidden="true"] {
+  font-size: 13px;
+}
+
+@media (max-width: 480px) {
+  .analogue-explanation-row {
+    align-items: flex-start;
+  }
+  .analogue-explanation-row .analogue-bulletins-btn.is-compact {
+    margin-top: 2px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .analogue-bulletins-btn,
+  .analogue-bulletins-btn > span[aria-hidden="true"] {
+    transition: none;
+  }
+}
+
+/* The bulletin overlay must sit above the analogue modal (z-index 9999);
+   its own backdrop is z-index 200 for the Historical Data page. The doubled
+   class keeps this override winning regardless of stylesheet order. */
+.bulletin-modal-backdrop.bulletin-modal-backdrop {
+  z-index: 10000;
+}
+
 @keyframes analogue-modal-in {
   from { opacity: 0; transform: translateY(10px) scale(0.98); }
   to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* ==========================================================================
-   Analysis Comparison Responsive
+   Analysis Comparison Responsive (standard 768px tablet breakpoint)
    ========================================================================== */
-@media (max-width: 760px) {
+@media (max-width: 768px) {
   .cs-top-grid {
     grid-template-columns: 1fr;
   }

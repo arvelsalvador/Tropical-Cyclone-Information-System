@@ -4,17 +4,20 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Analysis Comparison — Tropical Cyclone Information System</title>
+    <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
-    <link rel="stylesheet" href="../css/base.css" />
-    <link rel="stylesheet" href="../css/components/header.css" />
-    <link rel="stylesheet" href="../css/components/buttons.css" />
-    <link rel="stylesheet" href="../css/components/footer.css" />
-    <link rel="stylesheet" href="../css/pages/analysis-comparison.css?v=9" />
-    <script src="../js/upcoming-storm-state.js"></script>
+    <link rel="stylesheet" href="../css/base.css?v=1" />
+    <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
+    <link rel="stylesheet" href="../css/components/header.css?v=1" />
+    <link rel="stylesheet" href="../css/components/buttons.css?v=1" />
+    <link rel="stylesheet" href="../css/components/footer.css?v=1" />
+    <link rel="stylesheet" href="../css/pages/bulletin-modal.css?v=1" />
+    <link rel="stylesheet" href="../css/pages/analysis-comparison.css?v=13" />
+    <script src="../js/upcoming-storm-state.js?v=1"></script>
   </head>
   <body>
     <div id="site-header"><div class="announcement-bar">
@@ -39,17 +42,17 @@
       <a href="../pages/historical-data.html" class="nav-link">Historical Data</a>
       <a href="../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
-        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false"
+                aria-haspopup="menu"
+                aria-controls="education-menu">
           Education
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
         </button>
-        <div class="dropdown-menu">
-          <a href="../pages/education/index.html">Education Hub</a>
-          <a href="../pages/education/warning-signals.html">Warning Signals</a>
-          <a href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
-          <a href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
+        <div class="dropdown-menu" id="education-menu" role="menu">
+          <a role="menuitem" href=" role="menuitem"          <a role="menuitem" href="../pages/education/index.html">Education Hub</a>
+          <a role="menuitem" href="../pages/education/warning-signals.html">Warning Signals</a>
+          <a role="menuitem" href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
+          <a role="menuitem" href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
         </div>
       </div>
       <a href="../pages/resources.html" class="nav-link">Resources</a>
@@ -57,28 +60,19 @@
     </nav>
     <div class="header-actions">
         <a href="../pages/about.html" class="icon-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
           About
         </a>
         <a href="../pages/contact.html" class="icon-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
+          <i class="fa-solid fa-envelope" aria-hidden="true"></i>
           Contact
         </a>
         <a href="../admin/login.php" class="btn-prepared">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
+          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
           Log-in
         </a>
     </div>
-    <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-header"><span></span><span></span><span></span></button>
   </div>
 </header></div>
 
@@ -87,22 +81,7 @@
       <div class="cs-hero-inner">
         <div class="cs-hero-left">
           <div class="cs-hero-icon">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
-              <path
-                d="M12 4v16M12 4l-7 3m7-3l7 3M5 7l-2.5 6a3 3 0 006 0L6 7m13 0l-2.5 6a3 3 0 006 0L19 7"
-                stroke="#fff"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                transform="translate(0 0) scale(0.92) translate(1 1)"
-              />
-              <path
-                d="M8 20h8"
-                stroke="#fff"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </svg>
+            <i class="fa-solid fa-scale-balanced" aria-hidden="true"></i>
           </div>
           <div>
             <h1>Analysis Comparison</h1>
@@ -115,21 +94,7 @@
 
         <div class="cs-hero-how">
           <div class="cs-how-icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-              <circle
-                cx="12"
-                cy="12"
-                r="9"
-                stroke="#bfdbfe"
-                stroke-width="1.8"
-              />
-              <path
-                d="M12 11v5M12 7.5v.5"
-                stroke="#bfdbfe"
-                stroke-width="1.8"
-                stroke-linecap="round"
-              />
-            </svg>
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
           </div>
           <div>
             <strong>How it works</strong>
@@ -194,14 +159,7 @@
             <p class="sandbox-error" id="customStormError" role="alert" hidden></p>
             <div class="sandbox-actions">
               <button type="submit" class="compare-now-btn" id="customStormApply">
-                <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
-                  <path
-                    d="M4 20V10M10 20V4M16 20v-7M22 20V8"
-                    stroke="#fff"
-                    stroke-width="2"
-                    stroke-linecap="round"
-                  />
-                </svg>
+                <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
                 Apply Upcoming Storm
                 <span class="compare-arrow" aria-hidden="true">&rarr;</span>
               </button>
@@ -214,17 +172,7 @@
           <div id="upcomingStormSection" class="upcoming-hidden">
           <div class="profile-head">
             <div class="profile-storm-icon">
-              <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
-                <circle cx="12" cy="12" r="2.6" fill="#0f2e4c" />
-                <path
-                  d="M12 9.4c0-4 2.8-6.9 7.6-6.9-1.1 3-3.9 5-7.6 6.9z"
-                  fill="#0f2e4c"
-                />
-                <path
-                  d="M12 14.6c0 4-2.8 6.9-7.6 6.9 1.1-3 3.9-5 7.6-6.9z"
-                  fill="#0f2e4c"
-                />
-              </svg>
+              <i class="fa-solid fa-hurricane" aria-hidden="true"></i>
             </div>
             <div>
               <div class="profile-name-row">
@@ -238,15 +186,7 @@
           <div class="profile-stats">
             <div class="profile-stat">
               <span class="profile-stat-label">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path
-                    d="M3 8h9l7-3M3 16h9m0 0l-3-3m3 3l-3 3"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <i class="fa-solid fa-wind" aria-hidden="true"></i>
                 Max Winds
               </span>
               <strong data-us="wind">185 km/h</strong>
@@ -254,15 +194,7 @@
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path
-                    d="M5 19L19 5M19 5h-6m6 0v6"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                  />
-                </svg>
+                <i class="fa-solid fa-location-arrow" aria-hidden="true"></i>
                 Movement
               </span>
               <strong data-us="movement_speed">18 km/h</strong>
@@ -270,21 +202,7 @@
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="3"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  />
-                  <path
-                    d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M19.1 4.9L17 7M7 17l-2.1 2.1"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
+                <i class="fa-solid fa-signal" aria-hidden="true"></i>
                 PAGASA Signal
               </span>
               <strong data-us="pagasa_signal">Signal #2</strong>
@@ -292,21 +210,7 @@
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <circle
-                    cx="12"
-                    cy="12"
-                    r="8"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  />
-                  <path
-                    d="M12 12l3-3M12 4v2M20 12h-2"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
+                <i class="fa-solid fa-gauge-high" aria-hidden="true"></i>
                 Central Pressure
               </span>
               <strong data-us="pressure">965 hPa</strong>
@@ -314,23 +218,7 @@
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="16"
-                    rx="2"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  />
-                  <path
-                    d="M3 9h18M8 3v4M16 3v4"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linecap="round"
-                  />
-                </svg>
+                <i class="fa-solid fa-calendar-days" aria-hidden="true"></i>
                 Forecast Landfall
               </span>
               <strong data-us="landfall">May 26, 2025</strong>
@@ -338,21 +226,7 @@
             </div>
             <div class="profile-stat">
               <span class="profile-stat-label">
-                <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                  <path
-                    d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                    stroke-linejoin="round"
-                  />
-                  <circle
-                    cx="12"
-                    cy="10"
-                    r="2.5"
-                    stroke="currentColor"
-                    stroke-width="1.8"
-                  />
-                </svg>
+                <i class="fa-solid fa-location-dot" aria-hidden="true"></i>
                 Location
               </span>
               <strong data-us="location_note">420 km E of Catanduanes</strong>
@@ -366,10 +240,7 @@
 
           <div class="profile-advisory">
             <h3 class="profile-advisory-title">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true">
-                <rect x="5" y="3" width="14" height="18" rx="2" stroke="currentColor" stroke-width="1.8" />
-                <path d="M8 8h8M8 12h8M8 16h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
+              <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
               Advisory notes
             </h3>
             <ul data-us="advisory_list">
@@ -400,17 +271,7 @@
         <div class="controls-head">
           <div class="controls-head-title">
             <span class="controls-head-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <circle cx="12" cy="12" r="2.6" fill="#fff" />
-                <path
-                  d="M12 9c0-4.4 3.2-7.5 8.4-7.5-1.3 3.4-4.3 5.6-8.4 7.5z"
-                  fill="#fff"
-                />
-                <path
-                  d="M12 15c0 4.4-3.2 7.5-8.4 7.5 1.3-3.4 4.3-5.6 8.4-7.5z"
-                  fill="#fff"
-                />
-              </svg>
+              <i class="fa-solid fa-hurricane" aria-hidden="true"></i>
             </span>
             <div>
               <h2 class="cs-section-title">Storm Analysis Comparison</h2>
@@ -422,14 +283,7 @@
           </div>
           <div class="mode-toggle">
             <button type="button" class="mode-btn active" data-mode="strength">
-              <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-                <path
-                  d="M4 20V10M10 20V4M16 20v-7M22 20V8"
-                  stroke="currentColor"
-                  stroke-width="2"
-                  stroke-linecap="round"
-                />
-              </svg>
+              <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
               Storm Strength
             </button>
           </div>
@@ -442,7 +296,7 @@
             </label>
             <button type="button" class="picker-toggle" id="stormA" aria-haspopup="listbox" aria-expanded="false">
               <span class="picker-toggle-label">Select a storm…</span>
-              <svg class="picker-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <i class="fa-solid fa-chevron-down picker-chevron" aria-hidden="true"></i>
             </button>
             <div class="picker-panel" hidden>
               <input type="text" class="picker-search" placeholder="Search storms…" aria-label="Search storms" />
@@ -459,7 +313,7 @@
             </label>
             <button type="button" class="picker-toggle" id="stormB" aria-haspopup="listbox" aria-expanded="false">
               <span class="picker-toggle-label">None (compare with upcoming storm)</span>
-              <svg class="picker-chevron" viewBox="0 0 24 24" width="14" height="14" fill="none" aria-hidden="true"><path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <i class="fa-solid fa-chevron-down picker-chevron" aria-hidden="true"></i>
             </button>
             <div class="picker-panel" hidden>
               <input type="text" class="picker-search" placeholder="Search storms…" aria-label="Search storms" />
@@ -473,27 +327,12 @@
 
         <div class="controls-actions">
           <button type="button" class="compare-now-btn" id="compareNowBtn">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none" aria-hidden="true">
-              <path
-                d="M4 20V10M10 20V4M16 20v-7M22 20V8"
-                stroke="#fff"
-                stroke-width="2"
-                stroke-linecap="round"
-              />
-            </svg>
+            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
             Run Analysis
             <span class="compare-arrow" aria-hidden="true">&rarr;</span>
           </button>
           <button type="button" class="reset-btn" id="resetBtn">
-            <svg viewBox="0 0 24 24" width="15" height="15" fill="none">
-              <path
-                d="M3 12a9 9 0 109-9 9.7 9.7 0 00-6.7 2.8L3 8m0-5v5h5"
-                stroke="currentColor"
-                stroke-width="1.8"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-            </svg>
+            <i class="fa-solid fa-rotate-right" aria-hidden="true"></i>
             Reset
           </button>
         </div>
@@ -504,10 +343,7 @@
         <div class="results-head">
           <div class="results-head-title">
             <span class="results-trophy-icon">
-              <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-                <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-                <path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-trophy" aria-hidden="true"></i>
             </span>
             <div>
               <h2 class="cs-section-title">Comparison Results</h2>
@@ -516,9 +352,7 @@
           </div>
           <div class="results-tabs">
             <button type="button" class="results-tab active" data-mode="strength">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-              </svg>
+              <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
               Strength
             </button>
           </div>
@@ -526,10 +360,7 @@
 
         <div class="winner-banner" id="winnerBanner">
           <div class="winner-banner-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" width="30" height="30" fill="none">
-              <path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-              <path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+            <i class="fa-solid fa-trophy" aria-hidden="true"></i>
           </div>
           <div class="winner-banner-copy">
             <span id="winnerBannerLabel">Overall Winner</span>
@@ -552,10 +383,7 @@
         </div>
         <div class="results-note">
           <span class="results-note-icon">
-            <svg viewBox="0 0 24 24" width="13" height="13" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" />
-              <path d="M12 11v5M12 7.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
+            <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
           </span>
           <p><strong>Note:</strong> Data is based on PAGASA best track data. Values may vary slightly depending on the data source.</p>
         </div>
@@ -598,8 +426,120 @@
             </table>
           </div>
         </div>
-        <div class="analogue-modal-explanation" id="analogueModalExplanation"></div>
+        <div class="analogue-modal-explanation" id="analogueModalExplanation">
+          <h3>Why this is a match</h3>
+          <div class="analogue-explanation-row">
+            <p id="analogueModalReason"></p>
+            <button
+              type="button"
+              class="analogue-bulletins-btn is-compact"
+              id="analogueBulletinsBtn"
+            >
+              <span class="analogue-bulletins-btn-icon" aria-hidden="true">
+                <i class="fa-solid fa-file-pdf"></i>
+              </span>
+              <span class="analogue-bulletins-btn-text">
+                <strong>View bulletins</strong>
+                <small id="analogueBulletinsHint">Inspect archived PAGASA bulletins for this storm</small>
+              </span>
+              <span aria-hidden="true">&rsaquo;</span>
+            </button>
+          </div>
+          <div id="analogueModalExplanationBody"></div>
+        </div>
       </section>
+    </div>
+
+    <!-- Bulletin viewer modal — verbatim reuse of the Historical Data
+      bulletin modal (same markup + css/pages/bulletin-modal.css), opened as
+      an overlay above the analogue modal. -->
+    <div
+      class="bulletin-modal-backdrop"
+      id="bulletinModal"
+      hidden
+    >
+      <div
+        class="bulletin-modal"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="bulletinModalTitle"
+      >
+        <div class="bulletin-modal-head">
+          <div class="bulletin-modal-titles">
+            <div class="bulletin-modal-text">
+              <h2 id="bulletinModalTitle">Storm Bulletins</h2>
+              <p class="bulletin-modal-subtitle"><span class="bulletin-cat-icon" id="bulletinModalCatIcon" hidden></span><span id="bulletinModalSubtitle"></span></p>
+            </div>
+          </div>
+          <button
+            type="button"
+            class="bulletin-close"
+            id="bulletinClose"
+            aria-label="Close bulletin viewer"
+          >
+            &times;
+          </button>
+        </div>
+
+        <div id="bulletinListView">
+          <div class="bulletin-search" id="bulletinSearchWrap">
+            <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+            <input
+              type="search"
+              id="bulletinSearch"
+              placeholder="Search bulletins…"
+              aria-label="Search bulletins"
+              autocomplete="off"
+            />
+            <button
+              type="button"
+              id="bulletinSearchClear"
+              class="bulletin-search-clear"
+              aria-label="Clear search"
+              hidden
+            >
+              &times;
+            </button>
+          </div>
+          <div class="bulletin-list-bar">
+            <span class="bulletin-count" id="bulletinCount"></span>
+            <span class="bulletin-list-hint">Click to preview</span>
+          </div>
+          <ul class="bulletin-list" id="bulletinList"></ul>
+          <p class="bulletin-status" id="bulletinStatus" role="status"></p>
+        </div>
+
+        <div id="bulletinPreviewView" hidden>
+          <div class="bulletin-preview-top">
+            <button
+              type="button"
+              class="bulletin-back"
+              id="bulletinBackBtn"
+            >
+              &larr; Back to list
+            </button>
+            <p class="bulletin-preview-title" id="bulletinPreviewTitle"></p>
+          </div>
+          <iframe
+            id="bulletinPreviewFrame"
+            class="bulletin-preview-frame"
+            title="Bulletin PDF preview"
+          ></iframe>
+          <div class="bulletin-preview-actions">
+            <a
+              id="bulletinOpenNewTab"
+              class="bulletin-btn-secondary"
+              href="#"
+              target="_blank"
+              rel="noopener"
+              >Open in new tab</a
+            >
+            <a id="bulletinDownload" class="bulletin-btn-primary" href="#" download
+              >Download</a
+            >
+          </div>
+        </div>
+      </div>
     </div>
 
     <div id="site-footer"><footer class="site-footer">
@@ -626,8 +566,9 @@
   </div>
 </footer></div>
 
-    <script src="../js/main.js" data-root="../"></script>
-    <script src="../js/storm-category.js" defer></script>
-    <script src="../js/pages/analysis-comparison.js?v=11" defer></script>
+    <script src="../js/main.js?v=1" data-root="../"></script>
+    <script src="../js/api-client.js?v=1" defer></script>
+    <script src="../js/storm-category.js?v=1" defer></script>
+    <script src="../js/pages/analysis-comparison.js?v=12" defer></script>
   </body>
 </html>

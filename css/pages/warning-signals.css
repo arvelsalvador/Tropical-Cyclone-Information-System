@@ -491,6 +491,13 @@
   flex-shrink: 0;
 }
 
+.ws-cta-icon i.fa-solid,
+.ws-cta-icon i.fa-regular {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .ws-cta-left h2 {
   font-size: 17px;
   font-weight: 700;
@@ -835,7 +842,7 @@
       rgba(5, 23, 43, 0.45) 46%,
       rgba(5, 23, 43, 0.12) 100%
     ),
-    url("../../assets/images/warning-signals-background-color.png") center
+    url("../../assets/images/warning-signals-background-color.jpg") center
       bottom / cover no-repeat;
   min-height: 430px;
   display: flex;

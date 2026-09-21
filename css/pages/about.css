@@ -344,6 +344,13 @@
   flex-shrink: 0;
 }
 
+.ab-cta-icon i.fa-solid,
+.ab-cta-icon i.fa-regular {
+  color: #fff;
+  font-size: 22px;
+  line-height: 1;
+}
+
 .ab-cta-text h3 {
   font-size: 17px;
   font-weight: 700;

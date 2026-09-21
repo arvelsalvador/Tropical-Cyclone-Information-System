@@ -4,12 +4,14 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Resources — Tropical Cyclone Information System</title>
+    <noscript><style>[data-reveal]{opacity:1!important;transform:none!important}</style></noscript>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
       rel="stylesheet"
     />
     <link rel="stylesheet" href="../css/base.css" />
+    <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
     <link rel="stylesheet" href="../css/components/header.css" />
     <link rel="stylesheet" href="../css/components/buttons.css" />
     <link rel="stylesheet" href="../css/components/footer.css" />
@@ -38,17 +40,17 @@
       <a href="../pages/historical-data.html" class="nav-link">Historical Data</a>
       <a href="../pages/analysis-comparison.html" class="nav-link">Analysis Comparison</a>
       <div class="nav-dropdown" id="education-dropdown">
-        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false" aria-haspopup="true">
+        <button class="nav-link dropdown-toggle" type="button" aria-expanded="false"
+                aria-haspopup="menu"
+                aria-controls="education-menu">
           Education
-          <svg class="chevron" viewBox="0 0 24 24" width="16" height="16">
-            <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
+          <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
         </button>
-        <div class="dropdown-menu">
-          <a href="../pages/education/index.html">Education Hub</a>
-          <a href="../pages/education/warning-signals.html">Warning Signals</a>
-          <a href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
-          <a href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
+        <div class="dropdown-menu" id="education-menu" role="menu">
+          <a role="menuitem" href="../pages/education/index.html">Education Hub</a>
+          <a role="menuitem" href="../pages/education/warning-signals.html">Warning Signals</a>
+          <a role="menuitem" href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
+          <a role="menuitem" href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
         </div>
       </div>
       <a href="../pages/resources.html" class="nav-link">Resources</a>
@@ -56,28 +58,19 @@
     </nav>
     <div class="header-actions">
         <a href="../pages/about.html" class="icon-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <line x1="12" y1="16" x2="12" y2="12" />
-            <line x1="12" y1="8" x2="12.01" y2="8" />
-          </svg>
+          <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
           About
         </a>
         <a href="../pages/contact.html" class="icon-link">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
-            <polyline points="22,6 12,13 2,6" />
-          </svg>
+          <i class="fa-solid fa-envelope" aria-hidden="true"></i>
           Contact
         </a>
         <a href="../admin/login.php" class="btn-prepared">
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4" /><polyline points="10 17 15 12 10 7" /><line x1="15" y1="12" x2="3" y2="12" />
-          </svg>
+          <i class="fa-solid fa-right-to-bracket" aria-hidden="true"></i>
           Log-in
         </a>
     </div>
-    <button class="mobile-menu-toggle" aria-label="Toggle menu"><span></span><span></span><span></span></button>
+    <button class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="site-header"><span></span><span></span><span></span></button>
   </div>
 </header></div>
 
@@ -86,16 +79,7 @@
       <div class="res-hero-inner">
         <div class="res-hero-left slide-top">
           <div class="res-hero-icon">
-            <svg viewBox="0 0 24 24" width="26" height="26" fill="none">
-              <path
-                d="M4 4h16v14H8l-4 3V4z"
-                stroke="#fff"
-                stroke-width="1.8"
-                stroke-linejoin="round"
-                fill="none"
-              />
-              <path d="M8 9h8M8 13h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
+            <i class="fa-solid fa-comments" aria-hidden="true"></i>
           </div>
           <div>
             <h1>Resources</h1>
@@ -108,14 +92,7 @@
 
         <div class="res-hero-quick slide-top" style="animation-delay: 0.24s">
           <div class="res-hero-quick-icon">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="none">
-              <path
-                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.25 1L8.14 9.92a12.04 12.04 0 005.94 5.94l2.64-2.64a1 1 0 011-.25l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2C10.07 21 3 13.93 3 5z"
-                stroke="#bfdbfe"
-                stroke-width="1.8"
-                fill="none"
-              />
-            </svg>
+            <i class="fa-solid fa-phone" aria-hidden="true"></i>
           </div>
           <div>
             <strong>Emergency?</strong>
@@ -133,110 +110,111 @@
         counts.
       </p>
 
-      <div class="res-hotline-grid">
-        <div class="res-hotline" data-reveal style="--reveal-delay: 0.12s">
-          <div class="res-hotline-icon red">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <path
-                d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.25 1L8.14 9.92a12.04 12.04 0 005.94 5.94l2.64-2.64a1 1 0 011-.25l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2C10.07 21 3 13.93 3 5z"
-                stroke="#fff"
-                stroke-width="1.8"
-                fill="none"
-              />
-            </svg>
+      <!-- Fast-dial short codes: the fastest possible response -->
+      <div class="res-fastdial" data-reveal style="--reveal-delay: 0.08s">
+        <div class="res-fastdial-actions">
+          <div class="res-fastdial-btn res-fastdial-btn--sos">
+            <span class="res-fastdial-icon">
+              <img class="fastdial-logo" src="../assets/Icons/911.png" alt="Emergency 911 logo" />
+            </span>
+            <span class="res-fastdial-num">911</span>
+            <span class="res-fastdial-tag">Police &middot; Fire &middot; Medical</span>
           </div>
-          <div class="res-hotline-info">
-            <div class="res-hotline-name">National Emergency Hotline</div>
-            <div class="res-hotline-number">911</div>
-            <div class="res-hotline-desc">24/7 national emergency response — police, fire, medical, and disaster</div>
-          </div>
-        </div>
-
-        <div class="res-hotline" data-reveal style="--reveal-delay: 0.18s">
-          <div class="res-hotline-icon orange">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="1.8" fill="none" />
-              <path d="M12 8v5l3 2" stroke="#fff" stroke-width="1.8" stroke-linecap="round" fill="none" />
-            </svg>
-          </div>
-          <div class="res-hotline-info">
-            <div class="res-hotline-name">NDRRMC Operations Center</div>
-            <div class="res-hotline-number">(02) 8911-5061</div>
-            <div class="res-hotline-desc">National Disaster Risk Reduction and Management Council</div>
-            <a href="https://www.ndrrmc.gov.ph/" target="_blank" rel="noopener" class="res-hotline-link">
-              Visit website
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </a>
+          <div class="res-fastdial-btn">
+            <span class="res-fastdial-icon">
+              <img class="fastdial-logo" src="../assets/Icons/philippine-red-cross.png" alt="Philippine Red Cross logo" />
+            </span>
+            <span class="res-fastdial-num">143</span>
+            <span class="res-fastdial-tag">Red Cross &middot; Ambulance &middot; Rescue</span>
           </div>
         </div>
+      </div>
 
-        <div class="res-hotline" data-reveal style="--reveal-delay: 0.24s">
-          <div class="res-hotline-icon blue">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <path d="M5 19L19 5M19 5h-6m6 0v6" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+      <div class="res-card-grid">
+        <div class="res-card res-card--hotline" data-reveal style="--reveal-delay: 0.12s">
+          <div class="res-card-header">
+            <div class="res-card-icon green">
+              <img class="agency-logo" src="../assets/Icons/pnp.png" alt="Philippine National Police logo" />
+            </div>
+            <h3>PNP Emergency Hotline</h3>
           </div>
-          <div class="res-hotline-info">
-            <div class="res-hotline-name">PAGASA Weather Center</div>
-            <div class="res-hotline-number">(02) 8284-0800</div>
-            <div class="res-hotline-desc">Weather forecasts, typhoon bulletins, and warning signals</div>
-            <a href="https://www.pagasa.dost.gov.ph/" target="_blank" rel="noopener" class="res-hotline-link">
-              Visit website
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </a>
+          <div class="hotline-calls">
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0917-847-5757</span>
+            </div>
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0998-598-6019</span>
+            </div>
           </div>
+          <p>Police rescue and stranded-resident reports. Text may work when calls fail.</p>
         </div>
 
-        <div class="res-hotline" data-reveal style="--reveal-delay: 0.30s">
-          <div class="res-hotline-icon green">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <path d="M12 3l8 4v5c0 5-3.5 8-8 10-4.5-2-8-5-8-10V7l8-4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-              <path d="M9 12l2 2 4-4" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" />
-            </svg>
+        <div class="res-card res-card--hotline" data-reveal style="--reveal-delay: 0.16s">
+          <div class="res-card-header">
+            <div class="res-card-icon purple">
+              <img class="agency-logo" src="../assets/Icons/ocd.png" alt="Office of Civil Defense logo" />
+            </div>
+            <h3>OCD / RDRRMC Region V</h3>
           </div>
-          <div class="res-hotline-info">
-            <div class="res-hotline-name">Camarines Norte DRMMO</div>
-            <div class="res-hotline-number">(054) 471-0000</div>
-            <div class="res-hotline-desc">Provincial Disaster Risk Reduction and Management Office</div>
+          <div class="hotline-calls">
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0917-574-7880</span>
+              <span class="hotline-call-net">Globe</span>
+            </div>
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0928-505-3861</span>
+              <span class="hotline-call-net">Smart</span>
+            </div>
           </div>
+          <p>Regional storm coordination and evacuation updates across Bicol.</p>
         </div>
 
-        <div class="res-hotline" data-reveal style="--reveal-delay: 0.36s">
-          <div class="res-hotline-icon purple">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <path d="M4 4h16v13H8l-4 3V4z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-              <path d="M8 9h8M8 12.5h5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
-            </svg>
+        <div class="res-card res-card--hotline" data-reveal style="--reveal-delay: 0.20s">
+          <div class="res-card-header">
+            <div class="res-card-icon blue">
+              <img class="agency-logo" src="../assets/Icons/pcg.png" alt="Philippine Coast Guard logo" />
+            </div>
+            <h3>Philippine Coast Guard</h3>
           </div>
-          <div class="res-hotline-info">
-            <div class="res-hotline-name">DSWD Hotline</div>
-            <div class="res-hotline-number">(02) 8931-8101</div>
-            <div class="res-hotline-desc">Social welfare assistance and relief operations</div>
+          <div class="hotline-calls">
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0917-724-3682</span>
+              <span class="hotline-call-net">Globe</span>
+            </div>
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0918-967-4697</span>
+              <span class="hotline-call-net">Smart</span>
+            </div>
           </div>
+          <p>Flooding extraction, storm surge rescue, and maritime emergencies.</p>
         </div>
 
-        <div class="res-hotline" data-reveal style="--reveal-delay: 0.42s">
-          <div class="res-hotline-icon teal">
-            <svg viewBox="0 0 24 24" width="22" height="22" fill="none">
-              <rect x="3" y="5" width="18" height="14" rx="2" stroke="#fff" stroke-width="1.8" fill="none" />
-              <path d="M3 9h18" stroke="#fff" stroke-width="1.8" />
-            </svg>
+        <div class="res-card res-card--hotline" data-reveal style="--reveal-delay: 0.24s">
+          <div class="res-card-header">
+            <div class="res-card-icon green">
+              <img class="agency-logo" src="../assets/Icons/pdrrmo-camarines-norte.png" alt="Camarines Norte PDRRMO logo" />
+            </div>
+            <h3>PDRRMO Camarines Norte</h3>
           </div>
-          <div class="res-hotline-info">
-            <div class="res-hotline-name">Philippine Red Cross</div>
-            <div class="res-hotline-number">143</div>
-            <div class="res-hotline-desc">Blood services, first aid, and disaster response</div>
-            <a href="https://www.redcross.org.ph/" target="_blank" rel="noopener" class="res-hotline-link">
-              Visit website
-              <svg viewBox="0 0 24 24" width="12" height="12" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-            </a>
+          <div class="hotline-calls">
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0998-561-5388</span>
+              <span class="hotline-call-net">Smart</span>
+            </div>
+            <div class="hotline-call">
+              <i class="fa-solid fa-phone hotline-call-icon" aria-hidden="true"></i>
+              <span class="hotline-call-num">0917-583-9147</span>
+              <span class="hotline-call-net">Globe</span>
+            </div>
           </div>
+          <p>Provincial rescue teams, road clearing, and municipal coordination.</p>
         </div>
       </div>
 
@@ -251,36 +229,26 @@
         <div class="res-card" data-reveal style="--reveal-delay: 0.10s">
           <div class="res-card-header">
             <div class="res-card-icon blue">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z" stroke="currentColor" stroke-width="1.8" fill="none" />
-              </svg>
+              <img class="agency-logo" src="../assets/Icons/pagasa-dost.png" alt="PAGASA DOST logo" />
             </div>
-            <h3>PAGASA</h3>
+            <h3>PAGASA (DOST)</h3>
           </div>
           <p>
-            The Philippine weather bureau. Check here for tropical cyclone
-            bulletins, signal warnings, rainfall advisories, and forecast tracks
-            updated every 6 hours.
+            Primary agency for official storm tracking, signal warnings, and
+            flood advisories.
           </p>
           <div class="res-card-links">
             <a href="https://www.pagasa.dost.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              pagasa.dost.gov.ph
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Main Web Portal: pagasa.dost.gov.ph
             </a>
-            <a href="https://www.pagasa.dost.gov.ph/tropical-cyclone" target="_blank" rel="noopener" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              Tropical Cyclone Bulletins
+            <a href="https://bagong.pagasa.dost.gov.ph/tropical-cyclone/severe-weather-bulletin" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Tropical Cyclone Bulletins: severe-weather-bulletin
             </a>
-            <a href="https://www.pagasa.dost.gov.ph/warning" target="_blank" rel="noopener" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              Warning Signals & Advisories
+            <a href="https://facebook.com/PAGASA.DOST.GOV.PH" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Official Facebook Page: PAGASA.DOST.GOV.PH
             </a>
           </div>
         </div>
@@ -288,29 +256,80 @@
         <div class="res-card" data-reveal style="--reveal-delay: 0.15s">
           <div class="res-card-header">
             <div class="res-card-icon green">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <path d="M12 3l9 4v5c0 5-3.5 8-9 10-5.5-2-9-5-9-10V7l9-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-              </svg>
+              <img class="agency-logo" src="../assets/Icons/ndrrmc.png" alt="NDRRMC logo" />
             </div>
-            <h3>NDRRMC</h3>
+            <h3>NDRRMC / OCD</h3>
           </div>
           <p>
-            The National Disaster Risk Reduction and Management Council coordinates
-            government response during calamities. Check for official evacuation
-            orders and relief operations.
+            Central command for national emergency coordination, severe weather
+            advisories, and rescue deployment.
           </p>
           <div class="res-card-links">
             <a href="https://www.ndrrmc.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              ndrrmc.gov.ph
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Main NDRRMC Portal: ndrrmc.gov.ph
             </a>
-            <a href="https://www.ndrrmc.gov.ph/ calamity-status" target="_blank" rel="noopener" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              Current Calamity Status
+            <a href="https://ocd.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Office of Civil Defense (OCD): ocd.gov.ph
+            </a>
+            <a href="https://facebook.com/NDRRMC" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Official Facebook Page: NDRRMC
+            </a>
+          </div>
+        </div>
+
+        <div class="res-card" data-reveal style="--reveal-delay: 0.20s">
+          <div class="res-card-header">
+            <div class="res-card-icon orange">
+              <img class="agency-logo" src="../assets/Icons/dswd-dromic.png" alt="DSWD DROMIC logo" />
+            </div>
+            <h3>DSWD DROMIC</h3>
+          </div>
+          <p>
+            Monitors live evacuation updates, relief goods distribution, and
+            casualty/displaced population reports.
+          </p>
+          <div class="res-card-links">
+            <a href="https://dromic.dswd.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              DROMIC Disaster Portal: dromic.dswd.gov.ph
+            </a>
+            <a href="https://dswd.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              DSWD Main Portal: dswd.gov.ph
+            </a>
+            <a href="https://facebook.com/dswdserves" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Official Facebook Page: dswdserves
+            </a>
+          </div>
+        </div>
+
+        <div class="res-card" data-reveal style="--reveal-delay: 0.25s">
+          <div class="res-card-header">
+            <div class="res-card-icon purple">
+              <img class="agency-logo" src="../assets/Icons/pcg.png" alt="Philippine Coast Guard logo" />
+            </div>
+            <h3>Philippine Coast Guard (PCG)</h3>
+          </div>
+          <p>
+            Manages flood rescues, maritime safety warnings, and sea travel
+            suspensions during severe weather.
+          </p>
+          <div class="res-card-links">
+            <a href="https://coastguard.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Main Web Portal: coastguard.gov.ph
+            </a>
+            <a href="https://facebook.com/officialcoastguardph" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              National Facebook Page: officialcoastguardph
+            </a>
+            <a href="https://facebook.com/CGDBCL" target="_blank" rel="noopener" class="res-card-link">
+              <i class="fa-solid fa-arrow-up-right-from-square" aria-hidden="true"></i>
+              Coast Guard District Bicol Page: CGDBCL
             </a>
           </div>
         </div>
@@ -328,10 +347,7 @@
         <div class="res-card" data-reveal style="--reveal-delay: 0.10s">
           <div class="res-card-header">
             <div class="res-card-icon blue">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <path d="M12 22s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-                <circle cx="12" cy="10" r="2.5" stroke="currentColor" stroke-width="1.8" fill="none" />
-              </svg>
+              <img class="agency-logo" src="../assets/Icons/camarines-norte-provincial-government.png" alt="Camarines Norte Provincial Government logo" />
             </div>
             <h3>Camarines Norte Provincial Government</h3>
           </div>
@@ -340,25 +356,12 @@
             evacuation, and distributes relief. Follow their page for real-time
             updates during typhoons.
           </p>
-          <div class="res-card-links">
-            <a href="https://www.camarinesnorte.gov.ph/" target="_blank" rel="noopener" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M7 17L17 7M17 7H7m10 0v10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
-              camarinesnorte.gov.ph
-            </a>
-          </div>
         </div>
 
         <div class="res-card" data-reveal style="--reveal-delay: 0.15s">
           <div class="res-card-header">
             <div class="res-card-icon green">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <circle cx="9" cy="7" r="3" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path d="M4 20c0-3 2.2-5 5-5s5 2 5 5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none" />
-                <circle cx="17" cy="8" r="2.4" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path d="M14.5 19c.3-2.2 1.6-3.5 3.5-3.5s3.2 1.3 3.5 3.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none" />
-              </svg>
+              <img class="agency-logo" src="../assets/Icons/Brgy.png" alt="Barangay Hall logo" />
             </div>
             <h3>Your Barangay Hall</h3>
           </div>
@@ -367,14 +370,6 @@
             evacuation orders and know which streets flood first. Register your
             family with the barangay emergency contact list.
           </p>
-          <div class="res-card-links">
-            <span class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.95.68l1.2 3.6a1 1 0 01-.25 1L8.14 9.92a12.04 12.04 0 005.94 5.94l2.64-2.64a1 1 0 011-.25l3.6 1.2a1 1 0 01.68.95V19a2 2 0 01-2 2C10.07 21 3 13.93 3 5z" stroke="currentColor" stroke-width="1.8" fill="none" />
-              </svg>
-              Visit or call your barangay hall for the local emergency hotline
-            </span>
-          </div>
         </div>
       </div>
 
@@ -389,10 +384,7 @@
         <div class="res-card" data-reveal style="--reveal-delay: 0.10s">
           <div class="res-card-header">
             <div class="res-card-icon blue">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <path d="M4 4h16v13H8l-4 3V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-                <path d="M8 9h8M8 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
+              <i class="fa-solid fa-book-open" aria-hidden="true"></i>
             </div>
             <h3>Our Education Hub</h3>
           </div>
@@ -402,21 +394,15 @@
           </p>
           <div class="res-card-links">
             <a href="education/warning-signals.html" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
               Warning Signals Guide
             </a>
             <a href="education/evacuation-guide.html" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
               Evacuation Guide
             </a>
             <a href="education/preparedness-tips.html" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
               Preparedness Tips
             </a>
           </div>
@@ -425,10 +411,7 @@
         <div class="res-card" data-reveal style="--reveal-delay: 0.15s">
           <div class="res-card-header">
             <div class="res-card-icon orange">
-              <svg viewBox="0 0 24 24" width="20" height="20" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none" />
-              </svg>
+              <i class="fa-solid fa-clock" aria-hidden="true"></i>
             </div>
             <h3>Historical Data</h3>
           </div>
@@ -438,15 +421,11 @@
           </p>
           <div class="res-card-links">
             <a href="historical-data.html" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
               View Historical Data
             </a>
             <a href="analysis-comparison.html" class="res-card-link">
-              <svg viewBox="0 0 24 24" width="14" height="14" fill="none">
-                <path d="M9 18l6-6-6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
-              </svg>
+              <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
               Analysis Comparison Tool
             </a>
           </div>
@@ -462,59 +441,48 @@
 
       <div class="res-card res-links-card" data-reveal style="--reveal-delay: 0.06s">
         <div class="res-links-list">
-          <a href="https://www.pagasa.dost.gov.ph/" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.10s">
+          <a href="https://noah.up.edu.ph/" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.10s">
             <div class="res-link-icon">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path d="M2 12h20M12 2a15.3 15.3 0 014 10 15.3 15.3 0 01-4 10 15.3 15.3 0 01-4-10A15.3 15.3 0 0112 2z" stroke="currentColor" stroke-width="1.8" fill="none" />
-              </svg>
+              <img class="resource-logo" src="../assets/Icons/up-noah.png" alt="UP NOAH logo" />
             </div>
             <div class="res-link-info">
-              <div class="res-link-name">PAGASA — Tropical Cyclone Page</div>
-              <div class="res-link-desc">Official Philippine weather bulletins and typhoon forecasts</div>
+              <div class="res-link-name">UP NOAH Center</div>
+              <div class="res-link-desc">Interactive hazard mapping platform offering real-time flood, landslide, and storm surge risk models across the Philippines.</div>
             </div>
-            <span class="res-link-url">pagasa.dost.gov.ph</span>
+            <span class="res-link-url">noah.up.edu.ph</span>
           </a>
 
-          <a href="https://www.ndrrmc.gov.ph/" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.15s">
+          <a href="https://www.windy.com/" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.15s">
             <div class="res-link-icon">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                <path d="M12 3l9 4v5c0 5-3.5 8-9 10-5.5-2-9-5-9-10V7l9-4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-              </svg>
+              <img class="resource-logo" src="../assets/Icons/Windy.png" alt="Windy Weather Radar logo" />
             </div>
             <div class="res-link-info">
-              <div class="res-link-name">NDRRMC</div>
-              <div class="res-link-desc">National Disaster Risk Reduction and Management Council</div>
+              <div class="res-link-name">Windy Weather Radar</div>
+              <div class="res-link-desc">Live global satellite and radar tracking tool providing real-time visual monitoring of typhoon trajectories, wind speeds, and rain forecasts.</div>
             </div>
-            <span class="res-link-url">ndrrmc.gov.ph</span>
+            <span class="res-link-url">windy.com</span>
           </a>
 
-          <a href="https://www.reliefweb.int/country/phl" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.20s">
+          <a href="https://www.redcross.org.ph/" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.20s">
             <div class="res-link-icon">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                <path d="M4 4h16v13H8l-4 3V4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" fill="none" />
-                <path d="M8 9h8M8 12.5h5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />
-              </svg>
+              <img class="resource-logo" src="../assets/Icons/philippine-red-cross.png" alt="Philippine Red Cross logo" />
             </div>
             <div class="res-link-info">
-              <div class="res-link-name">ReliefWeb — Philippines</div>
-              <div class="res-link-desc">UN disaster relief updates and situation reports for the Philippines</div>
+              <div class="res-link-name">Philippine Red Cross</div>
+              <div class="res-link-desc">Premier national humanitarian agency providing immediate emergency medical transport, search and rescue, blood services, and relief goods.</div>
             </div>
-            <span class="res-link-url">reliefweb.int</span>
+            <span class="res-link-url">redcross.org.ph</span>
           </a>
 
-          <a href="https://www.globaldisasterriskreduction.net/" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.25s">
+          <a href="https://reliefweb.int/country/phl" target="_blank" rel="noopener" class="res-link-row" data-reveal style="--reveal-delay: 0.25s">
             <div class="res-link-icon">
-              <svg viewBox="0 0 24 24" width="16" height="16" fill="none">
-                <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8" fill="none" />
-                <path d="M12 7v5l3.5 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" fill="none" />
-              </svg>
+              <img class="resource-logo" src="../assets/Icons/reliefweb.png" alt="ReliefWeb logo" />
             </div>
             <div class="res-link-info">
-              <div class="res-link-name">UNDRR — Global Disaster Risk Reduction</div>
-              <div class="res-link-desc">United Nations disaster risk reduction framework and resources</div>
+              <div class="res-link-name">ReliefWeb Philippines</div>
+              <div class="res-link-desc">UN OCHA emergency portal delivering global situational reports, damage assessments, and international humanitarian tracking for Philippine disasters.</div>
             </div>
-            <span class="res-link-url">undrr.org</span>
+            <span class="res-link-url">reliefweb.int/country/phl</span>
           </a>
         </div>
       </div>
