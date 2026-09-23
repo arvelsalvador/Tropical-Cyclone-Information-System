@@ -22,14 +22,15 @@
   "use strict";
 
   // PAGASA wind ranges (km/h, max sustained wind) — the exact values the
-  // original admin forms always used:
-  //   below 61  -> unclassified (null)
-  //   61 - 88   -> Tropical Depression
+  // original admin forms always used, with the TD floor lowered to 30 so
+  // weak systems (e.g. 45 km/h) still auto-suggest a category:
+  //   below 30  -> unclassified (null)
+  //   30 - 88   -> Tropical Depression
   //   89 - 117  -> Tropical Storm
   //   118 - 148 -> Severe Tropical Storm
   //   149 - 184 -> Typhoon
   //   185+      -> Super Typhoon
-  var FLOOR = 61;
+  var FLOOR = 30;
   var THRESHOLDS = [
     { max: 88,  key: "TD"  },
     { max: 117, key: "TS"  },

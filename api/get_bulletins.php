@@ -22,16 +22,19 @@ if (!isset($_GET['cyclone_id']) || !ctype_digit($_GET['cyclone_id'])) {
 
 $cycloneId = (int) $_GET['cyclone_id'];
 
-// Per-cyclone fingerprint: bulletins change only on import, cache 5 min.
+// Per-cyclone fingerprint: bulletins change on import AND on backfill
+// (e.g. latitude/longitude updates touch no row count or max id, so the
+// coordinate coverage must be part of the ETag or clients keep the stale
+// payload with null coords via 304 revalidation).
 try {
-    $fpStmt = $conn->prepare('SELECT COUNT(*) AS c, MAX(id) AS maxid FROM bulletins WHERE cyclone_id = ?');
+    $fpStmt = $conn->prepare('SELECT COUNT(*) AS c, MAX(id) AS maxid, COUNT(latitude) AS clat, COUNT(longitude) AS clon FROM bulletins WHERE cyclone_id = ?');
     if ($fpStmt !== false) {
         $fpStmt->bind_param('i', $cycloneId);
         $fpStmt->execute();
         $fpRes = $fpStmt->get_result();
         if ($fpRes !== false) {
             $frow = $fpRes->fetch_assoc();
-            $etag = '"' . md5($cycloneId . '|' . ($frow['c'] ?? '') . '|' . ($frow['maxid'] ?? '')) . '"';
+            $etag = '"' . md5($cycloneId . '|' . ($frow['c'] ?? '') . '|' . ($frow['maxid'] ?? '') . '|' . ($frow['clat'] ?? '') . '|' . ($frow['clon'] ?? '')) . '"';
             header('ETag: ' . $etag);
             if (trim($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') === $etag) {
                 http_response_code(304);
@@ -50,7 +53,7 @@ header('Cache-Control: public, max-age=300');
 
 try {
     $stmt = $conn->prepare(
-        "SELECT id, bulletin_number, r2_url FROM bulletins WHERE cyclone_id = ? ORDER BY bulletin_number ASC"
+        "SELECT id, bulletin_number, r2_url, latitude, longitude FROM bulletins WHERE cyclone_id = ? ORDER BY bulletin_number ASC"
     );
     if ($stmt === false) {
         throw new mysqli_sql_exception('prepare failed');
@@ -81,6 +84,8 @@ foreach ($data as $row) {
         app_log('get_bulletins dropped non-http r2_url for cyclone ' . $cycloneId);
         continue;
     }
+    $row['latitude'] = $row['latitude'] !== null ? (float) $row['latitude'] : null;
+    $row['longitude'] = $row['longitude'] !== null ? (float) $row['longitude'] : null;
     $safe[] = $row;
 }
 

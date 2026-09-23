@@ -48,15 +48,10 @@ $categoryLabels = [
     'STY' => 'Super Typhoon',
 ];
 
-// Category badge artwork (transparent PNG storm glyphs in assets/Icons) shown
-// next to the category label in the list table.
-$categoryIcons = [
-    'TD'  => '../assets/Icons/Green_Storm.png',
-    'TS'  => '../assets/Icons/Yellow_Storm.png',
-    'STS' => '../assets/Icons/Orange_Storm.png',
-    'TY'  => '../assets/Icons/Red_Storm.png',
-    'STY' => '../assets/Icons/Purple_Storm.png',
-];
+// Single cyclone artwork (assets/Icons/The icon.png) shown next to every
+// cyclone in the list table — the old per-category color-code was removed,
+// so all categories share one icon.
+$cycloneIcon = '../assets/Icons/The%20icon.png';
 
 $conn = db_connect();
 $db_error = '';
@@ -316,9 +311,7 @@ function signal_chip(array $row) {
             <tr>
               <td>
                 <div class="admin-cyclone-cell">
-                  <?php if (!empty($categoryIcons[$catCode])): ?>
-                    <span class="admin-cyclone-icon"><img src="<?php echo $categoryIcons[$catCode]; ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
-                  <?php endif; ?>
+                  <span class="admin-cyclone-icon"><img src="<?php echo $cycloneIcon; ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
                   <div>
                     <div class="cell-strong"><?php echo htmlspecialchars(cyclone_name($row['local_name'])); ?></div>
                     <?php if ($row['international_name']): ?>

@@ -15,24 +15,17 @@
   const API_URL = (window.TCIS_API && window.TCIS_API.CYCLONES_URL) || "/Weather/api/get_cyclones.php";
   const BULLETIN_API_URL = (window.TCIS_API && window.TCIS_API.BULLETINS_URL) || "/Weather/api/get_bulletins.php?cyclone_id=";
 
-  // Storm badge artwork: transparent PNG glyphs in assets/Icons, one per
-  // intensity. Same color ramp as the pill palette used on the admin pages.
-  const CATEGORY_ICONS = {
-    "Super Typhoon": "../assets/Icons/Purple_Storm.png",
-    Typhoon: "../assets/Icons/Red_Storm.png",
-    "Severe Tropical Storm": "../assets/Icons/Orange_Storm.png",
-    "Tropical Storm": "../assets/Icons/Yellow_Storm.png",
-    "Tropical Depression": "../assets/Icons/Green_Storm.png",
-    "Low Pressure Area": "../assets/Icons/Grey_Storm.png",
-  };
+  // Single cyclone artwork for every intensity: assets/Icons/The icon.png.
+  // The old per-category color-code (Purple/Red/Orange/...) was removed —
+  // all cyclones now share one icon regardless of PAGASA category.
+  const CYCLONE_ICON_SRC = "../assets/Icons/The%20icon.png";
 
-  // Builds the <img> markup for a category badge, or "" when the category has
-  // no artwork. Callers fall back to text-only rendering when it is empty.
+  // Builds the <img> markup for the shared cyclone icon. The category
+  // argument is kept (so existing callers need no changes) but ignored —
+  // every category returns the same artwork.
   function categoryIconMarkup(category, size) {
-    const src = CATEGORY_ICONS[category];
-    if (!src) return "";
     return (
-      '<img src="' + src + '" alt="" width="' + size + '" height="' + size +
+      '<img src="' + CYCLONE_ICON_SRC + '" alt="" width="' + size + '" height="' + size +
       '" loading="lazy" decoding="async">'
     );
   }
@@ -59,8 +52,9 @@
     STY: "Super Typhoon",
   };
 
-  // Rainfall intensity (cyclones.rainfall_category ENUM) badge colors.
-  // NULL / empty maps to "—" and uses the muted fallback in renderTable.
+  // Rainfall intensity (cyclones.rainfall_category ENUM) — kept for the
+  // table column, CSV export, and search. The sidebar rainfall filter was
+  // removed, so these constants no longer drive any filter UI.
   const RAINFALL_LEVELS = [
     "Not detected",
     "Light to Moderate",
@@ -96,6 +90,7 @@
   const yearMaxValue = document.getElementById("yearMaxValue");
   const rangeFill = document.getElementById("rangeFill");
   const categoryList = document.getElementById("categoryList");
+  const rainfallList = document.getElementById("rainfallList"); // removed from HTML; kept null-safe
   const clearBtn = document.getElementById("clearFilters");
   const statTotal = document.getElementById("statTotal");
   const statTotalSub = document.getElementById("statTotalSub");
@@ -177,10 +172,14 @@
       if (!isNaN(parsed)) wind = parsed;
     }
 
-    // rainfall_category ENUM may be NULL (not yet encoded) — show "—".
-    // "Not detected" is an explicit recorded value, keep it as a badge.
+    // rainfall_category is VARCHAR(50) and may hold '-' (no data), NULL,
+    // or an empty string when PAGASA has not recorded a value — all of
+    // these display as a plain "-" with no badge. Only the five known
+    // severity labels render as badges; anything else NEVER falls back
+    // to a severity label ("Not detected" is an explicit recorded value,
+    // keep it as a badge).
     const rainfallRaw = (row.rainfall_category || "").trim();
-    const rainfall = RAINFALL_LEVELS.indexOf(rainfallRaw) !== -1 ? rainfallRaw : "—";
+    const rainfall = RAINFALL_LEVELS.indexOf(rainfallRaw) !== -1 ? rainfallRaw : "-";
 
     return {
       id: row.id != null ? parseInt(row.id, 10) : null,
@@ -190,6 +189,14 @@
       date: formatDateRange(row.date_start, row.date_end),
       dateStart: row.date_start || null,
       wind: wind,
+      // Combined "sustained / gust" display value (matches admin table);
+      // raw string kept for any future re-formatting needs.
+      strengthText: window.TCIS_API
+        ? window.TCIS_API.formatStrength(row.highest_strength)
+        : wind != null
+        ? wind + " km/h"
+        : "\u2014",
+      rawStrength: (row.highest_strength || "").trim() || null,
       rainfall: rainfall,
     };
   }
@@ -298,24 +305,26 @@
     categoryList.innerHTML = "";
     Object.keys(CATEGORIES).forEach((cat) => {
       const label = document.createElement("label");
-      label.className = "category-item";
+      label.className = "category-item category-item--no-icon";
 
       const checkbox = document.createElement("input");
       checkbox.type = "checkbox";
       checkbox.value = cat;
 
-      const icon = document.createElement("span");
-      icon.className = "category-icon";
-      icon.innerHTML = categoryIconMarkup(cat, 28);
-
       const text = document.createElement("span");
       text.textContent = cat;
 
       label.appendChild(checkbox);
-      label.appendChild(icon);
       label.appendChild(text);
       categoryList.appendChild(label);
     });
+  }
+
+  // Rainfall filter UI was removed from the sidebar; this is now a no-op
+  // kept so init() needs no changes and old cached HTML cannot crash.
+  function buildRainfallList() {
+    if (!rainfallList) return;
+    rainfallList.innerHTML = "";
   }
 
   // ---------------------------------------------------------------------
@@ -414,7 +423,7 @@
       statMaxWind.textContent = "—";
     }
     statMaxWindSub.textContent = strongest
-      ? strongest.name + " \u00b7 " + strongest.wind + " km/h"
+      ? strongest.name + " \u00b7 " + strongest.strengthText
       : "no data in range";
 
     animateStat(statAverage, average, 1);
@@ -478,13 +487,13 @@
       nameCell.appendChild(nameWrap);
       row.appendChild(nameCell);
 
-      // Year, Category (placeholder, filled below), Date, Wind,
+      // Year, Category (placeholder, filled below), Date, Strength,
       // Rainfall (placeholder, filled below)
       const cells = [
         storm.year,
         null,
         storm.date,
-        storm.wind != null ? storm.wind + " km/h" : "—",
+        storm.strengthText || "\u2014",
         null,
       ];
 
@@ -494,13 +503,17 @@
         row.appendChild(td);
       });
 
-      // Category shows plain text label; rainfall stays plain
-      // table text (no pill background).
+      // Category and rainfall show as plain table text. "-" (no data)
+      // renders gray via the rainfall-none class; known severity labels
+      // render in the default text color with no badge and no dot.
       const badgeTd = row.children[2];
       badgeTd.textContent = storm.category;
 
       const rainfallTd = row.children[5];
       rainfallTd.textContent = storm.rainfall;
+      if (!RAINFALL_STYLES[storm.rainfall]) {
+        rainfallTd.classList.add("rainfall-none");
+      }
 
       // Bulletins indicator cell (presentational — the whole row opens the modal)
       const bulletinTd = document.createElement("td");
@@ -561,13 +574,13 @@
   const bulletinModal = document.getElementById("bulletinModal");
   const bulletinModalTitle = document.getElementById("bulletinModalTitle");
   const bulletinModalSubtitle = document.getElementById("bulletinModalSubtitle");
-  const bulletinModalCatIcon = document.getElementById("bulletinModalCatIcon");
   const bulletinList = document.getElementById("bulletinList");
   const bulletinStatus = document.getElementById("bulletinStatus");
   const bulletinListView = document.getElementById("bulletinListView");
   const bulletinPreviewView = document.getElementById("bulletinPreviewView");
   const bulletinPreviewFrame = document.getElementById("bulletinPreviewFrame");
   const bulletinPreviewTitle = document.getElementById("bulletinPreviewTitle");
+  const bulletinPreviewCoords = document.getElementById("bulletinPreviewCoords");
   const bulletinOpenNewTab = document.getElementById("bulletinOpenNewTab");
   const bulletinDownload = document.getElementById("bulletinDownload");
   const bulletinCloseBtn = document.getElementById("bulletinClose");
@@ -611,11 +624,26 @@
     if (bulletinSearchWrap) bulletinSearchWrap.hidden = false;
     // Stop the PDF load when going back to the list.
     bulletinPreviewFrame.removeAttribute("src");
+    if (bulletinPreviewCoords) {
+      bulletinPreviewCoords.hidden = true;
+      bulletinPreviewCoords.textContent = "";
+    }
   }
 
   function setBulletinSearchEnabled(enabled) {
     if (bulletinSearch) bulletinSearch.disabled = !enabled;
     if (!enabled && bulletinSearchClear) bulletinSearchClear.hidden = true;
+  }
+
+  function getBulletinPreviewUrl(url) {
+    // Force the native PDF viewer to start fit-to-width with thumbnails
+    // closed. Without this the viewer re-uses its last zoom (e.g. 92%)
+    // inside the narrow modal, so the page looks zoomed-in / clipped.
+    // Keep download + "open in new tab" on the clean URL — this hint is
+    // iframe-only.
+    if (typeof url !== "string" || !url) return url;
+    var base = url.split("#")[0];
+    return base + "#page=1&zoom=page-width&pagemode=none&navpanes=0";
   }
 
   function showBulletinPreview(bulletin, cycloneName) {
@@ -625,10 +653,9 @@
       return;
     }
     bulletinPreviewTitle.textContent =
-      (currentStormLabel || cycloneName) +
-      " — Bulletin " +
-      bulletin.bulletin_number;
-    bulletinPreviewFrame.src = bulletin.r2_url;
+      "Bulletin " + bulletin.bulletin_number;
+    setPreviewCoords(bulletinPreviewCoords, bulletin);
+    bulletinPreviewFrame.src = getBulletinPreviewUrl(bulletin.r2_url);
     bulletinOpenNewTab.href = bulletin.r2_url;
     bulletinDownload.href = bulletin.r2_url;
     bulletinDownload.setAttribute(
@@ -649,6 +676,10 @@
     bulletinModal.hidden = true;
     bulletinModal.classList.remove("is-open");
     bulletinPreviewFrame.removeAttribute("src");
+    if (bulletinPreviewCoords) {
+      bulletinPreviewCoords.hidden = true;
+      bulletinPreviewCoords.textContent = "";
+    }
     document.body.style.overflow = "";
     resetBulletinSearch();
     currentBulletins = [];
@@ -690,6 +721,29 @@
     return totalLabel;
   }
 
+  function formatLatLong(lat, lon) {
+    const latAbs = Math.abs(lat).toFixed(1);
+    const lonAbs = Math.abs(lon).toFixed(1);
+    const latDir = lat < 0 ? "S" : "N";
+    const lonDir = lon < 0 ? "W" : "E";
+    return latAbs + "°" + latDir + ", " + lonAbs + "°" + lonDir;
+  }
+
+  // Shows this bulletin's coordinates alongside its PDF preview title.
+  // Missing coords hide the pill so legacy rows never show a stale value.
+  function setPreviewCoords(el, bulletin) {
+    if (!el) return;
+    if (bulletin && bulletin.latitude != null && bulletin.longitude != null) {
+      el.innerHTML =
+        '<span aria-hidden="true">📌</span> ' +
+        formatLatLong(bulletin.latitude, bulletin.longitude);
+      el.hidden = false;
+    } else {
+      el.hidden = true;
+      el.textContent = "";
+    }
+  }
+
   function renderBulletinItems(list) {
     bulletinList.innerHTML = "";
     if (list.length === 0) {
@@ -729,6 +783,15 @@
       previewPill.className = "bulletin-item-preview";
       previewPill.textContent = "Preview";
 
+      let latLongPill = null;
+      if (b.latitude != null && b.longitude != null) {
+        latLongPill = document.createElement("span");
+        latLongPill.className = "bulletin-item-latlong";
+        latLongPill.innerHTML =
+          '<span aria-hidden="true">\ud83d\udccd</span> ' +
+          formatLatLong(b.latitude, b.longitude);
+      }
+
       // Decorative affordance only (aria-hidden): the outer button owns
       // activation. A nested role=button/tabindex here would create an
       // invalid nested interactive with a double tab stop, so the
@@ -745,6 +808,7 @@
 
       btn.appendChild(icon);
       btn.appendChild(text);
+      if (latLongPill) btn.appendChild(latLongPill);
       btn.appendChild(previewPill);
       btn.appendChild(openBtn);
       btn.appendChild(chevron);
@@ -770,15 +834,6 @@
     if (bulletinSearchClear) bulletinSearchClear.hidden = true;
   }
 
-  // The modal header shows the cyclone's category badge beside the
-  // "2025 Typhoon" subtitle; categories without artwork hide the node.
-  function setBulletinModalCategoryIcon(category) {
-    if (!bulletinModalCatIcon) return;
-    const markup = categoryIconMarkup(category, 22);
-    bulletinModalCatIcon.innerHTML = markup;
-    bulletinModalCatIcon.hidden = markup === "";
-  }
-
   async function openBulletinModal(storm, rowEl) {
     if (!bulletinModal || storm.id == null) return;
     lastFocusedRow = rowEl || null;
@@ -791,7 +846,6 @@
 
     bulletinModalTitle.textContent = currentStormName + " Bulletins";
     bulletinModalSubtitle.textContent = stormSubtitleDetails(storm);
-    setBulletinModalCategoryIcon(storm.category);
     if (bulletinCount) bulletinCount.textContent = "";
     renderBulletinSkeletons(6);
     bulletinStatus.textContent = "Loading bulletins…";
@@ -880,14 +934,17 @@
   // CSV export
   // ---------------------------------------------------------------------
   function downloadCsv() {
-    const header = ["Name", "Year", "PAGASA Category", "Inclusive Date", "Max Wind (km/h)", "Rainfall Intensity"];
+    const header = ["Name", "Year", "PAGASA Category", "Inclusive Date", "Strength (Sustained / Gust, km/h)", "Rainfall Intensity"];
     const rows = lastFiltered.map((s) => [
       s.name,
       s.year,
       s.category,
       s.date,
-      s.wind != null ? s.wind : "",
-      s.rainfall && s.rainfall !== "—" ? s.rainfall : "",
+      // Combined sustained/gust value, same display as the table column.
+      s.strengthText && s.strengthText !== "\u2014" ? s.strengthText : "\u2014",
+      // No-data ("-", empty, null) exports as "-"; a severity label is
+      // only ever written for the five known rainfall levels.
+      RAINFALL_LEVELS.indexOf(s.rainfall) !== -1 ? s.rainfall : "-",
     ]);
     const csv = [header].concat(rows)
       .map((row) =>
@@ -919,6 +976,11 @@
     categoryList
       .querySelectorAll("input[type=checkbox]")
       .forEach((c) => (c.checked = false));
+    if (rainfallList) {
+      rainfallList
+        .querySelectorAll("input[type=checkbox]")
+        .forEach((c) => (c.checked = false));
+    }
     updateRangeUI();
     runFilters();
   }
@@ -929,6 +991,7 @@
   async function init() {
     setupReveal();
     buildCategoryList();
+    buildRainfallList();
     wireBulletinModal();
 
     await loadData();
@@ -952,6 +1015,7 @@
       runFilters();
     });
     categoryList.addEventListener("change", runFilters);
+    if (rainfallList) rainfallList.addEventListener("change", runFilters);
     clearBtn.addEventListener("click", clearFilters);
 
     searchInput.addEventListener("input", window.TCIS_API

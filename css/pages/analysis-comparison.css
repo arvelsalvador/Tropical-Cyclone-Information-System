@@ -274,6 +274,17 @@
 .upcoming-empty {
   padding: 42px 24px 32px;
   text-align: center;
+  background: var(--bg-soft, #f5f8fc);
+  border-radius: 12px;
+}
+
+/* Large muted hurricane glyph shown above the empty-state copy,
+   matching the Step 1 mockup */
+.upcoming-empty-icon {
+  display: block;
+  font-size: 44px;
+  color: #9aa7bd;
+  margin: 0 auto 12px;
 }
 
 .upcoming-empty-title {
@@ -300,17 +311,6 @@
   border-bottom: 1px solid var(--border-light);
 }
 
-.sandbox-lead {
-  font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--text-body);
-  background: var(--blue-50);
-  border: 1px solid #c7d8f9;
-  border-radius: 10px;
-  padding: 10px 14px;
-  margin-bottom: 14px;
-}
-
 .sandbox-fields {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -326,9 +326,15 @@
 }
 
 .sandbox-field > span {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 18px;
   font-size: 12px;
   font-weight: 700;
+  line-height: 1.4;
   color: var(--text-dark);
+  white-space: nowrap;
 }
 
 .sandbox-field input,
@@ -353,10 +359,186 @@
   box-shadow: 0 0 0 3px var(--blue-50);
 }
 
+/* Leading icons inside the Step 1 inputs/select (mockup pattern).
+   The icon sits absolutely over the control; the control gets extra
+   left padding so text clears it. Inputs keep their IDs so all JS
+   wiring is untouched. */
+.input-icon-wrap {
+  position: relative;
+  min-width: 0;
+}
+
+.input-icon-wrap > i {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 13px;
+  color: #9aa7bd;
+  pointer-events: none;
+}
+
+.input-icon-wrap input,
+.input-icon-wrap select {
+  padding-left: 34px;
+}
+
+/* Unified floating hint — hover/focus the ⓘ to reveal.
+   Used by the wind guide + trivia and the PAR location guide. */
+.field-tip {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--blue-600);
+  font-size: 12px;
+  font-weight: 400;
+  cursor: help;
+  vertical-align: baseline;
+}
+
+.field-tip-bubble {
+  display: none;
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 230px;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: #fff;
+  background: var(--navy-900, #1e2a4a);
+  border-radius: 8px;
+  padding: 8px 11px;
+  box-shadow: 0 8px 20px rgba(15, 30, 60, 0.22);
+  z-index: 20;
+  white-space: normal;
+}
+
+.field-tip-bubble::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: var(--navy-900, #1e2a4a);
+}
+
+.field-tip:hover .field-tip-bubble,
+.field-tip:focus .field-tip-bubble,
+.field-tip:focus-within .field-tip-bubble {
+  display: block;
+}
+
+.field-tip-line {
+  display: block;
+}
+
+.field-tip-divider {
+  display: block;
+  height: 1px;
+  background: rgba(255, 255, 255, 0.22);
+  margin: 6px 0;
+}
+
+.field-tip-trivia {
+  display: block;
+  color: #cfe0ff;
+}
+
 .sandbox-suggest {
   font-size: 12.5px;
   color: var(--blue-600);
   margin-bottom: 10px;
+}
+
+/* Latitude/Longitude pair — one logical "lat/long" field rendered as
+   two compact inputs side by side. Both are optional; leaving both
+   empty simply skips the location match. */
+.sandbox-field-pair {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.sandbox-subfields {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.sandbox-subfield {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.sandbox-subfield > span {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+.sandbox-subfield input {
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--text-dark);
+  background: #fff;
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 100%;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.sandbox-subfield input:focus {
+  outline: none;
+  border-color: var(--blue-600);
+  box-shadow: 0 0 0 3px var(--blue-50);
+}
+
+/* Live out-of-range highlight for the optional lat/lng pair — toggled by
+   JS on each keystroke (before Apply). Empty stays neutral; only a filled
+   value outside the PAR box goes red. Palette mirrors .sandbox-error. */
+.sandbox-subfield input.is-invalid {
+  border-color: #dc2626;
+  background: #fef2f2;
+}
+
+.sandbox-subfield input.is-invalid:focus {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15);
+}
+
+.sandbox-field > span.sandbox-pair-label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-dark);
+}
+
+@media (max-width: 560px) {
+  .sandbox-subfields {
+    grid-template-columns: 1fr;
+  }
+  /* Keep floating tips inside the viewport on narrow screens */
+  .sandbox-field:last-child .field-tip-bubble,
+  .sandbox-field-pair .field-tip-bubble {
+    left: auto;
+    right: -8px;
+    transform: none;
+  }
+  .sandbox-field:last-child .field-tip-bubble::after,
+  .sandbox-field-pair .field-tip-bubble::after {
+    left: auto;
+    right: 18px;
+    transform: none;
+  }
 }
 
 .sandbox-category-info {
@@ -396,6 +578,107 @@
   flex-wrap: wrap;
   gap: 10px;
   align-items: center;
+}
+
+/* Reference treatment for the visitor-entered Step 1 profile. */
+.cs-top-grid > .cs-card:first-child {
+  overflow: hidden;
+  padding: 20px;
+}
+
+.cs-top-grid > .cs-card:first-child > .cs-card-title {
+  margin: -20px -20px 18px;
+  padding: 15px 20px 14px;
+  background: #f3f7fc;
+  border-bottom: 1px solid #edf2f8;
+  font-size: 16px;
+}
+
+.cs-top-grid > .cs-card:first-child .sandbox-form {
+  padding-bottom: 16px;
+  margin-bottom: 14px;
+}
+
+.cs-top-grid > .cs-card:first-child .sandbox-fields {
+  gap: 11px 16px;
+  margin-bottom: 12px;
+}
+
+.cs-top-grid > .cs-card:first-child .sandbox-field > span,
+.cs-top-grid > .cs-card:first-child .sandbox-subfield > span {
+  font-size: 11.5px;
+}
+
+.cs-top-grid > .cs-card:first-child .sandbox-field input,
+.cs-top-grid > .cs-card:first-child .sandbox-field select,
+.cs-top-grid > .cs-card:first-child .sandbox-subfield input {
+  min-height: 34px;
+  padding-top: 7px;
+  padding-bottom: 7px;
+  border-color: #dbe5f2;
+  border-radius: 7px;
+  color: #526987;
+  font-size: 12.5px;
+}
+
+.cs-top-grid > .cs-card:first-child .sandbox-subfields {
+  gap: 16px;
+}
+
+.cs-top-grid > .cs-card:first-child .input-icon-wrap > i {
+  left: 11px;
+  font-size: 12px;
+  color: #6d84a6;
+}
+
+.cs-top-grid > .cs-card:first-child .input-icon-wrap input,
+.cs-top-grid > .cs-card:first-child .input-icon-wrap select {
+  padding-left: 12px;
+}
+
+.cs-top-grid > .cs-card:first-child .sandbox-actions {
+  gap: 10px;
+}
+
+.cs-top-grid > .cs-card:first-child .compare-now-btn {
+  min-height: 32px;
+  padding: 8px 12px;
+  border-radius: 7px;
+  font-size: 12px;
+  box-shadow: 0 3px 8px rgba(29, 78, 216, 0.18);
+}
+
+.cs-top-grid > .cs-card:first-child .reset-btn {
+  min-height: 32px;
+  padding: 7px 14px;
+  border: 1px solid #dbe5f2;
+  border-radius: 7px;
+  background: #f8fbff;
+  color: #5f7592;
+  font-size: 12px;
+}
+
+.cs-top-grid > .cs-card:first-child .upcoming-empty {
+  padding: 14px 20px 16px;
+  border-radius: 8px;
+  background: #f3f7fc;
+}
+
+.cs-top-grid > .cs-card:first-child .upcoming-empty-icon {
+  font-size: 34px;
+  margin-bottom: 7px;
+  color: #6d84a6;
+}
+
+.cs-top-grid > .cs-card:first-child .upcoming-empty-title {
+  font-size: 15px;
+  margin-bottom: 5px;
+}
+
+.cs-top-grid > .cs-card:first-child .upcoming-empty-sub {
+  max-width: 380px;
+  font-size: 11.5px;
+  line-height: 1.45;
 }
 
 /* Sandbox mode: a custom test storm only carries a name, wind and
@@ -988,6 +1271,66 @@
   transition: none !important;
 }
 
+/* ==========================================================================
+   Location match panel — a separate result bar, independent of the
+   wind-strength group. Shares the analogue-row layout, but the bar and
+   badge carry a teal accent so the two match types read differently.
+   ========================================================================== */
+.match-group-location .match-group-trophy {
+  background: linear-gradient(135deg, #14b8a6, #0f766e);
+  box-shadow: 0 3px 8px rgba(15, 118, 110, 0.35);
+}
+
+.match-group-location .match-group-badge {
+  color: #0f766e;
+  background: #effcf9;
+  border-color: #c9ece4;
+}
+
+.match-progress-location span {
+  background: #0d9488;
+}
+
+.analogue-distance-label {
+  display: block;
+  margin-top: 3px;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: #0f766e;
+}
+
+/* "Top N" pill on each result row and tied-group header — same wording
+   as the tie headers ("Top 1 · N cyclones tied") and the same
+   gold / steel-blue / bronze rank colors as .rank-number. Wind ties
+   collapse often (exact km/h grouping) while location distances are
+   unique floats so ties almost never collapse; the pill keeps the
+   Top rank visible in both states. */
+.analogue-top-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 800;
+  line-height: 1;
+  color: #fff;
+  background: var(--blue-600);
+  border-radius: 999px;
+  padding: 4px 9px;
+  margin-right: 7px;
+  vertical-align: 2px;
+  white-space: nowrap;
+}
+
+.analogue-top-tag.rank-1 {
+  background: linear-gradient(135deg, #fbbf24, #d97706);
+}
+
+.analogue-top-tag.rank-2 {
+  background: linear-gradient(135deg, #93a9d1, #5b7ec2);
+}
+
+.analogue-top-tag.rank-3 {
+  background: linear-gradient(135deg, #d29a6b, #a06a3c);
+}
+
 .analogue-view-btn {
   flex-shrink: 0;
   font-size: 12.5px;
@@ -1351,6 +1694,50 @@
   font-weight: 700;
 }
 
+.picker-option-upcoming {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  background: #eef4ff;
+  border: 1px solid #c9dcfb;
+  font-weight: 700;
+  color: var(--blue-600);
+}
+
+.picker-option-upcoming:hover {
+  background: #e2ecfd;
+}
+
+.picker-option-upcoming .picker-option-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.picker-option-tag {
+  flex-shrink: 0;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--blue-600);
+  border-radius: 999px;
+  padding: 3px 8px;
+}
+
+.picker-separator {
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  padding: 10px 10px 4px;
+}
+
 .picker-empty {
   font-size: 12.5px;
   color: var(--text-muted);
@@ -1427,6 +1814,39 @@
 
 .controls-actions .compare-now-btn:hover .compare-arrow {
   transform: translateX(3px);
+}
+
+.compare-now-btn.is-error {
+  outline: 2px solid #dc2626;
+  outline-offset: 2px;
+  animation: compare-shake 0.3s ease;
+}
+
+@keyframes compare-shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  75% { transform: translateX(-2px); }
+}
+
+.controls-error {
+  margin: 10px 0 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #dc2626;
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 10px 14px;
+}
+
+.controls-error[hidden] {
+  display: none;
+}
+
+.storm-picker.needs-choice .picker-toggle {
+  border-color: #dc2626;
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.12);
 }
 
 .compare-now-btn {
@@ -1997,6 +2417,13 @@
   background: #fff;
   border: 1px solid #dfe5ed;
   border-radius: 9px;
+}
+
+/* Location modal: headline distance spans the full row so the Matched
+   Bulletin and Upcoming Position cards share the next row exactly
+   aligned for direct coordinate comparison. */
+.analogue-modal-stat--wide {
+  grid-column: 1 / -1;
 }
 
 .analogue-stat-icon {

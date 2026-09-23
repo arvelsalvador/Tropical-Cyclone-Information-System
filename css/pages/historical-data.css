@@ -359,6 +359,17 @@
   object-fit: contain;
 }
 
+/* Rainfall intensity icon inside the shared category-icon circle */
+.rainfall-icon i {
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Rainfall Intensity "no data" cell: plain gray "-" text. */
+.rainfall-none {
+  color: #6b7280;
+}
+
 /* ==========================================================================
    Table header: title + search
    ========================================================================== */
@@ -517,7 +528,7 @@
 }
 
 .storm-table th {
-  text-align: left;
+  text-align: center;
   font-size: 11.5px;
   font-weight: 600;
   color: var(--text-muted);
@@ -527,12 +538,20 @@
   white-space: nowrap;
 }
 
+/* Name column stays left-aligned: centering the icon+name group makes the
+   icons zig-zag across rows since each name has a different width. */
+.storm-table th:first-child,
+.storm-table td:first-child {
+  text-align: left;
+}
+
 .storm-table td {
   padding: 13px 10px;
   border-bottom: 1px solid var(--border-light);
   color: var(--text-body);
   white-space: nowrap;
   vertical-align: middle;
+  text-align: center;
 }
 
 .storm-table tbody tr:last-child td {
@@ -542,6 +561,7 @@
 .storm-name-cell {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
   gap: 10px;
   font-weight: 600;
   color: var(--text-dark);

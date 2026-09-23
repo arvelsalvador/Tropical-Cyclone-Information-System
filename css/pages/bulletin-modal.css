@@ -84,7 +84,7 @@
 .bulletin-modal {
   width: min(1100px, calc(100% - 32px));
   max-width: 1100px;
-  height: min(90vh, 860px);
+  height: min(92vh, 900px);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -141,25 +141,7 @@
   line-height: 1.2;
 }
 
-/* Storm category badge sitting to the left of the modal subtitle */
-.bulletin-cat-icon {
-  display: inline-flex;
-  width: 22px;
-  height: 22px;
-  margin-right: 8px;
-  vertical-align: -5px;
-}
-
-.bulletin-cat-icon[hidden] {
-  display: none;
-}
-
-.bulletin-cat-icon img {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-}
+/* Storm category badge (removed) — kept rules deleted */
 
 .bulletin-modal-titles p {
   font-size: 14px;
@@ -405,6 +387,20 @@
   opacity: 1;
 }
 
+.bulletin-item-latlong {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--blue-600);
+  background: var(--blue-50);
+  border-radius: var(--radius-full);
+  padding: 5px 11px;
+  white-space: nowrap;
+}
+
 .bulletin-item-open {
   flex-shrink: 0;
   width: 30px;
@@ -527,6 +523,7 @@
   display: flex;
   align-items: center;
   gap: 12px;
+  flex-wrap: wrap;
 }
 
 .bulletin-back {
@@ -556,11 +553,22 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bulletin-preview-coords {
+  flex-shrink: 0;
+}
+
+.bulletin-preview-coords[hidden] {
+  display: none;
 }
 
 .bulletin-preview-frame {
-  flex: 1;
-  min-height: 60vh;
+  flex: 1 1 0;
+  min-height: 0;
+  height: auto;
   width: 100%;
   border: 1px solid var(--border-light);
   border-radius: var(--radius-md);
@@ -571,6 +579,8 @@
   display: flex;
   gap: 10px;
   flex-wrap: wrap;
+  flex-shrink: 0;
+  padding-bottom: 2px;
 }
 
 .bulletin-btn-primary,
@@ -634,6 +644,19 @@
   .bulletin-btn-primary,
   .bulletin-btn-secondary {
     width: 100%;
+  }
+}
+
+/* Narrow phones: the lat/long metadata pill would squeeze the title and
+   Preview pill in the LIST, so hide it there — the coordinates remain in
+   the PDF itself. The PREVIEW header keeps its pill (it sits beside the
+   PDF title with room to wrap). */
+@media (max-width: 480px) {
+  .bulletin-list .bulletin-item-latlong {
+    display: none;
+  }
+  .bulletin-preview-coords {
+    display: inline-flex;
   }
 }
 

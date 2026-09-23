@@ -15,8 +15,8 @@
     <link rel="stylesheet" href="../css/components/header.css?v=1" />
     <link rel="stylesheet" href="../css/components/buttons.css?v=1" />
     <link rel="stylesheet" href="../css/components/footer.css?v=1" />
-    <link rel="stylesheet" href="../css/pages/bulletin-modal.css?v=1" />
-    <link rel="stylesheet" href="../css/pages/analysis-comparison.css?v=13" />
+    <link rel="stylesheet" href="../css/pages/bulletin-modal.css?v=5" />
+    <link rel="stylesheet" href="../css/pages/analysis-comparison.css?v=14" />
     <script src="../js/upcoming-storm-state.js?v=1"></script>
   </head>
   <body>
@@ -49,7 +49,7 @@
           <i class="fa-solid fa-chevron-down chevron" aria-hidden="true"></i>
         </button>
         <div class="dropdown-menu" id="education-menu" role="menu">
-          <a role="menuitem" href=" role="menuitem"          <a role="menuitem" href="../pages/education/index.html">Education Hub</a>
+          <a role="menuitem" href="../pages/education/index.html">Education Hub</a>
           <a role="menuitem" href="../pages/education/warning-signals.html">Warning Signals</a>
           <a role="menuitem" href="../pages/education/evacuation-guide.html">Evacuation Guide</a>
           <a role="menuitem" href="../pages/education/preparedness-tips.html">Preparedness Tips</a>
@@ -116,43 +116,106 @@
           </h2>
 
           <form id="customStormForm" class="sandbox-form" novalidate>
-            <p class="sandbox-lead">
-              No live feed here — enter the upcoming storm below to compare.
-              Nothing is saved; refreshing the page resets everything.
-            </p>
             <div class="sandbox-fields">
               <label class="sandbox-field" for="customStormName">
                 <span>Storm name</span>
-                <input
-                  type="text"
-                  id="customStormName"
-                  maxlength="40"
-                   placeholder="e.g. Typhoon Odin"
-                  autocomplete="off"
-                />
+                <div class="input-icon-wrap">
+                  <input
+                    type="text"
+                    id="customStormName"
+                    maxlength="40"
+                     placeholder="e.g. Typhoon Odin"
+                    autocomplete="off"
+                  />
+                </div>
               </label>
               <label class="sandbox-field" for="customStormWind">
-                <span>Max sustained winds (km/h)</span>
-                <input
-                  type="number"
-                  id="customStormWind"
-                  min="30"
-                  max="500"
-                  step="1"
-                  placeholder="e.g. 185"
-                />
+                <span>Max sustained winds
+                  <span
+                    class="field-tip"
+                    tabindex="0"
+                    aria-label="Enter 30 km/h or above to compare."
+                  >
+                    <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                    <span class="field-tip-bubble" role="tooltip">
+                      <span class="field-tip-line">Enter 30 km/h or above to compare.</span>
+                    </span>
+                  </span>
+                </span>
+                <div class="input-icon-wrap">
+                  <input
+                    type="number"
+                    id="customStormWind"
+                    min="30"
+                    max="500"
+                    step="1"
+                    placeholder="e.g. 185"
+                  />
+                </div>
               </label>
               <label class="sandbox-field" for="customStormCategory">
                 <span>PAGASA category</span>
-                <select id="customStormCategory">
-                  <option value="">Auto-suggest from wind…</option>
-                  <option value="Tropical Depression">Tropical Depression</option>
-                  <option value="Tropical Storm">Tropical Storm</option>
-                  <option value="Severe Tropical Storm">Severe Tropical Storm</option>
-                  <option value="Typhoon">Typhoon</option>
-                  <option value="Super Typhoon">Super Typhoon</option>
-                </select>
+                <div class="input-icon-wrap">
+                  <select id="customStormCategory">
+                    <option value="">Auto-suggest from wind…</option>
+                    <option value="Tropical Depression">Tropical Depression</option>
+                    <option value="Tropical Storm">Tropical Storm</option>
+                    <option value="Severe Tropical Storm">Severe Tropical Storm</option>
+                    <option value="Typhoon">Typhoon</option>
+                    <option value="Super Typhoon">Super Typhoon</option>
+                  </select>
+                </div>
               </label>
+              <div class="sandbox-field sandbox-field-pair">
+                <div class="sandbox-subfields">
+                  <label class="sandbox-subfield" for="customStormLat">
+                    <span>
+                      Latitude (°N, 3–26)
+                      <span
+                        class="field-tip"
+                        tabindex="0"
+                        aria-label="Enter a latitude between 3 and 26 degrees north."
+                      >
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        <span class="field-tip-bubble" role="tooltip">Enter a latitude between 3 and 26°N.</span>
+                      </span>
+                    </span>
+                    <div class="input-icon-wrap">
+                      <input
+                        type="number"
+                        id="customStormLat"
+                        min="3"
+                        max="26"
+                        step="0.0001"
+                        placeholder="e.g. 14.5"
+                      />
+                    </div>
+                  </label>
+                  <label class="sandbox-subfield" for="customStormLng">
+                    <span>
+                      Longitude (°E, 115–145)
+                      <span
+                        class="field-tip"
+                        tabindex="0"
+                        aria-label="Enter a longitude between 115 and 145 degrees east."
+                      >
+                        <i class="fa-solid fa-circle-info" aria-hidden="true"></i>
+                        <span class="field-tip-bubble" role="tooltip">Enter a longitude between 115 and 145°E.</span>
+                      </span>
+                    </span>
+                    <div class="input-icon-wrap">
+                      <input
+                        type="number"
+                        id="customStormLng"
+                        min="115"
+                        max="145"
+                        step="0.0001"
+                        placeholder="e.g. 122.3"
+                      />
+                    </div>
+                  </label>
+                </div>
+              </div>
             </div>
             <p class="sandbox-suggest" id="customStormSuggest" hidden></p>
             <p class="sandbox-category-info" id="customStormCategoryInfo" hidden></p>
@@ -252,6 +315,7 @@
         </div>
 
           <div class="upcoming-empty upcoming-hidden" id="upcomingEmpty">
+            <i class="fa-solid fa-hurricane upcoming-empty-icon" aria-hidden="true"></i>
             <div class="upcoming-empty-title">No upcoming storm yet</div>
             <p class="upcoming-empty-sub">Enter the storm name and wind speed above, then Apply — its closest historical matches will appear in Step 2.</p>
           </div>
@@ -291,8 +355,8 @@
 
         <div class="selects-row">
           <div class="select-box storm-picker" data-picker="stormA">
-            <label for="stormA">Historical Storm
-              <small>Required — the storm to compare</small>
+            <label for="stormA">Storm A
+              <small>Required — pick a historical storm or the upcoming storm</small>
             </label>
             <button type="button" class="picker-toggle" id="stormA" aria-haspopup="listbox" aria-expanded="false">
               <span class="picker-toggle-label">Select a storm…</span>
@@ -308,11 +372,11 @@
           </div>
           <span class="vs-label">VS</span>
           <div class="select-box storm-picker" data-picker="stormB">
-            <label for="stormB">Historical Storm (Optional)
-              <small>Optional — pick another past storm</small>
+            <label for="stormB">Storm B
+              <small>Required — pick a second storm to compare against</small>
             </label>
             <button type="button" class="picker-toggle" id="stormB" aria-haspopup="listbox" aria-expanded="false">
-              <span class="picker-toggle-label">None (compare with upcoming storm)</span>
+              <span class="picker-toggle-label">Select a storm…</span>
               <i class="fa-solid fa-chevron-down picker-chevron" aria-hidden="true"></i>
             </button>
             <div class="picker-panel" hidden>
@@ -320,7 +384,7 @@
               <div class="picker-list" role="listbox" tabindex="-1"></div>
             </div>
             <select id="stormB-select" hidden aria-hidden="true" tabindex="-1">
-              <option value="">None (compare with upcoming storm)</option>
+              <option value="">Select a storm…</option>
             </select>
           </div>
         </div>
@@ -336,6 +400,7 @@
             Reset
           </button>
         </div>
+        <p class="controls-error" id="compareError" role="alert" hidden></p>
         </div>
 
       <!-- Results -->
@@ -468,7 +533,7 @@
           <div class="bulletin-modal-titles">
             <div class="bulletin-modal-text">
               <h2 id="bulletinModalTitle">Storm Bulletins</h2>
-              <p class="bulletin-modal-subtitle"><span class="bulletin-cat-icon" id="bulletinModalCatIcon" hidden></span><span id="bulletinModalSubtitle"></span></p>
+              <p class="bulletin-modal-subtitle"><span id="bulletinModalSubtitle"></span></p>
             </div>
           </div>
           <button
@@ -519,6 +584,7 @@
               &larr; Back to list
             </button>
             <p class="bulletin-preview-title" id="bulletinPreviewTitle"></p>
+            <span class="bulletin-item-latlong bulletin-preview-coords" id="bulletinPreviewCoords" hidden></span>
           </div>
           <iframe
             id="bulletinPreviewFrame"
@@ -567,8 +633,8 @@
 </footer></div>
 
     <script src="../js/main.js?v=1" data-root="../"></script>
-    <script src="../js/api-client.js?v=1" defer></script>
+    <script src="../js/api-client.js?v=3" defer></script>
     <script src="../js/storm-category.js?v=1" defer></script>
-    <script src="../js/pages/analysis-comparison.js?v=12" defer></script>
+    <script src="../js/pages/analysis-comparison.js?v=20" defer></script>
   </body>
 </html>

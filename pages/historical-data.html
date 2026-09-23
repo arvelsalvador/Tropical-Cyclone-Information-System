@@ -15,8 +15,8 @@
     <link rel="stylesheet" href="../css/components/header.css?v=1" />
     <link rel="stylesheet" href="../css/components/buttons.css?v=1" />
     <link rel="stylesheet" href="../css/components/footer.css?v=1" />
-    <link rel="stylesheet" href="../css/pages/historical-data.css?v=3" />
-    <link rel="stylesheet" href="../css/pages/bulletin-modal.css?v=2" />
+    <link rel="stylesheet" href="../css/pages/historical-data.css?v=8" />
+    <link rel="stylesheet" href="../css/pages/bulletin-modal.css?v=5" />
   </head>
   <body>
     <div id="site-header"><div class="announcement-bar">
@@ -213,8 +213,8 @@
                 <input
                   type="search"
                   id="searchInput"
-                  placeholder="Search name, category, rainfall…"
-                  aria-label="Search cyclone by name, category, or rainfall intensity"
+                  placeholder="Search name or category…"
+                  aria-label="Search cyclone by name or category"
                 />
               </div>
             </div>
@@ -223,8 +223,8 @@
               <table class="storm-table">
                 <caption class="sr-only">
                   Historical tropical cyclones affecting Camarines Norte, 2010
-                  to 2020, with inclusive dates, maximum winds, rainfall
-                  intensity, and impacts
+                  to 2020, with inclusive dates, strength (sustained / gust
+                  winds), rainfall intensity, and impacts
                 </caption>
                 <thead>
                   <tr>
@@ -232,7 +232,7 @@
                     <th>Year</th>
                     <th>PAGASA Category</th>
                     <th>Inclusive Date</th>
-                    <th>Max Wind (km/h)</th>
+                    <th>Strength (Sustained / Gust)</th>
                     <th>Rainfall Intensity</th>
                     <th>Bulletins</th>
                   </tr>
@@ -299,8 +299,8 @@
 </footer></div>
 
     <script src="../js/main.js?v=1" data-root="../"></script>
-    <script src="../js/api-client.js?v=1" defer></script>
-    <script src="../js/pages/historical-data.js?v=3" defer></script>
+    <script src="../js/api-client.js?v=3" defer></script>
+    <script src="../js/pages/historical-data.js?v=14" defer></script>
 
     <!-- Bulletin preview modal -->
     <div
@@ -318,7 +318,7 @@
           <div class="bulletin-modal-titles">
             <div class="bulletin-modal-text">
               <h2 id="bulletinModalTitle">Wilma Bulletins</h2>
-              <p class="bulletin-modal-subtitle"><span class="bulletin-cat-icon" id="bulletinModalCatIcon" hidden></span><span id="bulletinModalSubtitle">2025 Tropical Depression</span></p>
+              <p class="bulletin-modal-subtitle"><span id="bulletinModalSubtitle">2025 Tropical Depression</span></p>
             </div>
           </div>
           <button
@@ -369,6 +369,7 @@
               &larr; Back to list
             </button>
             <p class="bulletin-preview-title" id="bulletinPreviewTitle"></p>
+            <span class="bulletin-item-latlong bulletin-preview-coords" id="bulletinPreviewCoords" hidden></span>
           </div>
           <iframe
             id="bulletinPreviewFrame"

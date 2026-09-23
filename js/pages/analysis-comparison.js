@@ -7,6 +7,13 @@
 // they are not currently tracked in the database — comparisons now run
 // on wind speed and PAGASA category only. These can be re-added later
 // once that data is collected.
+//
+// LOCATION MATCH: the Step 1 form also takes optional latitude/longitude.
+// When both are filled, a separate "Best match · Location" panel ranks
+// historical storms by Haversine distance from that point to each
+// storm's full bulletin track (closest approach over all bulletin
+// lat/long points). It never merges with the wind-strength match — the
+// two bars run and display independently.
 // VISITOR PROFILE: there is no admin-managed upcoming storm in this flow.
 // The visitor enters the upcoming storm (name + max wind + category) in the
 // Step 1 form; only pressing Apply fills the UPCOMING profile, Best Match
@@ -50,24 +57,17 @@
     STY: "Super Typhoon",
   };
 
-  // Category badge artwork (transparent PNG storm glyphs in assets/Icons),
-  // keyed by the full PAGASA category name. Shares its color ramp with the
-  // Historical Data page and the admin pills.
-  const CATEGORY_ICONS = {
-    "Tropical Depression": "../assets/Icons/Green_Storm.png",
-    "Tropical Storm": "../assets/Icons/Yellow_Storm.png",
-    "Severe Tropical Storm": "../assets/Icons/Orange_Storm.png",
-    Typhoon: "../assets/Icons/Red_Storm.png",
-    "Super Typhoon": "../assets/Icons/Purple_Storm.png",
-  };
+  // Single cyclone artwork for every intensity: assets/Icons/The icon.png.
+  // The old per-category color-code (Green/Yellow/Orange/Red/Purple) was
+  // removed — all cyclones now share one icon regardless of PAGASA category.
+  const CYCLONE_ICON_SRC = "../assets/Icons/The%20icon.png";
 
-  // Builds the <img> markup for a category badge, or "" when the category is
-  // unrecognised (callers keep their own fallback glyph).
+  // Builds the <img> markup for the shared cyclone icon. The category
+  // argument is kept (so existing callers need no changes) but ignored —
+  // every category returns the same artwork.
   function categoryIconMarkup(category, size) {
-    const src = CATEGORY_ICONS[category];
-    if (!src) return "";
     return (
-      '<img src="' + src + '" alt="" width="' + size + '" height="' + size +
+      '<img src="' + CYCLONE_ICON_SRC + '" alt="" width="' + size + '" height="' + size +
       '" loading="lazy" decoding="async">'
     );
   }
@@ -97,6 +97,7 @@
   const stormBSelect = document.getElementById("stormB-select");
   const compareBtn = document.getElementById("compareNowBtn");
   const resetBtn = document.getElementById("resetBtn");
+  const compareError = document.getElementById("compareError");
   const resultsSubtitle = document.getElementById("resultsSubtitle");
   const tableBody = document.getElementById("resultsTableBody");
   const colAHead = document.getElementById("colAHead");
@@ -128,7 +129,6 @@
   const bulletinModal = document.getElementById("bulletinModal");
   const bulletinModalTitle = document.getElementById("bulletinModalTitle");
   const bulletinModalSubtitle = document.getElementById("bulletinModalSubtitle");
-  const bulletinModalCatIcon = document.getElementById("bulletinModalCatIcon");
   const bulletinCloseBtn = document.getElementById("bulletinClose");
   const bulletinList = document.getElementById("bulletinList");
   const bulletinStatus = document.getElementById("bulletinStatus");
@@ -136,6 +136,7 @@
   const bulletinPreviewView = document.getElementById("bulletinPreviewView");
   const bulletinPreviewFrame = document.getElementById("bulletinPreviewFrame");
   const bulletinPreviewTitle = document.getElementById("bulletinPreviewTitle");
+  const bulletinPreviewCoords = document.getElementById("bulletinPreviewCoords");
   const bulletinOpenNewTab = document.getElementById("bulletinOpenNewTab");
   const bulletinDownload = document.getElementById("bulletinDownload");
   const bulletinBackBtn = document.getElementById("bulletinBackBtn");
@@ -147,6 +148,8 @@
   const customStormForm = document.getElementById("customStormForm");
   const customStormName = document.getElementById("customStormName");
   const customStormWind = document.getElementById("customStormWind");
+  const customStormLat = document.getElementById("customStormLat");
+  const customStormLng = document.getElementById("customStormLng");
   const customStormCategory = document.getElementById("customStormCategory");
   const customStormSuggest = document.getElementById("customStormSuggest");
   const customStormCategoryInfo = document.getElementById("customStormCategoryInfo");
@@ -227,6 +230,17 @@
       dateEnd: row.date_end || null,
       wind: wind,
       peak: peak,
+      // Combined "sustained / gust" display value (matches admin table);
+      // display-only — ranking/similarity stays on sustained (wind).
+      strengthText: window.TCIS_API
+        ? window.TCIS_API.formatStrength(row.highest_strength)
+        : peak != null
+        ? wind != null
+          ? wind + " / " + peak + " km/h"
+          : peak + " km/h"
+        : wind != null
+        ? wind + " km/h"
+        : "\u2014",
       days: days,
     };
   }
@@ -236,6 +250,15 @@
   // ---------------------------------------------------------------------
   const CUSTOM_WIND_MIN = 30;
   const CUSTOM_WIND_MAX = 500;
+
+  // Simplified PAR bounding box enforced on the optional Step 1
+  // coordinates: latitude 3°N–26°N, longitude 115°E–145°E. Anything
+  // outside means the point is outside the Philippine Area of
+  // Responsibility, so the form rejects it with an error.
+  const PAR_LAT_MIN = 3;
+  const PAR_LAT_MAX = 26;
+  const PAR_LNG_MIN = 115;
+  const PAR_LNG_MAX = 145;
 
   // Plain category names keyed by the shared classifier's TD…STY keys
   // (js/storm-category.js exposes getCategoryFromStrength).
@@ -249,7 +272,7 @@
 
   // One-line explainer per category: wind range + what it means.
   const CATEGORY_INFO = {
-    "Tropical Depression": "61–88 km/h · the weakest class — heavy rain, Signals No. 1–2.",
+    "Tropical Depression": "30–88 km/h · the weakest class — heavy rain, Signals No. 1–2.",
     "Tropical Storm": "89–117 km/h · damaging winds, possible Signals No. 2–3.",
     "Severe Tropical Storm": "118–148 km/h · destructive winds, widespread damage, higher signals.",
     Typhoon: "149–184 km/h · very destructive — major damage, evacuations likely.",
@@ -380,6 +403,7 @@
 
   function applyCustomStorm() {
     hideCustomError();
+    refreshLatLngValidity();
     const data = readCustomStorm();
     const problem = validateCustomStorm(data);
     if (problem) return showCustomError(problem.message, problem.focusEl);
@@ -392,11 +416,16 @@
     const name = customStormName ? customStormName.value.trim() : "";
     const windRaw = customStormWind ? customStormWind.value.trim() : "";
     const wind = Number(windRaw);
+    // Coordinates are optional; empty strings mean "no location match".
+    const latRaw = customStormLat ? customStormLat.value.trim() : "";
+    const lngRaw = customStormLng ? customStormLng.value.trim() : "";
+    const lat = latRaw === "" ? null : Number(latRaw);
+    const lng = lngRaw === "" ? null : Number(lngRaw);
     let category = customStormCategory ? customStormCategory.value : "";
     if (!category && windRaw !== "" && !isNaN(wind)) {
       category = suggestedCategoryName(wind);
     }
-    return { name, windRaw, wind, category };
+    return { name, windRaw, wind, category, latRaw, lngRaw, lat, lng };
   }
 
   // Returns { message, focusEl } for the first problem, or null when valid.
@@ -413,6 +442,38 @@
         focusEl: customStormWind,
       };
     }
+    // Coordinates are optional, but they work as a pair: one without the
+    // other can't form a point. Each gets its own range check.
+    const latFilled = data.latRaw !== "";
+    const lngFilled = data.lngRaw !== "";
+    if (latFilled !== lngFilled) {
+      return {
+        message: "Fill both latitude and longitude — or leave both blank to skip the location match.",
+        focusEl: latFilled ? customStormLng : customStormLat,
+      };
+    }
+    if (latFilled && (isNaN(data.lat) || data.lat < -90 || data.lat > 90)) {
+      return { message: "Latitude must be a number between -90 and 90.", focusEl: customStormLat };
+    }
+    if (lngFilled && (isNaN(data.lng) || data.lng < -180 || data.lng > 180)) {
+      return { message: "Longitude must be a number between -180 and 180.", focusEl: customStormLng };
+    }
+    // Simplified PAR bounding box (lat 3°N–26°N, lng 115°E–145°E):
+    // anything outside PAR is rejected as an error.
+    if (latFilled && (data.lat < PAR_LAT_MIN || data.lat > PAR_LAT_MAX)) {
+      return {
+        message: "Latitude must be between " + PAR_LAT_MIN + "°N and " + PAR_LAT_MAX +
+          "°N — anything outside is outside the PAR.",
+        focusEl: customStormLat,
+      };
+    }
+    if (lngFilled && (data.lng < PAR_LNG_MIN || data.lng > PAR_LNG_MAX)) {
+      return {
+        message: "Longitude must be between " + PAR_LNG_MIN + "°E and " + PAR_LNG_MAX +
+          "°E — anything outside is outside the PAR.",
+        focusEl: customStormLng,
+      };
+    }
     if (!data.category) {
       return { message: "Pick a PAGASA category.", focusEl: customStormCategory };
     }
@@ -426,14 +487,20 @@
       wind: Math.round(data.wind),
       peak: null,
       category: data.category,
+      lat: data.lat != null && !isNaN(data.lat) ? data.lat : null,
+      lng: data.lng != null && !isNaN(data.lng) ? data.lng : null,
     };
     hasUpcomingStorm = true;
     if (window.UpcomingStormState) window.UpcomingStormState.write(UPCOMING);
     if (window.UpcomingStormState) window.UpcomingStormState.renderCards();
     renderCustomProfile();
     renderAnalogues();
-    // Re-run any visible comparison so column B picks up the new storm.
-    runCompareSafe();
+    renderLocationMatches();
+    syncPickerToggles();
+    // Don't flash the "please choose" error just because an upcoming storm
+    // was applied — the user hasn't pressed Run Analysis yet. Only refresh
+    // a comparison that is already fully picked.
+    if (selection.stormA && selection.stormB) runCompareSafe();
   }
 
   function restoreCustomStorm() {
@@ -442,7 +509,14 @@
     if (!saved) return;
     if (customStormName) customStormName.value = saved.name;
     if (customStormWind) customStormWind.value = String(saved.wind);
+    if (customStormLat) {
+      customStormLat.value = saved.lat != null ? String(saved.lat) : "";
+    }
+    if (customStormLng) {
+      customStormLng.value = saved.lng != null ? String(saved.lng) : "";
+    }
     if (customStormCategory) customStormCategory.value = saved.category;
+    refreshLatLngValidity();
     commitCustomStorm(saved);
   }
 
@@ -468,6 +542,7 @@
     if (customStormSuggest) customStormSuggest.hidden = true;
     if (customStormCategoryInfo) customStormCategoryInfo.hidden = true;
     hideCustomError();
+    clearLatLngValidity();
     UPCOMING = null;
     hasUpcomingStorm = false;
     if (window.UpcomingStormState) {
@@ -475,6 +550,53 @@
       window.UpcomingStormState.renderCards();
     }
     renderCustomProfile();
+    renderAnalogues();
+    renderLocationMatches();
+    // A cleared upcoming storm can't stay picked — drop it from both
+    // dropdowns so it never renders as a stale selection.
+    if (selection.stormA === UPCOMING_KEY) selection.stormA = "";
+    if (selection.stormB === UPCOMING_KEY) selection.stormB = "";
+    if (stormASelect && stormASelect.value === UPCOMING_KEY) stormASelect.value = "";
+    if (stormBSelect && stormBSelect.value === UPCOMING_KEY) stormBSelect.value = "";
+    syncPickerToggles();
+  }
+
+  // Live lat/lng range highlight (before Apply): empty stays neutral since
+  // coordinates are optional; any filled value outside the PAR box goes red
+  // on each keystroke. The full text error still only appears on Apply via
+  // validateCustomStorm(), which remains the authority.
+  function setCoordValidity(input, invalid) {
+    if (!input) return;
+    input.classList.toggle("is-invalid", !!invalid);
+    if (invalid) {
+      input.setAttribute("aria-invalid", "true");
+    } else {
+      input.removeAttribute("aria-invalid");
+    }
+  }
+
+  function isLatOutOfRange(raw) {
+    const text = String(raw == null ? "" : raw).trim();
+    if (text === "") return false;
+    const n = Number(text);
+    return isNaN(n) || n < PAR_LAT_MIN || n > PAR_LAT_MAX;
+  }
+
+  function isLngOutOfRange(raw) {
+    const text = String(raw == null ? "" : raw).trim();
+    if (text === "") return false;
+    const n = Number(text);
+    return isNaN(n) || n < PAR_LNG_MIN || n > PAR_LNG_MAX;
+  }
+
+  function refreshLatLngValidity() {
+    setCoordValidity(customStormLat, customStormLat && isLatOutOfRange(customStormLat.value));
+    setCoordValidity(customStormLng, customStormLng && isLngOutOfRange(customStormLng.value));
+  }
+
+  function clearLatLngValidity() {
+    setCoordValidity(customStormLat, false);
+    setCoordValidity(customStormLng, false);
   }
 
   function setupCustomStorm() {
@@ -489,6 +611,20 @@
         refreshCategorySuggestion();
         renderCategoryInfo();
       });
+    }
+    if (customStormLat) {
+      customStormLat.addEventListener("input", () => {
+        hideCustomError();
+        refreshLatLngValidity();
+      });
+      customStormLat.addEventListener("change", refreshLatLngValidity);
+    }
+    if (customStormLng) {
+      customStormLng.addEventListener("input", () => {
+        hideCustomError();
+        refreshLatLngValidity();
+      });
+      customStormLng.addEventListener("change", refreshLatLngValidity);
     }
     if (customStormCategory) {
       customStormCategory.addEventListener("change", () => {
@@ -506,6 +642,7 @@
       customStormClear.addEventListener("click", () => {
         resetCustomStormState();
         renderAnalogues();
+        renderLocationMatches();
         runCompareSafe();
       });
     }
@@ -567,6 +704,418 @@
     return hi > 0 ? (lo / hi) * 100 : 0;
   }
 
+  // ---------------------------------------------------------------------
+  // Location matching — Haversine distance against each historical
+  // storm's FULL bulletin track (every bulletin lat/long in sequence,
+  // not just one point).
+  // ---------------------------------------------------------------------
+
+  // Mean Earth radius in km — the standard constant for Haversine.
+  const EARTH_RADIUS_KM = 6371;
+
+  // Great-circle distance between two points in kilometres. Haversine is
+  // used because it accounts for the Earth's curvature, so the result is
+  // a true real-world surface distance rather than a flat-coordinate gap.
+  function haversineKm(lat1, lon1, lat2, lon2) {
+    const toRad = Math.PI / 180;
+    const dLat = (lat2 - lat1) * toRad;
+    const dLon = (lon2 - lon1) * toRad;
+    const a =
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * toRad) * Math.cos(lat2 * toRad) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    // Clamp handles floating-point drift at antipodal points (a > 1).
+    return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(a)));
+  }
+
+  // Display scale for the location bar: a closest approach of 0 km reads
+  // 100%, and every 1,000 km of distance costs 100 points. Bars are
+  // display-only — ranking is always by raw distance.
+  const LOCATION_SCORE_RANGE_KM = 1000;
+
+  function locationScore(distanceKm) {
+    return Math.max(0, (1 - distanceKm / LOCATION_SCORE_RANGE_KM) * 100);
+  }
+
+  function formatDistanceKm(distanceKm) {
+    if (distanceKm < 10) return distanceKm.toFixed(1) + " km";
+    return Math.round(distanceKm).toLocaleString("en-US") + " km";
+  }
+
+  // Collects the bulletin track points that form a storm's track.
+  // Bulletins without coordinates are skipped — partial coverage is
+  // normal, and any single valid point is enough to compare against.
+  // The bulletin_number rides along so the location panel can name the
+  // exact bulletin behind each closest approach.
+  function trackPointsFromBulletins(bulletins) {
+    const points = [];
+    (Array.isArray(bulletins) ? bulletins : []).forEach((bulletin) => {
+      if (bulletin.latitude == null || bulletin.longitude == null) return;
+      const lat = Number(bulletin.latitude);
+      const lng = Number(bulletin.longitude);
+      if (!isFinite(lat) || !isFinite(lng)) return;
+      points.push({
+        lat: lat,
+        lng: lng,
+        bulletin_number: bulletin.bulletin_number != null ? Number(bulletin.bulletin_number) : null,
+      });
+    });
+    return points;
+  }
+
+  // Fetches a storm's bulletins through the shared api-client (memoized,
+  // ETag-cached), with a direct-API fallback when TCIS_API is absent.
+  async function loadStormBulletins(cycloneId) {
+    if (window.TCIS_API && typeof window.TCIS_API.fetchBulletins === "function") {
+      return window.TCIS_API.fetchBulletins(cycloneId);
+    }
+    const res = await fetch(BULLETIN_API_URL + encodeURIComponent(cycloneId));
+    if (!res.ok) throw new Error("Request failed: " + res.status);
+    return res.json();
+  }
+
+  // Fetches every storm's bulletins and, for each, the smallest Haversine
+  // distance from the entered point to ANY point along its full track
+  // (closest approach over all bulletin positions combined). Resolves
+  // with storms sorted by that distance — nearest track first — with the
+  // distance AND the winning bulletin attached. Storms whose bulletins
+  // carry no coordinates are excluded. The input point itself is
+  // validated by the caller.
+  async function computeLocationMatches(lat, lng) {
+    const candidates = await Promise.all(
+      STORMS.map(async (storm) => {
+        try {
+          const bulletins = await loadStormBulletins(storm.id);
+          const points = trackPointsFromBulletins(bulletins);
+          if (!points.length) return null;
+          let closest = Infinity;
+          let closestBulletin = null;
+          points.forEach((point) => {
+            const distance = haversineKm(lat, lng, point.lat, point.lng);
+            // Strict < keeps the first (lowest bulletin_number when the
+            // feed is ordered) on exact ties — deterministic winner.
+            if (distance < closest) {
+              closest = distance;
+              closestBulletin = point;
+            }
+          });
+          return { storm: storm, distanceKm: closest, bulletin: closestBulletin };
+        } catch (err) {
+          console.error("Location match: failed to load bulletins for storm", storm.id, err);
+          return null;
+        }
+      })
+    );
+    return candidates
+      .filter(Boolean)
+      .sort((a, b) => a.distanceKm - b.distanceKm);
+  }
+
+  // Cap on how many tied storms expand inside one group header; overflow
+  // gets a "+N more …" note tucked inside the expanded list.
+  const MAX_SUB_ROWS = 5;
+
+  // Shared tie-group markup for BOTH match panels — the wind panel and the
+  // location panel render through this one implementation (DRY). A group
+  // with a single storm renders as a plain analogue row; a group of 2+
+  // collapses into a "Top N · X cyclones tied" header bar (rank badge,
+  // Top N pill, shared score + bar, chevron) that expands to its member rows. The
+  // group's identity comes from `group.key`/`group.unit` (e.g. 75 km/h,
+  // 5.5 km) used in the aria label and the "+N more" note, and `buildRow`
+  // renders each member so the panels keep their own row look and data.
+  // Nodes are appended into `container` (one node, or header + sub-rows
+  // container for a tie group).
+  function buildTieGroupMarkup(group, buildRow, container) {
+    if (group.matches.length === 1) {
+      container.appendChild(buildRow(group.matches[0]));
+      return;
+    }
+
+    const rep = group.matches[0];
+    const shownSubs = group.matches.slice(0, MAX_SUB_ROWS);
+    const hiddenSubCount = group.matches.length - shownSubs.length;
+    // Keys can carry units ("5.5 km") — collapse whitespace so the id
+    // behind aria-controls stays a valid single token.
+    const subId =
+      "analogue-sub-" + group.rank + "-" + String(group.key).replace(/\s+/g, "-");
+
+    const header = document.createElement("button");
+    header.type = "button";
+    header.className = "analogue-row analogue-group" + (group.rank === 1 ? " best-match" : " rank-" + group.rank);
+    header.setAttribute("aria-expanded", "false");
+    header.setAttribute("aria-controls", subId);
+
+    const rank = document.createElement("span");
+    rank.className = "rank-number rank-" + group.rank;
+    rank.textContent = group.rank;
+
+    const info = document.createElement("div");
+    info.className = "analogue-info";
+    // Same "Top N" pill as single rows (wind + location share this helper
+    // and the .analogue-top-tag style); rank is 1-3, safe to interpolate.
+    info.innerHTML =
+      '<div class="analogue-name"><span class="analogue-top-tag rank-' + group.rank + '">Top ' + group.rank + "</span>" +
+      group.matches.length + ' cyclones tied</div>' +
+      '<span class="analogue-match-label">Click to view</span>';
+
+    const sim = document.createElement("div");
+    sim.className = "analogue-similarity";
+    sim.innerHTML = "<strong>0%</strong>";
+
+    const bar = document.createElement("div");
+    bar.className = "match-progress";
+    bar.innerHTML = '<span style="width:' + Number(rep.score) + '%"></span>';
+
+    const action = document.createElement("div");
+    action.className = "analogue-action";
+    const chevron = document.createElement("span");
+    chevron.className = "analogue-chevron";
+    chevron.setAttribute("aria-hidden", "true");
+    chevron.textContent = "\u203a";
+    action.appendChild(chevron);
+
+    const sub = document.createElement("div");
+    sub.className = "analogue-subrows";
+    sub.id = subId;
+    sub.hidden = true;
+    sub.setAttribute("role", "group");
+    sub.setAttribute("aria-label", "Tied storms at " + group.key + " " + group.unit);
+
+    shownSubs.forEach((match) => {
+      sub.appendChild(buildRow(match, "is-sub"));
+    });
+    if (hiddenSubCount > 0) {
+      const moreEl = document.createElement("div");
+      moreEl.className = "analogue-more";
+      moreEl.textContent = "+" + hiddenSubCount + " more at " + group.key + " " + group.unit;
+      sub.appendChild(moreEl);
+    }
+
+    header.appendChild(rank);
+    header.appendChild(info);
+    header.appendChild(sim);
+    header.appendChild(bar);
+    header.appendChild(action);
+
+    let expanded = false;
+    header.addEventListener("click", () => {
+      expanded = !expanded;
+      header.setAttribute("aria-expanded", String(expanded));
+      sub.hidden = !expanded;
+    });
+
+    container.appendChild(header);
+    container.appendChild(sub);
+    animateMatchScore(sim.querySelector("strong"), rep.score);
+  }
+
+  // Render token: only the newest location render may paint, so a slow
+  // bulletin fetch from a previous apply/reset can never overwrite the
+  // panel that is on screen now.
+  let locationRenderToken = 0;
+
+  // Builds the separate "Best match · Location" panel — it never merges
+  // with the wind-strength group; the two run and display independently.
+  async function renderLocationMatches() {
+    const token = ++locationRenderToken;
+    const hasCoordinates =
+      UPCOMING && UPCOMING.lat != null && UPCOMING.lng != null;
+
+    if (!hasCoordinates) {
+      // No coordinates entered — the location bar simply never appears.
+      // The wind bar is untouched: the two do not depend on each other.
+      return;
+    }
+
+    let matches;
+    try {
+      matches = await computeLocationMatches(UPCOMING.lat, UPCOMING.lng);
+    } catch (err) {
+      if (token !== locationRenderToken || !hasUpcomingStorm) return;
+      console.error("Location match failed:", err);
+      const failEl = document.createElement("p");
+      failEl.className = "empty-state";
+      failEl.textContent =
+        "Location match could not be calculated — bulletin data is unavailable right now.";
+      analogueList.appendChild(failEl);
+      return;
+    }
+    if (token !== locationRenderToken || !hasUpcomingStorm) return;
+
+    // A 0% score must never rank as a "best" match: drop every track whose
+    // closest approach is at/beyond the score range (score is display-only,
+    // ranking stays by raw distance). The cutoff is display-aware: anything
+    // that would render as 0.0% at one decimal is also hidden, not just raw
+    // zero (strict < keeps exactly-1000 km out too).
+    const hadCandidates = matches.length > 0;
+    matches = matches.filter((match) => locationScore(match.distanceKm) > 0.05);
+
+    const groupEl = document.createElement("section");
+    groupEl.className = "match-group match-group-location";
+
+    const heading = document.createElement("div");
+    heading.className = "match-group-head";
+    heading.innerHTML =
+      '<div>' +
+      '<div class="match-group-titlerow">' +
+      '<span class="match-group-trophy" aria-hidden="true">' +
+      '<svg viewBox="0 0 24 24" width="18" height="18" fill="none">' +
+      '<path d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<circle cx="12" cy="10" r="2.6" stroke="#fff" stroke-width="1.8"/>' +
+      "</svg></span>" +
+      '<h3 class="match-group-title">Best match &middot; Location</h3>' +
+      "</div>" +
+      "</div>" +
+      '<span class="match-group-badge">' +
+      '<svg viewBox="0 0 24 24" width="13" height="13" fill="none" aria-hidden="true">' +
+      '<path d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>' +
+      '<circle cx="12" cy="10" r="2.6" stroke="currentColor" stroke-width="1.8"/>' +
+      "</svg>Based on bulletin tracks (Haversine)</span>";
+    groupEl.appendChild(heading);
+
+    if (!matches.length) {
+      const emptyEl = document.createElement("div");
+      emptyEl.className = "empty-state";
+      emptyEl.innerHTML = hadCandidates
+        ? "<p>No historical storm passes close to this location — all bulletin tracks are over 1,000 km away.</p>"
+        : "<p>No historical storm in the archive has bulletin coordinates to compare this location against.</p>";
+      groupEl.appendChild(emptyEl);
+      analogueList.appendChild(groupEl);
+      return;
+    }
+
+    // Rank the GROUPS, not the individual cyclones: cyclones whose
+    // closest-approach distances agree to one decimal (the same rounding
+    // tolerance the wind groups use on their 1-decimal scores) share one
+    // rank — dense Top 3, e.g. two cyclones both 0.0 km away render as
+    // "Top 1 · 2 cyclones tied". Input is already nearest-first, so
+    // group order is distance order; members inside a group are ordered
+    // by exact distance (truly nearer first), then alphabetically.
+    const TIE_DECIMALS = 1;
+    const topGroups = groupTies(
+      matches.map((match) => ({
+        storm: match.storm,
+        distanceKm: match.distanceKm,
+        score: locationScore(match.distanceKm),
+        bulletin: match.bulletin || null,
+      })),
+      (match) => match.distanceKm.toFixed(TIE_DECIMALS),
+      compareTiedLocationStorms
+    )
+      .slice(0, 3)
+      .map((group, groupIndex) => ({
+        rank: groupIndex + 1,
+        key: formatDistanceKm(group.items[0].distanceKm),
+        unit: "",
+        matches: group.items.map((match) => ({
+          storm: match.storm,
+          distanceKm: match.distanceKm,
+          score: match.score,
+          bulletin: match.bulletin || null,
+          rank: groupIndex + 1,
+        })),
+      }));
+
+    // Same precision policy as the wind panel: escalate if two distinct
+    // scores would render as the same string.
+    scoreDecimals = displayDecimals(topGroups.flatMap((group) => group.matches.map((m) => m.score)));
+
+    // Plain-text "Bulletin N · X.X°N, Y.Y°E" for the winning bulletin, or
+    // "" when the number is missing (legacy rows stay clean).
+    const matchedBulletinText = (bulletin) => {
+      if (!bulletin) return "";
+      const num = Number(bulletin.bulletin_number);
+      if (!isFinite(num)) return "";
+      let coords = "";
+      if (typeof formatLatLong === "function") {
+        coords = formatLatLong(bulletin.lat, bulletin.lng);
+      }
+      return "Bulletin " + num + (coords ? " · " + coords : "");
+    };
+
+    // Row sub-line HTML for the winning bulletin. Bulletin number comes
+    // from our own track data (numeric) and coords from formatLatLong
+    // (numbers only) — no raw DB text interpolated.
+    const matchedBulletinLabel = (bulletin) => {
+      const text = matchedBulletinText(bulletin);
+      if (!text) return "";
+      return '<span class="analogue-distance-label analogue-bulletin-label">' +
+        esc(text) + "</span>";
+    };
+
+    // One location row: rank badge, name + closest-approach distance +
+    // matched bulletin number/coords, shared bar/score, View button. Same
+    // shape as the wind panel's row builder; the bar carries the location
+    // panel's teal accent.
+    const buildStormRow = (match, extraClass) => {
+      const rowEl = document.createElement("div");
+      rowEl.className = "analogue-row" +
+        (match.rank === 1 ? " best-match" : " rank-" + match.rank) +
+        (extraClass ? " " + extraClass : "");
+
+      const rankEl = document.createElement("span");
+      rankEl.className = "rank-number rank-" + match.rank;
+      rankEl.textContent = match.rank;
+
+      const info = document.createElement("div");
+      info.className = "analogue-info";
+      var escName = window.TCIS_API ? window.TCIS_API.escapeHtml(match.storm.name) : String(match.storm.name);
+      // Explicit "Top N" pill mirroring the wind panel's tie-header wording
+      // ("Top 1 · N cyclones tied"): location distances are unique floats so
+      // ties almost never occur, leaving single rows with only the rank
+      // badge. rank is always 1–3 here (Top-3 slice), safe to interpolate.
+      info.innerHTML =
+        '<div class="analogue-name"><span class="analogue-top-tag rank-' + match.rank + '">Top ' + match.rank + "</span>" + escName + "</div>" +
+        '<span class="analogue-distance-label">Closest approach: ' +
+        formatDistanceKm(match.distanceKm) + "</span>" +
+        matchedBulletinLabel(match.bulletin);
+
+      const sim = document.createElement("div");
+      sim.className = "analogue-similarity";
+      sim.innerHTML = "<strong>0%</strong>";
+
+      const bar = document.createElement("div");
+      bar.className = "match-progress match-progress-location";
+      bar.innerHTML = '<span style="width:' + Number(match.score) + '%"></span>';
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "analogue-view-btn";
+      btn.textContent = "View";
+      btn.addEventListener("click", () => {
+        openAnalogueDetails(match.storm, match.score, btn, {
+          kind: "location",
+          distanceKm: match.distanceKm,
+          bulletin: match.bulletin || null,
+        });
+      });
+
+      rowEl.appendChild(rankEl);
+      rowEl.appendChild(info);
+      rowEl.appendChild(sim);
+      rowEl.appendChild(bar);
+      rowEl.appendChild(btn);
+      animateMatchScore(sim.querySelector("strong"), match.score);
+      return rowEl;
+    };
+
+    // Tied ranks collapse exactly like the wind panel's ("Top N · X
+    // cyclones tied", Click to view, capped sub-rows) through the same
+    // shared helper — while the panel itself stays fully independent.
+    topGroups.forEach((topGroup) => {
+      buildTieGroupMarkup(topGroup, buildStormRow, groupEl);
+    });
+
+    // Re-check before painting: the panel may have been re-rendered (or
+    // emptied) while bulletins were in flight.
+    if (token !== locationRenderToken || !hasUpcomingStorm) return;
+
+    analogueList.appendChild(groupEl);
+    groupEl.querySelectorAll(".analogue-row").forEach((rowEl, index) => {
+      rowEl.style.setProperty("--row-delay", index * 45 + "ms");
+    });
+  }
+
   function animateMatchScore(el, target) {
     // The final value uses the group's chosen precision (one decimal
     // normally, escalated so near-tie candidates display distinctly);
@@ -620,6 +1169,32 @@
     return decimals;
   }
 
+  // Groups matches that share one value into ordered tie groups (dense
+  // grouping: every member of a group shares one rank). `keyOf` decides
+  // what "equal" means — pass a rounding function for numeric tolerance
+  // (the wind panel compares exact winds; the location panel rounds its
+  // Haversine distances to one decimal first, mirroring the wind panel's
+  // 1-decimal score equality). Input order is preserved inside groups;
+  // group order follows first appearance, so callers stay in control of
+  // ranking (e.g. by passing pre-sorted input).
+  function groupTies(items, keyOf, sortWithin) {
+    const groups = [];
+    const index = new Map();
+    (items || []).forEach((item) => {
+      const key = keyOf(item);
+      if (!index.has(key)) {
+        const group = { key: key, items: [] };
+        index.set(key, group);
+        groups.push(group);
+      }
+      index.get(key).items.push(item);
+    });
+    if (typeof sortWithin === "function") {
+      groups.forEach((group) => group.items.sort(sortWithin));
+    }
+    return groups;
+  }
+
   // Groups historical storms by their exact Max Wind value.
   // Assumes `storms` is already in a stable order (STORMS is built in
   // year/date order by loadData), so groups start in that order too.
@@ -660,6 +1235,18 @@
     const daysDiff = (b.days ?? 0) - (a.days ?? 0);
     if (daysDiff !== 0) return daysDiff;
     return String(a.name).localeCompare(String(b.name));
+  }
+
+  // Display order for location matches inside one tied-distance group:
+  // exact distance first (a 5.51 km cyclone ahead of a 5.53 km one even
+  // though both read "5.5 km"), then recency, then alphabetical — the
+  // same trailing order the wind panel uses on its ties.
+  function compareTiedLocationStorms(a, b) {
+    const distanceDiff = a.distanceKm - b.distanceKm;
+    if (distanceDiff !== 0) return distanceDiff;
+    const recencyDiff = recentness(b.storm) - recentness(a.storm);
+    if (recencyDiff !== 0) return recencyDiff;
+    return String(a.storm.name).localeCompare(String(b.storm.name));
   }
 
   function renderAnalogues() {
@@ -706,11 +1293,14 @@
     // Each rank keeps every storm sharing its wind (dense ranking:
     // 1, 1, 1, 2, 3), most recent first. Rank order = group closeness;
     // the similarity score is display-only and must never re-order ranks.
-    const MAX_SUB_ROWS = 5;
     const topGroups = rankGroupsByCloseness(groupByWind(STORMS), UPCOMING.wind)
       .slice(0, 3)
       .map((group, groupIndex) => ({
         rank: groupIndex + 1,
+        // groupTies()/buildTieGroupMarkup() group identity: the exact
+        // shared wind (used in the aria label / "+N more" note).
+        key: group.wind,
+        unit: "km/h",
         matches: group.storms
           .slice()
           .sort(compareTiedStorms)
@@ -736,10 +1326,12 @@
 
       const info = document.createElement("div");
       info.className = "analogue-info";
-      // DB names are untrusted — escape before innerHTML.
+      // DB names are untrusted — escape before innerHTML. The "Top N" pill
+      // matches the location panel's rows (same class, same rank colors);
+      // rank is always 1–3 here (Top-3 slice), safe to interpolate.
       var escName = window.TCIS_API ? window.TCIS_API.escapeHtml(match.storm.name) : String(match.storm.name);
       info.innerHTML =
-        '<div class="analogue-name">' + escName + "</div>";
+        '<div class="analogue-name"><span class="analogue-top-tag rank-' + match.rank + '">Top ' + match.rank + "</span>" + escName + "</div>";
 
       const sim = document.createElement("div");
       sim.className = "analogue-similarity";
@@ -773,81 +1365,10 @@
     // storms (capped, the overflow note tucked inside). A lone storm
     // renders as a plain row — so the panel is always exactly the top 3
     // ranks and nothing can be pushed off it. Re-renders reset every
-    // group to collapsed.
+    // group to collapsed. The markup itself is shared with the location
+    // panel via buildTieGroupMarkup().
     topGroups.forEach((topGroup) => {
-      if (topGroup.matches.length === 1) {
-        groupEl.appendChild(buildStormRow(topGroup.matches[0]));
-        return;
-      }
-
-      const rep = topGroup.matches[0];
-      const shownSubs = topGroup.matches.slice(0, MAX_SUB_ROWS);
-      const hiddenSubCount = topGroup.matches.length - shownSubs.length;
-      const subId = "analogue-sub-" + rep.storm.wind;
-
-      const header = document.createElement("button");
-      header.type = "button";
-      header.className = "analogue-row analogue-group" + (topGroup.rank === 1 ? " best-match" : " rank-" + topGroup.rank);
-      header.setAttribute("aria-expanded", "false");
-      header.setAttribute("aria-controls", subId);
-
-      const rank = document.createElement("span");
-      rank.className = "rank-number rank-" + topGroup.rank;
-      rank.textContent = topGroup.rank;
-
-      const info = document.createElement("div");
-      info.className = "analogue-info";
-      info.innerHTML =
-        '<div class="analogue-name">Top ' + topGroup.rank + " \u00b7 " + topGroup.matches.length + ' cyclones tied</div>' +
-        '<span class="analogue-match-label">Click to view</span>';
-
-      const sim = document.createElement("div");
-      sim.className = "analogue-similarity";
-      sim.innerHTML = "<strong>0%</strong>";
-
-      const bar = document.createElement("div");
-      bar.className = "match-progress";
-      bar.innerHTML = '<span style="width:' + Number(rep.score) + '%"></span>';
-
-      const action = document.createElement("div");
-      action.className = "analogue-action";
-      const chevron = document.createElement("span");
-      chevron.className = "analogue-chevron";
-      chevron.setAttribute("aria-hidden", "true");
-      chevron.textContent = "\u203a";
-      action.appendChild(chevron);
-
-      const sub = document.createElement("div");
-      sub.className = "analogue-subrows";
-      sub.id = subId;
-      sub.hidden = true;
-      sub.setAttribute("role", "group");
-      sub.setAttribute("aria-label", "Tied storms at " + rep.storm.wind + " km/h");
-      shownSubs.forEach((match) => {
-        sub.appendChild(buildStormRow(match, "is-sub"));
-      });
-      if (hiddenSubCount > 0) {
-        const moreEl = document.createElement("div");
-        moreEl.className = "analogue-more";
-        moreEl.textContent = "+" + hiddenSubCount + " more at " + rep.storm.wind + " km/h";
-        sub.appendChild(moreEl);
-      }
-
-      header.appendChild(rank);
-      header.appendChild(info);
-      header.appendChild(sim);
-      header.appendChild(bar);
-      header.appendChild(action);
-      let expanded = false;
-      header.addEventListener("click", () => {
-        expanded = !expanded;
-        header.setAttribute("aria-expanded", String(expanded));
-        sub.hidden = !expanded;
-      });
-
-      groupEl.appendChild(header);
-      groupEl.appendChild(sub);
-      animateMatchScore(sim.querySelector("strong"), rep.score);
+      buildTieGroupMarkup(topGroup, buildStormRow, groupEl);
     });
 
     analogueList.appendChild(groupEl);
@@ -861,8 +1382,8 @@
     return window.TCIS_API ? window.TCIS_API.escapeHtml(s) : String(s == null ? "" : s);
   }
 
-  function statMarkup(label, value, icon) {
-    return '<div class="analogue-modal-stat"><span class="analogue-stat-icon">' +
+  function statMarkup(label, value, icon, extraClass) {
+    return '<div class="analogue-modal-stat' + (extraClass ? " " + extraClass : "") + '"><span class="analogue-stat-icon">' +
       icon + '</span><div><span>' + esc(label) +
       '</span><strong>' + esc(value) + "</strong></div></div>";
   }
@@ -872,10 +1393,101 @@
       esc(historicalValue) + "</td><td>" + esc(upcomingValue) + "</td></tr>";
   }
 
-  function openAnalogueDetails(storm, score, trigger) {
+  function openAnalogueDetails(storm, score, trigger, options) {
+    const details = options || {};
+    const isLocation = details.kind === "location";
     // Matches the panel's display precision so near-tie storms can't
     // read as the same percentage here either.
     const displayScore = score.toFixed(scoreDecimals);
+    const hasCoordinates =
+      UPCOMING && UPCOMING.lat != null && UPCOMING.lng != null;
+
+    if (isLocation) {
+      const distanceKm = Number(details.distanceKm);
+      const distanceText =
+        isFinite(distanceKm) ? formatDistanceKm(distanceKm) : "—";
+      const upcomingCoordText = hasCoordinates
+        ? Number(UPCOMING.lat).toFixed(2) + "°, " + Number(UPCOMING.lng).toFixed(2) + "°"
+        : "—";
+      // Winning bulletin behind this closest approach (number + coords).
+      const matchedBulletin = details.bulletin || null;
+      const matchedNum = matchedBulletin ? Number(matchedBulletin.bulletin_number) : NaN;
+      const hasBulletin = isFinite(matchedNum);
+      const matchedCoords = hasBulletin && typeof formatLatLong === "function"
+        ? formatLatLong(matchedBulletin.lat, matchedBulletin.lng)
+        : "";
+      const matchedText = hasBulletin
+        ? "Bulletin " + matchedNum + (matchedCoords ? " (" + matchedCoords + ")" : "")
+        : "—";
+      const scoreReason =
+        storm.name + "'s " + (hasBulletin ? matchedText + " passes" : "bulletin track passes") +
+        " within " + distanceText +
+        " of " + UPCOMING.name + "'s position (" + upcomingCoordText + "), producing a " +
+        displayScore + "% match.";
+
+      analogueModalKicker.innerHTML =
+        '<span class="analogue-kicker-icon">&#9670;</span>Best match \u00b7 location';
+      analogueModalTitle.textContent = storm.name;
+      analogueModalSummary.textContent = storm.date + " · " + storm.category;
+      // The modal's "Compared with …" headings name the upcoming storm; they
+      // used to be filled by upcoming-storm.js, now we set them directly.
+      analogueModal.querySelectorAll('[data-us="storm_name"]').forEach((node) => {
+        node.textContent = UPCOMING.name;
+      });
+      // Row 1 (full width): headline distance. Row 2: Matched Bulletin
+      // + Upcoming Position side by side, exactly aligned for direct
+      // coordinate comparison.
+      analogueModalStats.innerHTML =
+        statMarkup("Closest Approach", distanceText, '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.1 7-11a7 7 0 10-14 0c0 4.9 7 11 7 11z"/><circle cx="12" cy="10" r="2.6"/></svg>', "analogue-modal-stat--wide") +
+        statMarkup("Matched Bulletin", matchedText, categoryIconMarkup(storm.category, 22)) +
+        statMarkup("Upcoming Position", upcomingCoordText,
+          categoryIconMarkup(storm.category, 22));
+      analogueComparisonStorm.textContent = storm.name;
+      // The upcoming storm's position comes from the sandbox form's lat/lng
+      // inputs, so its value keeps the coordinate text.
+      analogueComparisonBody.innerHTML =
+        comparisonRow("Closest Approach", distanceText, upcomingCoordText) +
+        comparisonRow("Matched Bulletin", matchedText, "—") +
+        comparisonRow("PAGASA Category", storm.category, UPCOMING.category);
+      // Reason paragraph + breakdown render separately — the heading and
+      // the compact bulletins button live statically in the HTML above,
+      // so writing innerHTML here never wipes the button or its listener.
+      if (analogueModalReason) {
+        analogueModalReason.textContent = scoreReason;
+      }
+      const explanationTarget = analogueModalExplanationBody || analogueModalExplanation;
+      explanationTarget.innerHTML =
+        "<div class=\"analogue-match-breakdown\"><div class=\"analogue-score-ring\" style=\"--score: " +
+        displayScore + "%\"><strong>" + displayScore + "%</strong><span>LOCATION<br>MATCH</span></div><div class=\"analogue-match-checks\"><span><b>✓</b>Track closeness: " + displayScore +
+        "% (" + distanceText + " away)</span>" +
+        (hasBulletin ? "<span><b>✓</b>Closest point: " + esc(matchedText) + "</span>" : "") + "</div></div>";
+
+      // Fresh bulletin state per storm; the PDFs lazy-load when the visitor
+      // opens the bulletin overlay.
+      resetAnalogueBulletins();
+      bulletinStorm = storm;
+      if (analogueBulletinsHint) {
+        analogueBulletinsHint.textContent = hasBulletin
+          ? matchedText + " is the closest — inspect all archived PAGASA bulletins for " + storm.name
+          : "Inspect archived PAGASA bulletins for " + storm.name;
+      }
+      // Compact button: full hint lives in the tooltip / screen-reader label.
+      if (analogueBulletinsBtn) {
+        analogueBulletinsBtn.setAttribute(
+          "aria-label",
+          "View bulletins — inspect archived PAGASA bulletins for " + storm.name
+        );
+        analogueBulletinsBtn.title =
+          "Inspect archived PAGASA bulletins for " + storm.name;
+      }
+
+      lastModalTrigger = trigger;
+      analogueModal.hidden = false;
+      document.body.classList.add("modal-open");
+      analogueModal.querySelector(".analogue-modal-close").focus();
+      return;
+    }
+
     const windDelta = storm.wind - UPCOMING.wind;
     const scoreReason =
       "Its wind speed is close to " + UPCOMING.name + "'s, producing a " + displayScore + "% match.";
@@ -890,13 +1502,14 @@
       node.textContent = UPCOMING.name;
     });
     analogueModalStats.innerHTML =
-      statMarkup("Maximum winds", storm.wind + " km/h", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7c3 0 3-4 0-4M3 12h13c3 0 3-4 0-4M3 16h9c3 0 3-4 0-4M3 20h5"/></svg>') +
+      statMarkup("Strength (Sustained / Gust)", storm.strengthText || "\u2014", '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8h7c3 0 3-4 0-4M3 12h13c3 0 3-4 0-4M3 16h9c3 0 3-4 0-4M3 20h5"/></svg>') +
       statMarkup("PAGASA Category", storm.category,
-        categoryIconMarkup(storm.category, 22) ||
-          '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8"/></svg>');
+        categoryIconMarkup(storm.category, 22));
     analogueComparisonStorm.textContent = storm.name;
+    // The upcoming storm's wind comes from the sandbox form (sustained
+    // only — no gust input), so its value keeps the sustained-only text.
     analogueComparisonBody.innerHTML =
-      comparisonRow("Maximum winds", storm.wind + " km/h", UPCOMING.wind + " km/h") +
+      comparisonRow("Strength (Sustained / Gust)", storm.strengthText || "\u2014", UPCOMING.wind + " km/h") +
       comparisonRow("PAGASA Category", storm.category, UPCOMING.category);
     // Reason paragraph + breakdown render separately — the heading and
     // the compact bulletins button live statically in the HTML above,
@@ -981,11 +1594,41 @@
     if (bulletinSearchWrap) bulletinSearchWrap.hidden = false;
     // Stop the PDF load when going back to the list.
     if (bulletinPreviewFrame) bulletinPreviewFrame.removeAttribute("src");
+    if (bulletinPreviewCoords) {
+      bulletinPreviewCoords.hidden = true;
+      bulletinPreviewCoords.textContent = "";
+    }
   }
 
   function setBulletinSearchEnabled(enabled) {
     if (bulletinSearch) bulletinSearch.disabled = !enabled;
     if (!enabled && bulletinSearchClear) bulletinSearchClear.hidden = true;
+  }
+
+  function getBulletinPreviewUrl(url) {
+    // Same fit-to-width hint as Historical Data: start the native viewer
+    // at page-width with thumbnails closed so the page never opens at a
+    // stale zoom (e.g. 92%) and looks clipped inside the modal.
+    if (typeof url !== "string" || !url) return url;
+    var base = url.split("#")[0];
+    return base + "#page=1&zoom=page-width&pagemode=none&navpanes=0";
+  }
+
+  // Shows this bulletin's coordinates alongside its PDF preview title.
+  // Missing coords hide the pill so legacy rows never show a stale value.
+  function setPreviewCoords(el, bulletin) {
+    if (!el) return;
+    if (bulletin && bulletin.latitude != null && bulletin.longitude != null) {
+      const coordsText = formatLatLong(bulletin.latitude, bulletin.longitude);
+      if (coordsText) {
+        el.innerHTML =
+          '<span aria-hidden="true">📌</span> ' + coordsText;
+        el.hidden = false;
+        return;
+      }
+    }
+    el.hidden = true;
+    el.textContent = "";
   }
 
   function showBulletinPreview(bulletin) {
@@ -998,8 +1641,9 @@
       return;
     }
     bulletinPreviewTitle.textContent =
-      bulletinStorm.name + " — Bulletin " + bulletin.bulletin_number;
-    bulletinPreviewFrame.src = bulletin.r2_url;
+      "Bulletin " + bulletin.bulletin_number;
+    setPreviewCoords(bulletinPreviewCoords, bulletin);
+    bulletinPreviewFrame.src = getBulletinPreviewUrl(bulletin.r2_url);
     bulletinOpenNewTab.href = bulletin.r2_url;
     bulletinDownload.href = bulletin.r2_url;
     bulletinDownload.setAttribute(
@@ -1069,6 +1713,17 @@
     }
   }
 
+  function formatLatLong(lat, lon) {
+    const latNum = Number(lat);
+    const lonNum = Number(lon);
+    if (!isFinite(latNum) || !isFinite(lonNum)) return "";
+    const latAbs = Math.abs(latNum).toFixed(1);
+    const lonAbs = Math.abs(lonNum).toFixed(1);
+    const latDir = latNum < 0 ? "S" : "N";
+    const lonDir = lonNum < 0 ? "W" : "E";
+    return latAbs + "°" + latDir + ", " + lonAbs + "°" + lonDir;
+  }
+
   function renderBulletinItems(list) {
     if (!bulletinList) return;
     bulletinList.innerHTML = "";
@@ -1109,6 +1764,17 @@
       previewPill.className = "bulletin-item-preview";
       previewPill.textContent = "Preview";
 
+      let latLongPill = null;
+      if (b.latitude != null && b.longitude != null) {
+        const coordsText = formatLatLong(b.latitude, b.longitude);
+        if (coordsText) {
+          latLongPill = document.createElement("span");
+          latLongPill.className = "bulletin-item-latlong";
+          latLongPill.innerHTML =
+            '<span aria-hidden="true">📌</span> ' + coordsText;
+        }
+      }
+
       // Decorative affordance only (aria-hidden): the outer button owns
       // activation. A nested role=button/tabindex here would create an
       // invalid nested interactive with a double tab stop, so the
@@ -1125,6 +1791,7 @@
 
       btn.appendChild(icon);
       btn.appendChild(text);
+      if (latLongPill) btn.appendChild(latLongPill);
       btn.appendChild(previewPill);
       btn.appendChild(openBtn);
       btn.appendChild(chevron);
@@ -1205,7 +1872,7 @@
   }
 
   // Header mirrors the Historical Data viewer: "<Name> Bulletins" over the
-  // "year + category" subtitle with the category badge.
+  // "year + category" subtitle (category icon removed).
   function setBulletinModalHeader(storm) {
     if (bulletinModalTitle) bulletinModalTitle.textContent = storm.name + " Bulletins";
     if (bulletinModalSubtitle) {
@@ -1213,11 +1880,6 @@
         storm.category && storm.category !== "—"
           ? storm.year + " " + storm.category
           : String(storm.year);
-    }
-    if (bulletinModalCatIcon) {
-      const markup = categoryIconMarkup(storm.category, 22);
-      bulletinModalCatIcon.innerHTML = markup;
-      bulletinModalCatIcon.hidden = markup === "";
     }
   }
 
@@ -1363,6 +2025,28 @@
     return STORMS.find((s) => s.name === ref) || null;
   }
 
+  // The applied upcoming storm (Step 1) is a first-class pick in BOTH
+  // dropdowns: a pinned "upcoming" option sits at the very top of each
+  // storm list (when one is applied), above the historical storms.
+  var UPCOMING_KEY = "__upcoming__";
+  var UPCOMING_LABEL = "Upcoming storm";
+
+  function resolveStorm(ref) {
+    if (ref === UPCOMING_KEY) return hasUpcomingStorm && UPCOMING ? UPCOMING : null;
+    return findStorm(ref);
+  }
+
+  function upcomingLabel() {
+    if (!hasUpcomingStorm || !UPCOMING) return UPCOMING_LABEL;
+    return UPCOMING_LABEL + " — " + UPCOMING.name;
+  }
+
+  function stormDisplayLabel(storm) {
+    if (!storm) return "";
+    if (storm.year) return storm.name + " \u00b7 " + storm.year;
+    return storm.name;
+  }
+
   function lookupErrorRow(message) {
     updateWinnerBanner("Comparison", "", "", "idle");
     colAHead.textContent = "—";
@@ -1375,7 +2059,7 @@
   function runCompare() {
     const refA = selection.stormA;
     const refB = selection.stormB;
-    if (!refA) return;
+    if (!refA || !refB) return;
 
     // The cyclone list failed to load — nothing can be resolved.
     if (!STORMS.length) {
@@ -1383,30 +2067,24 @@
       return;
     }
 
-    const a = findStorm(refA);
-    const b = refB ? findStorm(refB) : null;
+    const a = resolveStorm(refA);
+    const b = resolveStorm(refB);
     if (!a) {
-      lookupErrorRow("The selected storm (A) could not be found. The list may have changed — please re-select it and run the analysis again.");
+      lookupErrorRow(refA === UPCOMING_KEY
+        ? "The upcoming storm is no longer applied. Apply one in Step 1, then pick it again."
+        : "The selected storm (A) could not be found. The list may have changed — please re-select it and run the analysis again.");
       return;
     }
-    if (refB && !b) {
-      lookupErrorRow("The selected storm (B) could not be found. The list may have changed — please re-select it and run the analysis again.");
+    if (!b) {
+      lookupErrorRow(refB === UPCOMING_KEY
+        ? "The upcoming storm is no longer applied. Apply one in Step 1, then pick it again."
+        : "The selected storm (B) could not be found. The list may have changed — please re-select it and run the analysis again.");
       return;
     }
 
-    // With no upcoming storm applied, comparing against "Upcoming" (the B
-    // column when none is chosen) has no meaning — ask for a second storm.
-    if (!hasUpcomingStorm && !b) {
-      updateWinnerBanner("Comparison", "", "", "idle");
-      colAHead.innerHTML =
-        '<span class="th-flex"><span class="col-badge col-badge-a">A</span>' + esc(a.name) +
-        ' <span class="col-year">· ' + esc(a.year) + "</span></span>";
-      colBHead.textContent = "—";
-      tableBody.innerHTML =
-        '<tr class="empty-row"><td colspan="3">' +
-        '<div class="empty-state">' +
-        "<p>No upcoming storm has been applied yet, so there is nothing to compare against. Apply one in Step 1 or select a second historical storm above.</p>" +
-        "</div></td></tr>";
+    // Same storm on both sides has no meaning — ask for two different picks.
+    if (refA === refB || (a === b && refA !== UPCOMING_KEY)) {
+      setCompareError("Pick two different storms — Storm A and Storm B can't be the same.", ["stormA", "stormB"]);
       return;
     }
 
@@ -1425,10 +2103,9 @@
 
     // Overall result: higher max sustained wind wins; on equal winds the
     // higher PAGASA category breaks the tie; identical winds AND category
-    // is an explicit tie. (Previously an A-vs-B tie fell through to a
-    // comparison against the upcoming storm, so a tied pair could show an
-    // unrelated storm as the "winner".)
-    const compareB = b || UPCOMING;
+    // is an explicit tie. Either column may be the applied upcoming storm
+    // (picked from the pinned top option in its dropdown).
+    const compareB = b;
     // Defensive: without a B column there is nothing to render — the caller
     // guards this, but never crash the results table on a null storm.
     if (!compareB) {
@@ -1462,51 +2139,39 @@
       ? "metric-green"
       : winner === compareB ? "metric-green" : "metric-red";
 
+    // Either side may be the upcoming storm (no year) — its header reads
+    // name-only with an "Upcoming storm" tag instead of a year.
     colAHead.innerHTML =
       '<span class="th-flex"><span class="col-badge ' + esc(badgeA) + '">A</span>' +
-      esc(a.name) + ' <span class="col-year">· ' + esc(a.year) + "</span></span>";
+      esc(a.name) + ' <span class="col-year">· ' + esc(a.year || "Upcoming storm") + "</span></span>";
     colBHead.innerHTML =
       '<span class="th-flex"><span class="col-badge ' + esc(badgeB) + '">B</span>' +
-      esc(compareB.name) + ' <span class="col-year">· ' +
-      esc(b ? compareB.year : "Upcoming storm") + "</span></span>";
+      esc(compareB.name) + ' <span class="col-year">· ' + esc(compareB.year || "Upcoming storm") + "</span></span>";
 
-    // An upcoming storm has no year, so its banner label is name-only.
-    // Computed lazily — UPCOMING is null for pure historical A-vs-B
-    // comparisons, and touching UPCOMING.year there threw a TypeError that
-    // aborted the render before the results table was filled.
-    const upcomingLabel = !b && UPCOMING
-      ? (UPCOMING.year ? UPCOMING.name + " · " + UPCOMING.year : UPCOMING.name)
-      : (!b ? "" : null);
+    function bannerLabel(storm) {
+      if (!storm) return "";
+      return storm.year ? storm.name + " · " + storm.year : storm.name + " (upcoming storm)";
+    }
 
     if (isTie) {
       updateWinnerBanner(
         "It's a Tie",
-        a.name + " & " + compareB.name,
+        bannerLabel(a) + " & " + bannerLabel(compareB),
         "Both storms top out at " + a.wind +
           " km/h at the same PAGASA category — neither is stronger. Based on PAGASA best track data.",
         "tie"
       );
-    } else if (!b) {
-      updateWinnerBanner(
-        "Overall Winner",
-        winner === UPCOMING ? upcomingLabel : winner.name + " · " + winner.year,
-          (winner === UPCOMING
-          ? "is stronger than the selected historical storm."
-          : "is stronger than the upcoming storm.") +
-          " Based on PAGASA best track data.",
-        "win"
-      );
     } else if (windDiff !== 0) {
       updateWinnerBanner(
         "Overall Winner",
-        winner.name + " · " + winner.year,
+        bannerLabel(winner),
         "is stronger based on wind speed. Based on PAGASA best track data.",
         "win"
       );
     } else {
       updateWinnerBanner(
         "Overall Winner",
-        winner.name + " · " + winner.year,
+        bannerLabel(winner),
         "reached a higher PAGASA category at the same wind speed. Based on PAGASA best track data.",
         "win"
       );
@@ -1517,7 +2182,13 @@
     const windWinner = windDiff > 0 ? 1 : windDiff < 0 ? 2 : 0;
     const catWinner = catDiff > 0 ? 1 : catDiff < 0 ? 2 : 0;
 
-    html += row("Maximum Sustained Winds", a.wind + " km/h", compareB.wind + " km/h",
+    // Strength shows the combined sustained/gust text (display only); the
+    // row's "Stronger" badge is still decided by sustained wind (windDiff).
+    // The upcoming storm side has no gust input (sandbox form), so it keeps
+    // its sustained-only text.
+    html += row("Strength (Sustained / Gust)",
+      a.strengthText || (a.wind != null ? a.wind + " km/h" : "\u2014"),
+      compareB.strengthText || (compareB.wind != null ? compareB.wind + " km/h" : "\u2014"),
       windWinner, classA, classB, (a.wind / 250) * 100, (compareB.wind / 250) * 100);
 
     html += row("PAGASA Category", a.category, compareB.category, catWinner,
@@ -1526,8 +2197,38 @@
     tableBody.innerHTML = html;
   }
 
+  // Run Analysis is always clickable. With an incomplete selection it does
+  // nothing except flag what's missing: an inline error, a red outline on
+  // the button plus the empty picker(s), and a short shake for attention.
+  function setCompareError(message, missing) {
+    if (compareError) {
+      if (message) {
+        compareError.textContent = message;
+        compareError.hidden = false;
+      } else {
+        compareError.textContent = "";
+        compareError.hidden = true;
+      }
+    }
+    if (compareBtn) compareBtn.classList.toggle("is-error", !!message);
+    ["stormA", "stormB"].forEach(function (which) {
+      var root = pickerContainer(which);
+      if (root) root.classList.toggle("needs-choice", !!(missing && missing.indexOf(which) !== -1));
+    });
+    if (message && compareBtn) {
+      // Re-trigger the shake animation on repeated clicks.
+      compareBtn.classList.remove("is-error");
+      void compareBtn.offsetWidth;
+      compareBtn.classList.add("is-error");
+    }
+  }
+
   function runCompareSafe() {
-    if (!selection.stormA) {
+    var missing = [];
+    if (!selection.stormA) missing.push("stormA");
+    if (!selection.stormB) missing.push("stormB");
+    if (missing.length) {
+      setCompareError("Please choose two cyclones first — pick a storm in both dropdowns above.", missing);
       // Idle/empty state: no result yet, so the banner indicator stays
       // dim (no glow classes set) and the guidance empty state shows.
       updateWinnerBanner("Comparison", "", "", "idle");
@@ -1537,13 +2238,14 @@
         '<svg viewBox="0 0 24 24" width="28" height="28" fill="none">' +
         '<path d="M4 20V10M10 20V4M16 20v-7M22 20V8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" />' +
         "</svg>" +
-        "<p>Select a historical storm from the dropdown above, then click " +
-        "<strong>Analysis Comparison</strong> to see results here.</p>" +
+        "<p>Select a storm in both dropdowns above (historical or the applied upcoming storm), then click " +
+        "<strong>Run Analysis</strong> to see results here.</p>" +
         "</div></td></tr>";
       colAHead.textContent = "—";
       colBHead.textContent = "—";
       return;
     }
+    setCompareError("", []);
     runCompare();
   }
 
@@ -1557,7 +2259,8 @@
     // resets the historical selections so a stored storm can be restored.
     if (clearUpcoming !== false) resetCustomStormState();
     renderAnalogues();
-    runCompareSafe();
+    renderLocationMatches();
+    setCompareError("", []);
   }
 
   // ---------------------------------------------------------------------
@@ -1570,7 +2273,7 @@
   // <select> used. The `selection` object is the single source of truth for
   // the compare logic; a hidden <select> (kept in sync) mirrors it for the
   // verify harness and as a fallback.
-  const PLACEHOLDER = { stormA: "Select a storm\u2026", stormB: "None (compare with upcoming storm)" };
+  const PLACEHOLDER = { stormA: "Select a storm\u2026", stormB: "Select a storm…" };
 
   function pickerContainer(which) {
     return document.querySelector('[data-picker="' + which + '"]');
@@ -1596,17 +2299,31 @@
         a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
     });
 
-    // Storm B's leading placeholder (compare against the upcoming storm
-    // instead of a second historical storm) is part of every list render;
-    // a query hides it so search results stay storm-only.
-    if (picker.which === "stormB" && !query) {
-      const noneOpt = document.createElement("button");
-      noneOpt.type = "button";
-      noneOpt.className = "picker-option";
-      noneOpt.setAttribute("role", "option");
-      noneOpt.setAttribute("data-value", "");
-      noneOpt.textContent = PLACEHOLDER.stormB;
-      picker.list.appendChild(noneOpt);
+    // Pinned upcoming-storm option at the very top (when applied) — its own
+    // separated bar so the visitor can pit the Step 1 storm against any
+    // historical cyclone. Hidden while searching so results stay storm-only.
+    if (hasUpcomingStorm && UPCOMING && !query) {
+      const upOpt = document.createElement("button");
+      upOpt.type = "button";
+      upOpt.className = "picker-option picker-option-upcoming";
+      upOpt.setAttribute("role", "option");
+      upOpt.setAttribute("data-value", UPCOMING_KEY);
+      upOpt.setAttribute("aria-selected", String(selection[picker.which] === UPCOMING_KEY));
+      const upName = document.createElement("span");
+      upName.className = "picker-option-name";
+      upName.textContent = upcomingLabel();
+      const upTag = document.createElement("span");
+      upTag.className = "picker-option-tag";
+      upTag.textContent = "Upcoming";
+      upOpt.appendChild(upName);
+      upOpt.appendChild(upTag);
+      if (selection[picker.which] === UPCOMING_KEY) upOpt.classList.add("is-selected");
+      picker.list.appendChild(upOpt);
+      const upSep = document.createElement("div");
+      upSep.className = "picker-separator";
+      upSep.setAttribute("aria-hidden", "true");
+      upSep.textContent = "Historical storms";
+      picker.list.appendChild(upSep);
     }
 
     let shown = 0;
@@ -1643,7 +2360,9 @@
       // reads "" when its options were rebuilt without the chosen value).
       const raw = selection[which] || (hiddenSelect ? hiddenSelect.value : "");
       let label = "";
-      if (raw) {
+      if (raw === UPCOMING_KEY) {
+        label = upcomingLabel();
+      } else if (raw) {
         const found = findStorm(raw);
         label = found ? found.name + " \u00b7 " + found.year : raw;
       }
@@ -1684,6 +2403,8 @@
     selection[which] = value;
     if (hiddenSelect) hiddenSelect.value = value;
     syncPickerToggles();
+    // A completed selection clears any previous "please choose" error.
+    if (selection.stormA && selection.stormB) setCompareError("", []);
     closeAllPickers(null);
   }
 
@@ -1749,11 +2470,21 @@
         a.name.localeCompare(b.name, undefined, { sensitivity: "base" });
     });
 
+    // Hidden selects also carry the upcoming option so the fallback and
+    // the verify harness can pick it too. Rebuilt on every fill, so re-add
+    // it each time (keeps the "" placeholder first).
     [stormASelect, stormBSelect].forEach((select) => {
       // Drop any storm options from a previous fill (keeps the placeholder).
       Array.from(select.options)
         .filter((option) => option.value !== "")
         .forEach((option) => option.remove());
+
+      if (hasUpcomingStorm && UPCOMING) {
+        const upOption = document.createElement("option");
+        upOption.value = UPCOMING_KEY;
+        upOption.textContent = upcomingLabel();
+        select.appendChild(upOption);
+      }
 
       ordered.forEach((storm) => {
         const option = document.createElement("option");
@@ -1762,6 +2493,9 @@
         select.appendChild(option);
       });
     });
+    // Restore any picked values the rebuild just dropped.
+    if (stormASelect && selection.stormA) stormASelect.value = selection.stormA;
+    if (stormBSelect && selection.stormB) stormBSelect.value = selection.stormB;
   }
 
   // ---------------------------------------------------------------------
@@ -1777,6 +2511,7 @@
     updateResultsSubtitle();
     renderCustomProfile();
     renderAnalogues();
+    renderLocationMatches();
 
     compareBtn.addEventListener("click", runCompareSafe);
     resetBtn.addEventListener("click", resetControls);
@@ -1784,11 +2519,13 @@
     if (stormASelect) {
       stormASelect.addEventListener("change", () => {
         selection.stormA = stormASelect.value;
+        if (selection.stormA && selection.stormB) setCompareError("", []);
       });
     }
     if (stormBSelect) {
       stormBSelect.addEventListener("change", () => {
         selection.stormB = stormBSelect.value;
+        if (selection.stormA && selection.stormB) setCompareError("", []);
       });
     }
 

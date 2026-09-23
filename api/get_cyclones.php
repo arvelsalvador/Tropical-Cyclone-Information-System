@@ -12,17 +12,13 @@ if ($conn->connect_error) {
     exit;
 }
 
-// Fingerprint for ETag/Last-Modified (cheap: PK + timestamp, no full scan).
-// Historical records rarely change, so browsers/CDN may cache 1hr.
+// Fingerprint for ETag (CHECKSUM TABLE: any edit to any column changes it).
 try {
-    $fp = $conn->query('SELECT COUNT(*) AS c, MAX(created_at) AS m, MAX(id) AS maxid FROM cyclones');
+    $fp = $conn->query('CHECKSUM TABLE cyclones');
     if ($fp !== false) {
-        $frow = $fp->fetch_assoc();
-        $etag = '"' . md5(($frow['c'] ?? '') . '|' . ($frow['m'] ?? '') . '|' . ($frow['maxid'] ?? '')) . '"';
+        $row = $fp->fetch_assoc();
+        $etag = '"' . md5((string) ($row['Checksum'] ?? '')) . '"';
         header('ETag: ' . $etag);
-        if (!empty($frow['m'])) {
-            header('Last-Modified: ' . gmdate('D, d M Y H:i:s', strtotime($frow['m'])) . ' GMT');
-        }
         if (trim($_SERVER['HTTP_IF_NONE_MATCH'] ?? '') === $etag) {
             http_response_code(304);
             $conn->close();
@@ -33,7 +29,7 @@ try {
     app_log('get_cyclones fingerprint failed: ' . $e->getMessage());
 }
 
-header('Cache-Control: public, max-age=3600');
+header('Cache-Control: public, no-cache');
 
 // Explicit column list (never SELECT *): new sensitive columns must be
 // allow-listed here before they become public.

@@ -9,8 +9,8 @@
  * pointing to the file's public R2 URL.
  */
 
-require_once __DIR__ . '/admin/auth.php';
-require_once __DIR__ . '/admin/helpers.php';
+require_once __DIR__ . '/../admin/auth.php';
+require_once __DIR__ . '/../admin/helpers.php';
 
 header('Content-Type: text/plain'); // plain text output, easy to read
 

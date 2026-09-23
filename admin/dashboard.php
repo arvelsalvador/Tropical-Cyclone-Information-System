@@ -61,15 +61,10 @@ $categoryLabels = [
     'STY' => 'Super Typhoon',
 ];
 
-// Category badge artwork (transparent PNG storm glyphs in assets/Icons) shown
-// inside the category pill in the recent-cyclones table.
-$categoryIcons = [
-    'TD'  => '../assets/Icons/Green_Storm.png',
-    'TS'  => '../assets/Icons/Yellow_Storm.png',
-    'STS' => '../assets/Icons/Orange_Storm.png',
-    'TY'  => '../assets/Icons/Red_Storm.png',
-    'STY' => '../assets/Icons/Purple_Storm.png',
-];
+// Single cyclone artwork (assets/Icons/The icon.png) shown next to every
+// cyclone in the recent-cyclones table — matches the public Historical Data
+// table and the admin Historical Cyclones list (no per-category color-code).
+$cycloneIcon = '../assets/Icons/The%20icon.png';
 
 // "Opong (Bualoi)" style display name (local part Title-Cased)
 function cyclone_display_name(array $row) {
@@ -217,9 +212,7 @@ if ($strongest) {
               <tr>
                 <td>
                   <div class="admin-cyclone-cell">
-                    <?php if (!empty($categoryIcons[$cat])): ?>
-                      <span class="admin-cyclone-icon"><img src="<?php echo $categoryIcons[$cat]; ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
-                    <?php endif; ?>
+                    <span class="admin-cyclone-icon"><img src="<?php echo $cycloneIcon; ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
                     <div>
                       <div class="cell-strong"><?php echo htmlspecialchars(cyclone_name($row['local_name'])); ?></div>
                       <?php if ($row['international_name']): ?>

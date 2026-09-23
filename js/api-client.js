@@ -48,6 +48,33 @@
     return isNaN(n) ? null : n;
   }
 
+  // Gust portion of "sustained/gust" (e.g. "185/230" -> 230). Legacy rows
+  // without a gust ("185", "185/") return null.
+  function parseGust(strength) {
+    if (!strength) return null;
+    var n = parseInt(String(strength).split("/")[1], 10);
+    return isNaN(n) ? null : n;
+  }
+
+  // Combined display value, mirroring the admin table (admin/cyclones.php
+  // strength_text): "185/230" -> "185 / 230 km/h". Graceful with legacy
+  // single-value rows ("185", "185/", "/230" -> "185 km/h" / "230 km/h");
+  // null / "" / "-" (no data) -> "—".
+  function formatStrength(strength) {
+    if (strength == null) return "\u2014";
+    var raw = String(strength).trim();
+    if (!raw || raw === "-") return "\u2014";
+    var parts = raw.split("/");
+    var sustained = parseInt(parts[0], 10);
+    var gust = parts.length > 1 ? parseInt(parts[1], 10) : NaN;
+    if (!isNaN(sustained) && !isNaN(gust)) {
+      return sustained + " / " + gust + " km/h";
+    }
+    if (!isNaN(sustained)) return sustained + " km/h";
+    if (!isNaN(gust)) return gust + " km/h";
+    return "\u2014";
+  }
+
   function categoryFull(abbrev) {
     if (!abbrev) return "—";
     return CATEGORY_MAP[abbrev] || abbrev;
@@ -137,42 +164,24 @@
     return typeof url === "string" && /^https?:\/\//i.test(url);
   }
 
-  // --- Caching (Step 3 performance) -------------------------------------
-  // Cyclone records rarely change: 1hr sessionStorage cache shared across
-  // Home -> Historical -> Analysis (was 3 identical full-table downloads).
+  // --- Caching --------------------------------------------------------
+  // Cyclone rows must always be fresh: rainfall_category (and any other
+  // column) can be edited at any time, and the API answers conditional
+  // requests with ETag + `Cache-Control: public, no-cache`, so every
+  // fetch revalidates instead of serving stale rows. (A 1hr
+  // persistent client-side cache here previously kept old cyclone data on
+  // screen for up to an hour after an edit — removed.)
   // Bulletins: per-page-load memo per cyclone_id + shared in-flight promise
   // (Historical refetched on every modal open; Analysis on every switch-back).
-  var CYCLONE_CACHE_KEY = "tcis_cyclones_v1";
-  var CYCLONE_TTL_MS = 3600 * 1000;
   var cycloneInflight = null;
   var bulletinInflight = {};
   var bulletinMemo = {};
 
-  function readCycloneCache() {
-    try {
-      var raw = sessionStorage.getItem(CYCLONE_CACHE_KEY);
-      if (!raw) return null;
-      var parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.data) || !parsed.t) return null;
-      if (Date.now() - parsed.t > CYCLONE_TTL_MS) return null;
-      return parsed.data;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  function writeCycloneCache(data) {
-    try {
-      sessionStorage.setItem(CYCLONE_CACHE_KEY, JSON.stringify({ t: Date.now(), data: data }));
-    } catch (e) {}
-  }
-
   function fetchCyclones() {
-    var cached = readCycloneCache();
-    if (cached) return Promise.resolve(cached);
+    // No persistent cache: concurrent callers share one in-flight request,
+    // but nothing is kept across page loads — the server ETag decides 304.
     if (cycloneInflight) return cycloneInflight;
     cycloneInflight = fetchJson(CYCLONES_URL).then(function (data) {
-      writeCycloneCache(data);
       cycloneInflight = null;
       return data;
     }).catch(function (err) {
@@ -214,6 +223,8 @@
     CATEGORY_MAP: CATEGORY_MAP,
     escapeHtml: escapeHtml,
     parseSustained: parseSustained,
+    parseGust: parseGust,
+    formatStrength: formatStrength,
     categoryFull: categoryFull,
     formatDateRange: formatDateRange,
     toTitleCase: toTitleCase,

@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /admin/
 Disallow: /scripts/
-Disallow: /import_bulletins.php
+Disallow: /tools/

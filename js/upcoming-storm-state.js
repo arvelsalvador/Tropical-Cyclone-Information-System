@@ -10,13 +10,28 @@
     sessionStorage.removeItem(STORAGE_KEY);
   }
 
+  // Coordinates are optional extras used by the location-based match —
+  // invalid, missing, or outside-PAR ones simply mean "no location match",
+  // never a rejected upcoming storm. PAR box: lat 3–26°N, lng 115–145°E.
+  function normalizeCoord(value, min, max) {
+    const num = Number(value);
+    if (!Number.isFinite(num) || num < min || num > max) return null;
+    return num;
+  }
+
   function normalize(value) {
     if (!value || typeof value !== "object") return null;
     const name = typeof value.name === "string" ? value.name.trim() : "";
     const wind = Number(value.wind);
     const category = typeof value.category === "string" ? value.category.trim() : "";
     if (!name || !Number.isFinite(wind) || !category) return null;
-    return { name: name, wind: Math.round(wind), category: category };
+    return {
+      name: name,
+      wind: Math.round(wind),
+      category: category,
+      lat: normalizeCoord(value.lat, 3, 26),
+      lng: normalizeCoord(value.lng, 115, 145),
+    };
   }
 
   function read() {
