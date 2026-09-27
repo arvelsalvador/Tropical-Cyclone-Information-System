@@ -1,6 +1,6 @@
 <?php
-require 'auth.php';
-require_once 'helpers.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/helpers.php';
 
 // ===========================================================================
 // Delete a historical cyclone.
@@ -127,6 +127,16 @@ $displayName = $record
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
   <?php require 'nav.php'; ?>
@@ -155,14 +165,14 @@ $displayName = $record
 
     <section class="admin-card admin-card--form" data-reveal style="--reveal-delay: 0.08s">
       <?php if ($db_error !== ''): ?>
-        <div class="alert alert-error">
+        <div class="alert alert-error" role="alert">
           <i class="fa-solid fa-circle-exclamation"></i>
           <span><?php echo htmlspecialchars($db_error); ?></span>
         </div>
         <a class="admin-btn admin-btn--inline" href="cyclones.php">Back to list</a>
       <?php elseif ($record): ?>
         <?php if ($confirmError !== ''): ?>
-          <div class="alert alert-error">
+          <div class="alert alert-error" role="alert">
             <i class="fa-solid fa-circle-exclamation"></i>
             <span><?php echo htmlspecialchars($confirmError); ?></span>
           </div>
@@ -208,6 +218,6 @@ $displayName = $record
       sync();
     })();
   </script>
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>

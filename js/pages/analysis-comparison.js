@@ -1276,7 +1276,7 @@
       '<path d="M8 21h8M12 17v4M7 4h10v4a5 5 0 01-10 0V4z" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
       '<path d="M7 5H4a3 3 0 003 5M17 5h3a3 3 0 01-3 5" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>' +
       "</svg></span>" +
-      '<h3 class="match-group-title">Best historical matches</h3>' +
+      '<h3 class="match-group-title">Best match wind</h3>' +
       "</div>" +
       "</div>" +
       '<span class="match-group-badge">' +

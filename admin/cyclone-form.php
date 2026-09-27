@@ -1,6 +1,6 @@
 <?php
-require 'auth.php';
-require_once 'helpers.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/helpers.php';
 
 // Historical Cyclones — add / edit form (no ?id= = add, ?id=N = edit).
 // PHP is the validation authority; the client script re-checks the same rules.
@@ -9,6 +9,7 @@ require_once 'helpers.php';
 $id = isset($_GET['id']) ? (int) $_GET['id'] : 0; // >0 = edit mode
 
 $errors = [];
+$saveError = '';   // set when the INSERT/UPDATE itself fails (e.g. value too long)
 $current = null;
 
 $conn = db_connect();
@@ -67,9 +68,22 @@ if ($conn->connect_error) {
         // Stored as "sustained/gust", e.g. "185/230" (same format as existing rows)
         if ($highest_strength !== '' && !preg_match('/^\d{1,3}\s*\/\s*\d{1,3}$/', $highest_strength)) {
             $errors['highest_strength'] = 'Use the format sustained/gust, e.g. 185/230.';
+        } elseif ($highest_strength !== '') {
+            // A gust weaker than the sustained wind is physically impossible.
+            $strengthParts = preg_split('/\s*\/\s*/', $highest_strength);
+            $sustainedKmh = (int) $strengthParts[0];
+            $gustKmh = (int) $strengthParts[1];
+            if ($sustainedKmh > 0 && $gustKmh < $sustainedKmh) {
+                $errors['highest_strength'] = 'The gust must be equal to or higher than the sustained wind.';
+            }
         }
-        $rainfallLevels = array('Not detected', 'Light to Moderate', 'Moderate to Heavy', 'Heavy to Intense', 'Intense to Torrential');
-        if ($rainfall_category !== '' && !in_array($rainfall_category, $rainfallLevels, true)) {
+        $rainfallLevels = rainfall_choices();
+        // Legacy rows can still hold a "no data" placeholder ('-'); treat those
+        // as blank instead of refusing an otherwise valid edit.
+        $rainfallNoData = array('-', '—', '–', 'N/A', 'n/a', 'None', 'none');
+        if ($rainfall_category !== ''
+            && !in_array($rainfall_category, $rainfallLevels, true)
+            && !in_array($rainfall_category, $rainfallNoData, true)) {
             $errors['rainfall_category'] = 'Choose a rainfall intensity, or None.';
         }
         $signalFields = [
@@ -92,7 +106,7 @@ if ($conn->connect_error) {
             $date_end = $date_end !== '' ? $date_end : null;
             $highest_category = $highest_category !== '' ? $highest_category : null;
             $highest_strength = $highest_strength !== '' ? preg_replace('/\s+/', '', $highest_strength) : null;
-            $rainfall_category = $rainfall_category !== '' ? $rainfall_category : null;
+            $rainfall_category = ($rainfall_category !== '' && !in_array($rainfall_category, $rainfallNoData, true)) ? $rainfall_category : null;
             foreach ($signalFields as $sigField => $sigLabel) {
                 $$sigField = $$sigField !== '' ? (int) $$sigField : null;
             }
@@ -128,26 +142,31 @@ if ($conn->connect_error) {
                 $stmt = $conn->prepare("INSERT INTO cyclones ($columnList) VALUES ($placeholders)");
             }
 
-            $stmt->bind_param($types, ...$values);
-            $stmt->execute();
-            $stmt->close();
+            $saveError = '';
+            try {
+                $stmt->bind_param($types, ...$values);
+                $stmt->execute();
+                $stmt->close();
+            } catch (mysqli_sql_exception $e) {
+                // e.g. a value longer than its column, or duplicate data.
+                app_log('cyclone save failed: ' . $e->getMessage());
+                $saveError = 'Could not save this cyclone. Please check the values (names are limited to 100 characters) and try again.';
+            }
             $conn->close();
 
-            // Redirect-after-POST: the list page shows the result banner.
-            header('Location: cyclones.php?' . ($id > 0 ? 'updated=1' : 'saved=1'));
-            exit;
+            if ($saveError === '') {
+                // Redirect-after-POST: the list page shows the result banner.
+                header('Location: cyclones.php?' . ($id > 0 ? 'updated=1' : 'saved=1'));
+                exit;
+            }
+            // Save failed → fall through so the form re-renders with the error.
         }
         // Validation failed → fall through and re-render with what was typed.
     }
 }
 
-$categoryLabels = [
-    'TD'  => 'Tropical Depression (TD)',
-    'TS'  => 'Tropical Storm (TS)',
-    'STS' => 'Severe Tropical Storm (STS)',
-    'TY'  => 'Typhoon (TY)',
-    'STY' => 'Super Typhoon (STY)',
-];
+// Shared lists (admin/helpers.php): DB codes + full labels for the dropdown.
+$categoryLabels = category_labels(true);
 $signalChoices = ['1', '2', '3', '4', '5'];
 $signalLabels = [
     '1' => 'Signal No. 1',
@@ -156,7 +175,7 @@ $signalLabels = [
     '4' => 'Signal No. 4',
     '5' => 'Signal No. 5',
 ];
-$rainfallChoices = array('Not detected', 'Light to Moderate', 'Moderate to Heavy', 'Heavy to Intense', 'Intense to Torrential');
+$rainfallChoices = rainfall_choices();
 
 if ($db_error === '') {
     $conn->close();
@@ -177,6 +196,16 @@ if ($db_error === '') {
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
   <?php require 'nav.php'; ?>
@@ -203,28 +232,45 @@ if ($db_error === '') {
     </section>
 
     <section class="admin-card admin-card--form" data-reveal style="--reveal-delay: 0.08s">
+      <?php if ($saveError !== ''): ?>
+        <div class="alert alert-error" role="alert">
+          <i class="fa-solid fa-circle-exclamation"></i>
+          <span><?php echo htmlspecialchars($saveError); ?></span>
+        </div>
+      <?php endif; ?>
       <?php if ($db_error !== ''): ?>
-        <div class="alert alert-error">
+        <div class="alert alert-error" role="alert">
           <i class="fa-solid fa-circle-exclamation"></i>
           <span><?php echo htmlspecialchars($db_error); ?></span>
         </div>
         <a class="admin-btn admin-btn--inline" href="cyclones.php">Back to list</a>
       <?php else: ?>
 
-      <form method="POST" novalidate>
+      <form method="POST" id="cycloneForm" novalidate>
         <?php echo csrf_field(); ?>
+        <?php if ($saveError !== ''): ?>
+          <div class="alert alert-error" role="alert"><?php echo htmlspecialchars($saveError); ?></div>
+        <?php elseif (!empty($errors)): ?>
+          <div class="alert alert-error" role="alert">Please fix the highlighted fields below. Nothing was saved yet.</div>
+        <?php endif; ?>
         <div class="form-section-title">Identity</div>
         <div class="form-grid">
           <div>
             <label for="f_local">Local Name *</label>
-            <input type="text" id="f_local" name="local_name"<?php echo cls('local_name'); ?>
+            <input type="text" id="f_local" name="local_name" maxlength="100"<?php echo cls('local_name'); ?>
                    value="<?php echo val('local_name'); ?>" placeholder="e.g. Opong">
             <?php echo err('local_name'); ?>
           </div>
           <div>
             <label for="f_intl">International Name</label>
-            <input type="text" id="f_intl" name="international_name"
+            <input type="text" id="f_intl" name="international_name" maxlength="100"
                    value="<?php echo val('international_name'); ?>" placeholder="e.g. Bualoi">
+          </div>
+          <div>
+            <label for="f_year">Year *</label>
+            <input type="text" id="f_year" name="year" inputmode="numeric" maxlength="4"
+                   value="<?php echo val('year'); ?>" placeholder="e.g. 2025"<?php echo cls('year'); ?>>
+            <?php echo err('year'); ?>
           </div>
         </div>
 
@@ -232,10 +278,10 @@ if ($db_error === '') {
         <div class="form-grid">
           <div>
             <label for="f_strength">Highest Strength — Sustained/Gust (km/h)</label>
-            <input type="text" id="f_strength" name="highest_strength"<?php echo cls('highest_strength'); ?>
+            <input type="text" id="f_strength" name="highest_strength" maxlength="20"<?php echo cls('highest_strength'); ?>
                    value="<?php echo val('highest_strength'); ?>" placeholder="e.g. 185/230">
             <?php echo err('highest_strength'); ?>
-            <p class="field-hint">Format: sustained/gust — e.g. 185/230. The sustained part auto-selects the Highest Category.</p>
+            <p class="field-hint">Format: sustained/gust — e.g. 185/230. The gust must be equal to or higher than the sustained wind.</p>
           </div>
           <div>
             <label for="f_cat">Highest Category</label>
@@ -254,13 +300,6 @@ if ($db_error === '') {
             <input type="date" id="f_end" name="date_end"<?php echo cls('date_end'); ?>
                    value="<?php echo val('date_end'); ?>">
             <?php echo err('date_end'); ?>
-          </div>
-          <div>
-            <label for="f_strength">Highest Strength — Sustained/Gust (km/h)</label>
-            <input type="text" id="f_strength" name="highest_strength"<?php echo cls('highest_strength'); ?>
-                   value="<?php echo val('highest_strength'); ?>" placeholder="e.g. 185/230">
-            <div class="field-hint">Format: sustained/gust — e.g. 185/230.</div>
-            <?php echo err('highest_strength'); ?>
           </div>
           <div>
             <label for="f_rainfall">Rainfall Intensity</label>
@@ -297,8 +336,10 @@ if ($db_error === '') {
     // Client-side validation mirroring the PHP rules: Local Name + Year are
     // required, strength must look like sustained/gust, and the end date
     // cannot precede the start date. The PHP checks remain the authority.
+    // Bound to #cycloneForm only — the logout button lives in its own form in
+    // the header, so a generic form selector would validate the wrong form.
     (function () {
-      var form = document.querySelector("form");
+      var form = document.getElementById("cycloneForm");
       if (!form) return;
 
       function showError(input, message) {
@@ -334,9 +375,16 @@ if ($db_error === '') {
         }
 
         var strength = form.elements["highest_strength"];
-        if (strength && strength.value.trim() !== "" && !/^\d{1,3}\s*\/\s*\d{1,3}$/.test(strength.value.trim())) {
+        var strengthVal = strength ? strength.value.trim() : "";
+        if (strength && strengthVal !== "" && !/^\d{1,3}\s*\/\s*\d{1,3}$/.test(strengthVal)) {
           showError(strength, "Use the format sustained/gust, e.g. 185/230.");
           valid = false;
+        } else if (strength && /^\d{1,3}\s*\/\s*\d{1,3}$/.test(strengthVal)) {
+          var strengthParts = strengthVal.split("/");
+          if (parseInt(strengthParts[1], 10) < parseInt(strengthParts[0], 10)) {
+            showError(strength, "The gust must be equal to or higher than the sustained wind.");
+            valid = false;
+          }
         }
 
         var start = form.elements["date_start"], end = form.elements["date_end"];
@@ -362,6 +410,6 @@ if ($db_error === '') {
       );
     })();
   </script>
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>

@@ -1,6 +1,6 @@
 <?php
-require 'auth.php';
-require_once 'helpers.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/helpers.php';
 
 // ===========================================================================
 // Historical Cyclones — list page.
@@ -30,7 +30,7 @@ $categoryFilter = trim($_GET['category'] ?? '');
 if (!in_array($categoryFilter, array('TD', 'TS', 'STS', 'TY', 'STY'), true)) {
     $categoryFilter = '';
 }
-$rainfallLevels = array('Not detected', 'Light to Moderate', 'Moderate to Heavy', 'Heavy to Intense', 'Intense to Torrential');
+$rainfallLevels = rainfall_choices();
 $rainfallFilter = trim($_GET['rainfall'] ?? '');
 if (!in_array($rainfallFilter, $rainfallLevels, true)) {
     $rainfallFilter = '';
@@ -40,13 +40,8 @@ $page = max(1, (int) ($_GET['page'] ?? 1));
 
 // Full display names for the category codes (also used to translate a
 // category typed into the search bar into the codes stored in the DB).
-$categoryLabels = [
-    'TD'  => 'Tropical Depression',
-    'TS'  => 'Tropical Storm',
-    'STS' => 'Severe Tropical Storm',
-    'TY'  => 'Typhoon',
-    'STY' => 'Super Typhoon',
-];
+// Shared lists (admin/helpers.php): DB codes -> full display labels.
+$categoryLabels = category_labels();
 
 // Single cyclone artwork (assets/Icons/The icon.png) shown next to every
 // cyclone in the list table — the old per-category color-code was removed,
@@ -183,6 +178,15 @@ function signal_chip(array $row) {
     }
     return '&mdash;';
 }
+
+// Fragment mode for the live search: the toolbar script requests this page
+// with ?ajax=1 and swaps the returned #cycloneResults block in place, so the
+// search box keeps focus, the filter panel stays open and nothing reloads.
+if (isset($_GET['ajax']) && $_GET['ajax'] === '1') {
+    header('Content-Type: text/html; charset=utf-8');
+    require __DIR__ . '/partials/cyclones-results.php';
+    exit;
+}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -199,20 +203,30 @@ function signal_chip(array $row) {
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
   <?php require 'nav.php'; ?>
 
   <main class="admin-main">
     <?php if ($banner !== ''): ?>
-      <div class="alert alert-success">
+      <div class="alert alert-success" role="status">
         <i class="fa-solid fa-circle-check"></i>
         <span><?php echo htmlspecialchars($banner); ?></span>
       </div>
     <?php endif; ?>
 
     <?php if ($db_error !== ''): ?>
-      <div class="alert alert-error">
+      <div class="alert alert-error" role="alert">
         <i class="fa-solid fa-circle-exclamation"></i>
         <span><?php echo htmlspecialchars($db_error); ?></span>
       </div>
@@ -237,7 +251,7 @@ function signal_chip(array $row) {
           <span class="admin-search-icon">
             <i class="fa-solid fa-magnifying-glass"></i>
           </span>
-          <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search by name, year, category, or rainfall">
+          <input type="text" name="q" value="<?php echo htmlspecialchars($search); ?>" placeholder="Search by name, year, category, or rainfall" aria-label="Search cyclones by name, year, category, or rainfall" autocomplete="off">
           <?php if ($search !== ''): ?>
             <a class="admin-search-clear" href="cyclones.php<?php echo ($yearFilter !== '' || $categoryFilter !== '' || $rainfallFilter !== '') ? '?' . http_build_query(array_filter(array('year' => $yearFilter, 'category' => $categoryFilter, 'rainfall' => $rainfallFilter))) : ''; ?>" title="Clear search">&times;</a>
           <?php endif; ?>
@@ -283,158 +297,114 @@ function signal_chip(array $row) {
         </details>
       </form>
 
-      <div class="admin-table-wrap" data-reveal>
-        <table class="admin-table">
-          <thead>
-            <tr>
-              <th>Cyclone</th>
-              <th>Year</th>
-              <th class="col-dates">Dates</th>
-              <th>Category</th>
-              <th>Strength (Sustained / Gust)</th>
-              <th>Rainfall</th>
-              <th class="col-signal">Signal</th>
-              <th class="col-actions">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <?php if (!$rows): ?>
-            <tr>
-              <td colspan="8"><div class="admin-empty">No cyclones found<?php echo $search !== '' ? ' for &ldquo;' . htmlspecialchars($search) . '&rdquo;' : ''; echo ($yearFilter !== '' || $categoryFilter !== '' || $rainfallFilter !== '') ? ' with the current filters' : ''; ?>.</div></td>
-            </tr>
-            <?php else: ?>
-            <?php foreach ($rows as $row): ?>
-            <?php
-              $catCode  = $row['highest_category'];
-              $catLabel = $categoryLabels[$catCode] ?? '';
-            ?>
-            <tr>
-              <td>
-                <div class="admin-cyclone-cell">
-                  <span class="admin-cyclone-icon"><img src="<?php echo $cycloneIcon; ?>" alt="" width="36" height="36" loading="lazy" decoding="async"></span>
-                  <div>
-                    <div class="cell-strong"><?php echo htmlspecialchars(cyclone_name($row['local_name'])); ?></div>
-                    <?php if ($row['international_name']): ?>
-                      <div class="cell-sub"><?php echo htmlspecialchars($row['international_name']); ?></div>
-                    <?php endif; ?>
-                  </div>
-                </div>
-              </td>
-              <td><?php echo htmlspecialchars((string) $row['year']); ?></td>
-              <td class="col-dates"><?php echo format_date_range($row['date_start'], $row['date_end']); ?></td>
-              <td>
-                <?php if ($catLabel !== ''): ?>
-                  <?php echo htmlspecialchars($catLabel); ?>
-                <?php else: ?>
-                  &mdash;
-                <?php endif; ?>
-              </td>
-              <td><?php echo strength_text($row['highest_strength']); ?></td>
-              <td><?php echo ($row['rainfall_category'] ?? '') !== '' ? htmlspecialchars($row['rainfall_category']) : '&mdash;'; ?></td>
-              <td class="col-signal">
-                <?php echo signal_chip($row); ?>
-              </td>
-              <td class="col-actions">
-                <div class="row-menu">
-                  <button type="button" class="row-menu-btn" aria-haspopup="true" aria-expanded="false" aria-label="Actions for <?php echo htmlspecialchars(cyclone_name($row['local_name']) . ' (' . $row['year'] . ')'); ?>">
-                    <i class="fa-solid fa-ellipsis-vertical" aria-hidden="true"></i>
-                  </button>
-                  <div class="row-menu-list" hidden>
-                    <a class="row-menu-item" href="cyclone-form.php?id=<?php echo (int) $row['id']; ?>">
-                      <i class="fa-solid fa-pen" aria-hidden="true"></i>
-                      Edit
-                    </a>
-                    <a class="row-menu-item row-menu-item--danger" href="cyclone-delete.php?id=<?php echo (int) $row['id']; ?>">
-                      <i class="fa-solid fa-trash" aria-hidden="true"></i>
-                      Delete
-                    </a>
-                  </div>
-                </div>
-              </td>
-            </tr>
-            <?php endforeach; ?>
-            <?php endif; ?>
-          </tbody>
-        </table>
-      </div>
+      <?php require __DIR__ . '/partials/cyclones-results.php'; ?>
 
-      <?php if ($pages > 1): ?>
-      <div class="admin-pagination">
-        <a class="admin-page-link<?php echo $page <= 1 ? ' admin-page-link--disabled' : ''; ?>"
-           href="<?php echo page_link(max(1, $page - 1), $search, $yearFilter, $categoryFilter, $rainfallFilter); ?>">&lsaquo; Prev</a>
-        <?php
-        if ($pages <= 9) {
-            $pageNumbers = range(1, $pages);
-        } else {
-            $pageNumbers = [1];
-            $start = max(2, $page - 1);
-            $end = min($pages - 1, $page + 1);
-            if ($start > 2) $pageNumbers[] = '...';
-            for ($p = $start; $p <= $end; $p++) $pageNumbers[] = $p;
-            if ($end < $pages - 1) $pageNumbers[] = '...';
-            $pageNumbers[] = $pages;
-        }
-        foreach ($pageNumbers as $p):
-            if ($p === '...'):
-        ?>
-          <span class="admin-page-ellipsis">&hellip;</span>
-        <?php else: ?>
-          <a class="admin-page-link<?php echo $p === $page ? ' admin-page-link--active' : ''; ?>"
-             href="<?php echo page_link($p, $search, $yearFilter, $categoryFilter, $rainfallFilter); ?>"><?php echo $p; ?></a>
-        <?php endif; endforeach; ?>
-        <a class="admin-page-link<?php echo $page >= $pages ? ' admin-page-link--disabled' : ''; ?>"
-           href="<?php echo page_link(min($pages, $page + 1), $search, $yearFilter, $categoryFilter, $rainfallFilter); ?>">Next &rsaquo;</a>
-      </div>
-      <?php endif; ?>
-
-      <p class="admin-page-info">
-        <?php echo $total; ?> cyclone<?php echo $total === 1 ? '' : 's'; ?> on record
-        &middot; page <?php echo $page; ?> of <?php echo $pages; ?>
-      </p>
 
       <?php endif; ?>
   </main>
 
   <?php require 'partials/site-footer.php'; ?>
 
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 
   <script>
-    // Live toolbar: results update as you type in the search box or pick a
-    // filter (year / category "type") — no need to press Enter or "Apply".
-    // The Apply button still works as a fallback.
-    // Slight debounce so each keystroke doesn't reload the page immediately
-    // — it waits until the admin pauses typing, then submits and shows results.
+    // Live toolbar: typing in the search box or picking a filter fetches this
+    // same page with ?ajax=1 and swaps only the #cycloneResults block, so the
+    // page never reloads — the search box keeps focus and the filter panel
+    // stays open. Enter and the Apply button still work normally.
     (function () {
       var form = document.querySelector(".admin-toolbar-card");
-      if (!form) return;
+      var results = document.getElementById("cycloneResults");
+      if (!form || !results) return;
 
       var timer = null;
-      function scheduleSubmit() {
+      var inFlight = null;
+
+      function buildUrl() {
+        var clean = new URLSearchParams();
+        new FormData(form).forEach(function (value, key) {
+          if (String(value) !== "") clean.set(key, value);
+        });
+        clean.set("ajax", "1");
+        return form.getAttribute("action") + "?" + clean.toString();
+      }
+
+      function cleanUrl(url) {
+        return url.replace(/([?&])ajax=1&?/, "$1").replace(/[?&]$/, "");
+      }
+
+      function onReplaced(pushState, url) {
+        // Keep the address bar (and the back button) in sync without a reload.
+        if (pushState && window.history && history.pushState) {
+          history.pushState({ cyclones: cleanUrl(url) }, "", cleanUrl(url));
+        }
+        if (window.tcisInitRowMenus) window.tcisInitRowMenus();
+      }
+
+      function load(pushState) {
+        var url = buildUrl();
+        if (inFlight) inFlight.abort();
+        inFlight = ("AbortController" in window) ? new AbortController() : null;
+
+        results.classList.add("is-loading");
+        fetch(url, {
+          credentials: "same-origin",
+          signal: inFlight ? inFlight.signal : undefined
+        })
+          .then(function (response) {
+            if (!response.ok) throw new Error("HTTP " + response.status);
+            return response.text();
+          })
+          .then(function (html) {
+            var holder = document.getElementById("cycloneResults");
+            if (holder) holder.outerHTML = html;
+            onReplaced(pushState, url);
+          })
+          .catch(function (error) {
+            if (error && error.name === "AbortError") return;
+            // Anything unexpected: fall back to a plain page load so the admin
+            // still gets results instead of a dead search box.
+            window.location.href = cleanUrl(url);
+          });
+      }
+
+      function schedule() {
         if (timer) clearTimeout(timer);
-        timer = setTimeout(function () { form.submit(); }, 350);
+        timer = setTimeout(function () { load(true); }, 300);
       }
 
       // Search-as-you-type
       form.querySelectorAll("input[name='q']").forEach(function (input) {
-        input.addEventListener("input", scheduleSubmit);
+        input.addEventListener("input", schedule);
       });
 
       // Filters apply instantly on selection (selects fire "change", not "input")
       form.querySelectorAll("select").forEach(function (select) {
-        select.addEventListener("change", scheduleSubmit);
+        select.addEventListener("change", function () {
+          if (timer) clearTimeout(timer);
+          load(true);
+        });
+      });
+
+      form.addEventListener("submit", function (e) {
+        e.preventDefault();
+        if (timer) clearTimeout(timer);
+        load(true);
+      });
+
+      window.addEventListener("popstate", function () {
+        window.location.reload();
       });
     })();
 
-    // 3-dot row menus: click toggles Edit/Delete, closes on
-    // outside-click or Escape. Last two rows open upward to avoid
-    // clipping inside the scrollable table wrapper.
-    (function () {
-      var menus = Array.prototype.slice.call(document.querySelectorAll(".row-menu"));
-      if (!menus.length) return;
-
+    // 3-dot row menus: click toggles Edit/Delete, closes on outside-click or
+    // Escape. Re-runnable — the live search replaces the table rows, so the
+    // freshly inserted menus must be wired up again after every swap (hence
+    // the data-menu-wired guard instead of binding the document handlers
+    // more than once).
+    window.tcisInitRowMenus = (function () {
       function closeAll(except) {
-        menus.forEach(function (menu) {
+        document.querySelectorAll(".row-menu").forEach(function (menu) {
           if (menu === except) return;
           var btn = menu.querySelector(".row-menu-btn");
           var list = menu.querySelector(".row-menu-list");
@@ -444,32 +414,40 @@ function signal_chip(array $row) {
         });
       }
 
-      function markUpward() {
-        menus.forEach(function (m) { m.classList.remove("is-up"); });
-        menus.slice(-2).forEach(function (m) { m.classList.add("is-up"); });
-      }
-      markUpward();
-
-      menus.forEach(function (menu) {
-        var btn = menu.querySelector(".row-menu-btn");
-        var list = menu.querySelector(".row-menu-list");
-        if (!btn || !list) return;
-        btn.addEventListener("click", function (e) {
-          e.stopPropagation();
-          var willOpen = list.hidden;
-          closeAll(menu);
-          list.hidden = !willOpen;
-          btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
-          menu.classList.toggle("is-open", willOpen);
-        });
-        list.addEventListener("click", function (e) { e.stopPropagation(); });
-      });
-
       document.addEventListener("click", function () { closeAll(null); });
       document.addEventListener("keydown", function (e) {
         if (e.key === "Escape") closeAll(null);
       });
+
+      return function initRowMenus() {
+        var menus = Array.prototype.slice.call(document.querySelectorAll(".row-menu"));
+        if (!menus.length) return;
+
+        // Last two rows open upward so the menu is never clipped.
+        menus.forEach(function (m) { m.classList.remove("is-up"); });
+        menus.slice(-2).forEach(function (m) { m.classList.add("is-up"); });
+
+        menus.forEach(function (menu) {
+          if (menu.dataset.menuWired === "1") return;
+          var btn = menu.querySelector(".row-menu-btn");
+          var list = menu.querySelector(".row-menu-list");
+          if (!btn || !list) return;
+
+          menu.dataset.menuWired = "1";
+          btn.addEventListener("click", function (e) {
+            e.stopPropagation();
+            var willOpen = list.hidden;
+            closeAll(menu);
+            list.hidden = !willOpen;
+            btn.setAttribute("aria-expanded", willOpen ? "true" : "false");
+            menu.classList.toggle("is-open", willOpen);
+          });
+          list.addEventListener("click", function (e) { e.stopPropagation(); });
+        });
+      };
     })();
+
+    window.tcisInitRowMenus();
   </script>
 </body>
 </html>

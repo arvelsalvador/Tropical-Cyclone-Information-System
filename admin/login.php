@@ -26,6 +26,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
     if (!rate_limit_check('login:' . $ip, 10, 300)) {
+        app_log('login throttled for IP ' . $ip);
         $error = "Too many login attempts. Please wait a few minutes and try again.";
     } else {
         $conn = db_connect();
@@ -49,9 +50,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     header('Location: dashboard.php');
                     exit;
                 } else {
+                    // Audit trail: username + IP only, never the password.
+                    app_log('login failed (bad password) for "' . $username . '" from ' . $ip);
                     $error = "Incorrect username or password.";
                 }
             } else {
+                app_log('login failed (unknown username) for "' . $username . '" from ' . $ip);
                 $error = "Incorrect username or password.";
             }
 
@@ -77,6 +81,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -93,13 +107,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <section class="admin-card" data-reveal style="--reveal-delay: 0.08s">
       <?php if ($notice): ?>
-        <div class="alert alert-success">
+        <div class="alert alert-success" role="status">
           <i class="fa-solid fa-circle-check"></i>
           <span><?php echo htmlspecialchars($notice); ?></span>
         </div>
       <?php endif; ?>
       <?php if ($error): ?>
-        <div class="alert alert-error">
+        <div class="alert alert-error" role="alert">
           <i class="fa-solid fa-circle-exclamation"></i>
           <span><?php echo htmlspecialchars($error); ?></span>
         </div>
@@ -113,7 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <label for="passwordField">Password</label>
         <div class="pw-wrap">
           <input type="password" id="passwordField" name="password" placeholder="Password" required>
-          <button type="button" class="pw-toggle" onclick="togglePassword(this)">Show</button>
+          <button type="button" class="pw-toggle" onclick="togglePassword(this)" aria-pressed="false" aria-controls="passwordField">Show</button>
         </div>
 
         <button type="submit" class="admin-btn">Log In</button>
@@ -132,15 +146,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <script>
     function togglePassword(button) {
       const field = document.getElementById("passwordField");
-      if (field.type === "password") {
-        field.type = "text";
-        button.textContent = "Hide";
-      } else {
-        field.type = "password";
-        button.textContent = "Show";
-      }
+      const show = field.type === "password";
+      field.type = show ? "text" : "password";
+      button.textContent = show ? "Hide" : "Show";
+      // The control is a toggle, so expose its state to assistive tech too.
+      button.setAttribute("aria-pressed", show ? "true" : "false");
+      button.setAttribute("aria-label", show ? "Hide password" : "Show password");
     }
   </script>
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>

@@ -26,7 +26,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
-    if (!preg_match('/^\d{6}$/', $code)) {
+    if (!rate_limit_check('reset:' . ($_SERVER['REMOTE_ADDR'] ?? 'unknown'), 10, 900)) {
+        // The 5-attempt cap below is per session, so without this a bot could
+        // clear its cookie and keep guessing codes (10 tries / 15 min / IP).
+        $message = "Too many attempts. Please wait a few minutes and try again.";
+    } elseif (!preg_match('/^\d{6}$/', $code)) {
         $_SESSION['reset_attempts'] = (int) $_SESSION['reset_attempts'] + 1;
         $message = "Invalid or expired code.";
     } elseif (strlen($newPassword) < 10) {
@@ -38,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             app_log('reset-password db connect failed');
             $message = "Something went wrong. Please try again.";
         } else {
-            $stmt = $conn->prepare("SELECT id FROM admins WHERE email = ?");
+            $stmt = $conn->prepare("SELECT id FROM admins WHERE email = ? LIMIT 1");
             $stmt->bind_param("s", $email);
             $stmt->execute();
             $result = $stmt->get_result();
@@ -53,17 +57,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $checkResult = $checkStmt->get_result();
 
                 if ($checkResult->num_rows === 1) {
-                    $resetRow = $checkResult->fetch_assoc();
-                    $resetId = $resetRow['id'];
-
                     $hashedPassword = password_hash($newPassword, PASSWORD_DEFAULT);
                     $update = $conn->prepare("UPDATE admins SET password_hash = ? WHERE id = ?");
                     $update->bind_param("si", $hashedPassword, $adminId);
                     $update->execute();
                     $update->close();
 
-                    $markUsed = $conn->prepare("UPDATE password_resets SET used = 1 WHERE id = ?");
-                    $markUsed->bind_param("i", $resetId);
+                    // Retire every code for this admin: an older code still
+                    // inside its 15-minute window must not be usable again.
+                    $markUsed = $conn->prepare("UPDATE password_resets SET used = 1 WHERE admin_id = ?");
+                    $markUsed->bind_param("i", $adminId);
                     $markUsed->execute();
                     $markUsed->close();
 
@@ -103,6 +106,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -119,7 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <section class="admin-card" data-reveal style="--reveal-delay: 0.08s">
       <?php if ($message): ?>
-        <div class="alert alert-error">
+        <div class="alert alert-error" role="alert">
           <i class="fa-solid fa-circle-exclamation"></i>
           <span><?php echo htmlspecialchars($message); ?></span>
         </div>
@@ -142,6 +155,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <?php require 'partials/site-footer.php'; ?>
 
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>

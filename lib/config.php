@@ -57,15 +57,22 @@ function app_config($key, $default = null) {
 }
 
 function app_db_open() {
-    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
-    $conn = new mysqli(
+    // The connection must FAIL SOFT: every page and api endpoint checks
+    // $conn->connect_error to show its "Database connection failed" UI. With
+    // MYSQLI_REPORT_STRICT the mysqli constructor throws instead, which turned
+    // those pages into uncaught fatal errors. So the constructor runs in
+    // REPORT_OFF mode (the warning is suppressed because it leaks the host and
+    // credentials into the HTML when display_errors is on) while statements
+    // executed after it keep reporting errors strictly.
+    mysqli_report(MYSQLI_REPORT_OFF);
+    $conn = @new mysqli(
         app_config('DB_HOST', 'localhost'),
         app_config('DB_USER', 'root'),
         app_config('DB_PASS', ''),
         app_config('DB_NAME', 'cyclone_db')
     );
-    // Non-throwing connect check stays the caller's job ($conn->connect_error),
-    // matching existing code; charset failure must not break the page.
+    mysqli_report(MYSQLI_REPORT_ERROR | MYSQLI_REPORT_STRICT);
+    // Charset failure must not break the page.
     if (!$conn->connect_error) {
         @$conn->set_charset('utf8mb4');
     }

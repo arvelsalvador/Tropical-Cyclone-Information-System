@@ -26,17 +26,6 @@
   --gray-700: #44536a;                           /* dark secondary text       */
   --gray-800: #22314a;                           /* near-navy text            */
   --gray-900: var(--text-dark);                  /* primary text              */
-
-  --status-approaching-bg: #fef3c7;
-  --status-approaching-fg: #b45309;
-  --status-strengthening-bg: #ffedd5;
-  --status-strengthening-fg: #c2410c;
-  --status-active-bg: #fee2e2;
-  --status-active-fg: #dc2626;
-  --status-weakening-bg: #dbeafe;
-  --status-weakening-fg: #1d4ed8;
-  --status-gone-bg: #f1f5f9;
-  --status-gone-fg: #64748b;
 }
 
 /* Column layout so the public footer hugs the bottom on short pages */
@@ -189,6 +178,52 @@ body {
   color: var(--red-fg);
 }
 
+/* Log out is a POST form (CSRF-safe) but keeps the old text-link look ------ */
+
+.admin-logout {
+  display: inline-flex;
+  margin: 0;
+}
+
+.admin-link-btn {
+  font: inherit;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.admin-link-btn:hover {
+  color: var(--red-fg);
+}
+
+/* Tab-strip toggle — only shown on phones (see the 720px media query) ------ */
+
+.admin-nav-toggle {
+  display: none;
+  align-items: center;
+  gap: 7px;
+  margin-right: 14px;
+  font: inherit;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-dark);
+  background: var(--white);
+  border: 1px solid var(--border-light);
+  border-radius: 10px;
+  padding: 7px 12px;
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.admin-nav-toggle:hover {
+  background: var(--bg-soft);
+}
+
 /* ==========================================================================
    Page hero (icon chip + title + subtitle, matching public page heroes)
    ========================================================================== */
@@ -273,14 +308,9 @@ body {
   width: min(100%, 440px);
 }
 
-/* None-mode on the Upcoming Storm page: the detail cards get the hidden
-   attribute toggled by JS — make sure it always wins over card styling. */
+/* Hidden detail cards still obey the hidden attribute over card styling. */
 .admin-card[hidden] {
   display: none;
-}
-
-.admin-card--wide {
-  width: min(100%, 640px);
 }
 
 .admin-card--form {
@@ -289,20 +319,6 @@ body {
 
 .admin-card--page {
   width: 100%;
-}
-
-.admin-title {
-  font-size: 20px;
-  font-weight: 700;
-  color: var(--navy-900);
-  margin-bottom: 4px;
-}
-
-.admin-subtitle {
-  font-size: 14px;
-  color: var(--text-body);
-  line-height: 1.55;
-  margin-bottom: 20px;
 }
 
 /* Alerts ------------------------------------------------------------------ */
@@ -318,7 +334,8 @@ body {
   margin-bottom: 16px;
 }
 
-.alert svg {
+.alert svg,
+.alert i {
   flex-shrink: 0;
   margin-top: 1px;
 }
@@ -376,7 +393,6 @@ body {
 .stat-icon--blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .stat-icon--purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 .stat-icon--red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
-.stat-icon--green  { background: linear-gradient(135deg, #34d399, #059669); }
 
 .stat-label {
   font-size: 11.5px;
@@ -394,11 +410,6 @@ body {
   line-height: 1.2;
 }
 
-.stat-value--small {
-  font-size: 17px;
-  margin-top: 12px;
-}
-
 .stat-sub {
   font-size: 13px;
   color: var(--text-body);
@@ -406,21 +417,8 @@ body {
   line-height: 1.4;
 }
 
-/* ==========================================================================
-   Dashboard layout
-   ========================================================================== */
-
-.dash-grid {
-  display: grid;
-  grid-template-columns: 1.5fr 1fr;
-  gap: 18px;
-  margin-bottom: 20px;
-}
-
 @media (max-width: 880px) {
-  .dash-grid {
-    grid-template-columns: 1fr;
-  }
+
 }
 
 .dash-card {
@@ -454,26 +452,6 @@ body {
   text-decoration: underline;
 }
 
-.dash-storm-head {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 12px;
-}
-
-.dash-storm-name {
-  font-size: 20px;
-  font-weight: 800;
-  color: var(--navy-900);
-}
-
-.dash-facts {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap: 10px;
-}
-
 .dash-fact {
   background: var(--bg-soft);
   border: 1px solid var(--border-light);
@@ -497,428 +475,14 @@ body {
   word-break: break-word;
 }
 
-.dash-fact-note {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-.dash-updated {
-  margin-top: 12px;
-  font-size: 12.5px;
-  color: var(--text-muted);
-}
-
-/* Upcoming Storm session summary ----------------------------------------- */
-
-.upcoming-storm-session-card {
-  margin-bottom: 20px;
-  overflow: hidden;
-}
-
-.upcoming-dash-heading {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.upcoming-dash-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  flex: 0 0 auto;
-  color: var(--blue-600);
-  background: var(--blue-50);
-  border: 1px solid #d8e5fb;
-  border-radius: 12px;
-}
-
-.upcoming-dash-titlewrap {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  min-width: 0;
-}
-
-.upcoming-dash-title {
-  margin: 0;
-  font-size: 18px;
-  line-height: 1.2;
-}
-
-.upcoming-dash-sub {
-  margin: 0;
-  color: var(--text-muted);
-  font-size: 12.5px;
-  line-height: 1.4;
-}
-
-.upcoming-dash-eyebrow {
-  display: block;
-  color: var(--blue-600);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  line-height: 1.3;
-  text-transform: uppercase;
-}
-
-.upcoming-dash-badge {
-  margin-left: auto;
-  flex-shrink: 0;
-  padding: 5px 11px;
-  border: 1px solid #d8e5fb;
-  border-radius: 999px;
-  color: var(--blue-600);
-  background: var(--blue-50);
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* Empty state: icon + copy on top, numbered steps below */
-.upcoming-dash-empty {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 16px 2px 2px;
-  color: var(--text-muted);
-  font-size: 13px;
-  line-height: 1.5;
-}
-
-.upcoming-dash-empty-top {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  padding: 14px;
-  background: var(--bg-soft);
-  border: 1px solid var(--border-light);
-  border-radius: 12px;
-}
-
-.upcoming-dash-empty-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  color: var(--blue-600);
-  background: #fff;
-  border: 1px solid #d8e5fb;
-  border-radius: 50%;
-}
-
-.upcoming-dash-empty-copy {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-}
-
-.upcoming-dash-empty-copy strong {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 8px;
-  color: var(--text-dark);
-  font-size: 15px;
-}
-
-.upcoming-dash-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 9px;
-  border-radius: 999px;
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.upcoming-dash-pill--empty {
-  color: var(--text-muted);
-  background: #fff;
-  border: 1px solid var(--border-light);
-}
-
-.upcoming-dash-empty-text {
-  font-size: 12.5px;
-  line-height: 1.55;
-}
-
-.upcoming-dash-steps {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-
-.upcoming-dash-steps li {
-  display: flex;
-  gap: 10px;
-  align-items: flex-start;
-  padding: 11px 12px;
-  background: #fff;
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-  min-width: 0;
-}
-
-.upcoming-dash-stepnum {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  flex: 0 0 auto;
-  color: #fff;
-  background: var(--blue-600);
-  border-radius: 50%;
-  font-size: 11.5px;
-  font-weight: 800;
-}
-
-.upcoming-dash-steps b {
-  display: block;
-  color: var(--text-dark);
-  font-size: 12.5px;
-  line-height: 1.35;
-}
-
-.upcoming-dash-steps i {
-  display: block;
-  font-style: normal;
-  color: var(--text-muted);
-  font-size: 11.5px;
-  margin-top: 1px;
-}
-
-/* Active details state */
-.upcoming-dash-details {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-  padding-top: 16px;
-}
-
-.upcoming-dash-details[hidden] {
-  display: none;
-}
-
-.upcoming-dash-profile {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-  padding: 14px;
-  background: linear-gradient(100deg, #f0f6ff, #e8f1fe);
-  border: 1px solid #d8e5fb;
-  border-radius: 12px;
-}
-
-.upcoming-dash-profile-icon {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 38px;
-  height: 38px;
-  flex: 0 0 auto;
-  color: #fff;
-  background: var(--blue-600);
-  border-radius: 50%;
-}
-
-.upcoming-dash-profile-copy {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  flex: 1;
-}
-
-.upcoming-dash-profile-label {
-  color: var(--blue-600);
-  font-size: 10.5px;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.upcoming-dash-profile-copy strong {
-  color: var(--navy-900);
-  font-size: 21px;
-  line-height: 1.2;
-  overflow-wrap: anywhere;
-}
-
-.upcoming-dash-status {
-  display: inline-flex;
-  align-items: center;
-  gap: 7px;
-  margin-left: auto;
-  flex-shrink: 0;
-  padding: 6px 11px;
-  border: 1px solid #bbe7d0;
-  border-radius: 999px;
-  color: #15803d;
-  background: #ecfdf5;
-  font-size: 11px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.upcoming-dash-dot {
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  background: #22c55e;
-  box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.18);
-}
-
-.upcoming-dash-facts {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 10px;
-}
-
-.upcoming-dash-fact {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  min-width: 0;
-  padding: 12px 13px;
-  background: var(--bg-soft);
-  border: 1px solid var(--border-light);
-  border-radius: 10px;
-}
-
-.upcoming-dash-fact span {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-muted);
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-}
-
-.upcoming-dash-fact span svg {
-  color: var(--blue-600);
-  flex-shrink: 0;
-}
-
-.upcoming-dash-fact strong {
-  color: var(--text-dark);
-  font-size: 15px;
-  line-height: 1.3;
-  overflow-wrap: anywhere;
-}
-
-.upcoming-dash-hint {
-  margin: 0;
-  padding: 9px 12px;
-  color: var(--text-muted);
-  background: #fff;
-  border: 1px dashed var(--border-light);
-  border-radius: 9px;
-  font-size: 12px;
-  line-height: 1.55;
-}
-
-/* Card footer actions — shared by both states */
-.upcoming-dash-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px;
-  margin-top: 16px;
-  padding-top: 14px;
-  border-top: 1px solid var(--border-light);
-}
-
-.upcoming-dash-cta {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 10px;
-  color: #fff;
-  background: var(--blue-600);
-  font-size: 13.5px;
-  font-weight: 700;
-  text-decoration: none;
-  transition: background 0.15s ease, transform 0.15s ease, box-shadow 0.2s ease;
-}
-
-.upcoming-dash-cta:hover {
-  background: var(--blue-500);
-  transform: translateY(-1px);
-  box-shadow: 0 6px 14px rgba(29, 78, 216, 0.22);
-  color: #fff;
-}
-
-.upcoming-dash-ghost {
-  display: inline-flex;
-  align-items: center;
-  padding: 10px 16px;
-  border-radius: 10px;
-  border: 1px solid var(--border-light);
-  color: var(--text-body);
-  background: #fff;
-  font-size: 13.5px;
-  font-weight: 600;
-  text-decoration: none;
-}
-
-.upcoming-dash-ghost:hover {
-  background: var(--bg-soft);
-  color: var(--text-dark);
-}
-
 @media (max-width: 640px) {
-  .upcoming-dash-steps {
-    grid-template-columns: 1fr;
-  }
 
-  .upcoming-dash-profile {
-    flex-wrap: wrap;
-  }
-
-  .upcoming-dash-status {
-    margin-left: 50px;
-  }
 }
 
 @media (max-width: 560px) {
-  .upcoming-dash-heading {
-    align-items: flex-start;
-  }
-
-  .upcoming-dash-badge {
-    margin-left: auto;
-  }
-
-  .upcoming-dash-facts {
-    grid-template-columns: 1fr;
-  }
-
-  .upcoming-dash-actions {
-    flex-direction: column;
-    align-items: stretch;
-    text-align: center;
-  }
 
   .upcoming-dash-cta,
-  .upcoming-dash-ghost {
-    justify-content: center;
-  }
+
 }
 
 .dash-empty {
@@ -970,10 +534,8 @@ body {
   flex-shrink: 0;
 }
 
-.dash-action-icon--blue   { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
 .dash-action-icon--purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
 .dash-action-icon--green  { background: linear-gradient(135deg, #34d399, #059669); }
-.dash-action-icon--navy   { background: linear-gradient(135deg, #123a63, #0a2540); }
 
 .dash-action-text {
   flex: 1;
@@ -1002,63 +564,6 @@ body {
 }
 
 /* ==========================================================================
-   Pills (category / status badges)
-   ========================================================================== */
-
-.pill {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-  border-radius: var(--radius-full);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-/* Storm category badge inside a category pill */
-.pill img {
-  width: 16px;
-  height: 16px;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-.pill--muted {
-  background: var(--bg-soft);
-  border: 1px solid var(--border-light);
-  color: var(--text-body);
-}
-
-/* Category palette — same colors as the public Historical Data page */
-.pill--STY { background: var(--purple-100); color: var(--purple-600); }
-.pill--TY  { background: #fee2e2; color: #dc2626; }
-.pill--STS { background: var(--orange-50); color: #ea580c; }
-.pill--TS  { background: #fef9c3; color: var(--amber-500); }
-.pill--TD  { background: var(--signal-1-bg); color: var(--signal-1-fg); }
-
-/* Category badge artwork (PNG storm glyphs) in table cells */
-.cat-cell {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.cat-cell img {
-  width: 18px;
-  height: 18px;
-  flex-shrink: 0;
-  object-fit: contain;
-}
-
-/* Upcoming-storm status colors */
-.pill--status-approaching   { background: var(--status-approaching-bg); color: var(--status-approaching-fg); }
-.pill--status-strengthening { background: var(--status-strengthening-bg); color: var(--status-strengthening-fg); }
-.pill--status-active        { background: var(--status-active-bg); color: var(--status-active-fg); }
-.pill--status-weakening     { background: var(--status-weakening-bg); color: var(--status-weakening-fg); }
-.pill--status-gone          { background: var(--status-gone-bg); color: var(--status-gone-fg); }
-
-/* ==========================================================================
    Data table
    ========================================================================== */
 
@@ -1068,7 +573,43 @@ body {
   border: 1px solid var(--border-light);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-card);
-  overflow-x: auto;
+  /* Deliberately NOT a scroll container: overflow-x:auto used to clip the
+     3-dot row menu (hence the .row-menu.is-up workaround). Phones re-enable
+     horizontal scrolling in the 720px media query below. */
+  overflow: visible;
+}
+
+/* Live search: the results block dims while it is being replaced ----------- */
+
+#cycloneResults {
+  transition: opacity var(--dur-fast) var(--ease-out);
+}
+
+#cycloneResults.is-loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* Visually hidden but available to screen readers (table captions etc.) ---- */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* Reveal safety net: each admin page's <head> adds .no-js when js/main.js
+   never ran (blocked, offline, error), so the [data-reveal] blocks stay
+   readable instead of leaving the page blank. */
+html.no-js [data-reveal] {
+  opacity: 1;
+  transform: none;
 }
 
 .admin-table-wrap--flush {
@@ -1157,41 +698,6 @@ body {
   font-size: 14px;
 }
 
-/* Signal chips -------------------------------------------------------------- */
-
-.sig-cell {
-  display: flex;
-  gap: 4px;
-  align-items: center;
-  flex-wrap: wrap;
-}
-
-.sig-chip {
-  display: inline-block;
-  min-width: 0;
-  text-align: center;
-  padding: 3px 10px;
-  border-radius: 8px;
-  background: var(--blue-50);
-  color: var(--blue-600);
-  font-size: 12px;
-  font-weight: 700;
-  white-space: nowrap;
-}
-
-.sig-chip--none {
-  background: var(--bg-soft);
-  color: var(--text-muted);
-  font-weight: 500;
-}
-
-/* Signal-level colors — reuse the public site's signal palette */
-.sig-chip--level-1 { background: var(--signal-1-bg); color: var(--signal-1-fg); }
-.sig-chip--level-2 { background: var(--signal-2-bg); color: var(--signal-2-fg); }
-.sig-chip--level-3 { background: var(--signal-3-bg); color: var(--signal-3-fg); }
-.sig-chip--level-4 { background: var(--signal-4-bg); color: var(--signal-4-fg); }
-.sig-chip--level-5 { background: var(--signal-5-bg); color: var(--signal-5-fg); }
-
 /* ==========================================================================
    Buttons (pill-shaped, like .btn-prepared on the public site)
    ========================================================================== */
@@ -1257,52 +763,6 @@ body {
 
 .admin-back:hover {
   color: var(--blue-600);
-}
-
-.admin-btn-sm {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 7px 15px;
-  border-radius: var(--radius-full);
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  background: var(--blue-50);
-  color: var(--blue-600);
-  transition:
-    background var(--dur-fast) var(--ease-out),
-    color var(--dur-fast) var(--ease-out),
-    transform var(--dur-fast) var(--ease-out);
-}
-
-.admin-btn-sm:hover {
-  background: var(--blue-600);
-  color: #ffffff;
-  transform: translateY(-1px);
-}
-
-.admin-btn-sm--danger {
-  background: var(--red-50);
-  color: var(--red-fg);
-}
-
-.admin-btn-sm--danger:hover {
-  background: var(--red-fg);
-  color: #ffffff;
-}
-
-.row-actions {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-
-.row-actions form {
-  margin: 0;
 }
 
 /* Fixed column widths for the cyclone list table */
@@ -1626,136 +1086,33 @@ body {
 }
 
 /* ==========================================================================
-   Sectioned form cards + sticky action bar (Upcoming Storm page pattern)
-   ========================================================================== */
-
-.admin-card--section {
-  width: 100%;
-  padding: 22px 26px;
-  margin-bottom: 18px;
-}
-
-.form-card-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding-bottom: 14px;
-  margin-bottom: 18px;
-  border-bottom: 1px solid var(--border-light);
-}
-
-.form-card-icon {
-  width: 30px;
-  height: 30px;
-  border-radius: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--blue-600);
-  background: var(--blue-50);
-  flex-shrink: 0;
-}
-
-.form-card-title {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--navy-900);
-}
-
-/* "No active storm right now" toggle (Upcoming Storm page) */
-.none-mode-card {
-  display: block;
-}
-
-.none-toggle {
-  display: flex;
-  align-items: flex-start;
-  gap: 12px;
-  cursor: pointer;
-  user-select: none;
-}
-
-.none-toggle input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  margin-top: 3px;
-  flex-shrink: 0;
-  accent-color: #2f80ed;
-  cursor: pointer;
-}
-
-.none-toggle-text {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-.none-toggle-text strong {
-  font-size: 15px;
-  font-weight: 700;
-  color: var(--navy-900);
-}
-
-.none-toggle-text small {
-  font-size: 12.5px;
-  color: var(--text-muted);
-  line-height: 1.45;
-}
-
-/* Field spanning both columns of a .form-grid */
-.form-full {
-  grid-column: 1 / -1;
-}
-
-/* Sticky bottom action bar (Cancel + Save Changes) */
-.storm-actions {
-  position: sticky;
-  bottom: 0;
-  z-index: 70;
-  background: #ffffff;
-  border-top: 1px solid var(--border-light);
-  box-shadow: 0 -8px 20px rgba(15, 30, 51, 0.05);
-}
-
-.storm-actions-inner {
-  max-width: 1140px;
-  margin: 0 auto;
-  padding: 12px 32px;
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.storm-actions .admin-btn {
-  margin-top: 0;
-  border-radius: 10px;
-  padding: 10px 22px;
-  box-shadow: none;
-}
-
-.storm-actions .admin-btn:hover {
-  transform: none;
-}
-
-.storm-actions .admin-btn--cancel {
-  background: #ffffff;
-  color: var(--text-dark);
-  border: 1px solid var(--border-light);
-}
-
-.storm-actions .admin-btn--cancel:hover {
-  background: var(--bg-soft);
-  box-shadow: none;
-}
-
-/* ==========================================================================
    Responsive & motion preferences
    ========================================================================== */
 
 @media (max-width: 720px) {
   .admin-main {
     padding: 28px 20px 64px;
+  }
+
+  /* Phone layout: the tab strip collapses behind the Menu button and the
+     table gets its horizontal scroll back. */
+  .admin-nav-toggle {
+    display: inline-flex;
+  }
+
+  .admin-tabs-nav {
+    display: none;
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .admin-tabs-nav.is-open {
+    display: flex;
+  }
+
+  .admin-table-wrap {
+    overflow-x: auto;
   }
 
   .admin-tabs {

@@ -1,0 +1,24 @@
+-- ===========================================================================
+-- Step 6 data fix: the "no data" rainfall placeholder.
+--
+-- 18 historical rows recorded PAGASA rainfall as a literal '-' ("not
+-- recorded") instead of NULL. That value is not one of the five rainfall
+-- levels, so the admin add/edit form could not re-save any of those records
+-- (it rejected the value) and the list filter could never select it.
+-- Both the public page and the admin table already render NULL and '-' the
+-- same way ("-"), so normalising to NULL changes no displayed value.
+--
+-- Affected ids (captured before the update, as the revert reference):
+--   66,67,69,71,72,73,74,75,76,77,78,79,80,81,82,84,85,87
+--
+-- To revert:  UPDATE cyclones SET rainfall_category = '-' WHERE id IN (...);
+--
+-- STATUS 2026-09-25: already applied — every '-' row was normalised to NULL
+-- via the admin save path, so this file is now the historical record of the
+-- change (COUNT(*) WHERE rainfall_category = '-' returns 0).
+-- ===========================================================================
+
+-- UPDATE cyclones SET rainfall_category = NULL WHERE rainfall_category = '-';
+
+-- Verify: must return 0 rows.
+-- SELECT COUNT(*) AS remaining_placeholders FROM cyclones WHERE rainfall_category = '-';

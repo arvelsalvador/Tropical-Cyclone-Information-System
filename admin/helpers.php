@@ -1,10 +1,7 @@
 <?php
 // ===========================================================================
-// Shared helpers for the admin portal pages.
-//
-// Extracted from the old upcoming-storm admin form so every admin form
-// page (historical cyclones, ...) reuses the same connection and the same
-// validation-display code instead of duplicating it.
+// Shared helpers for the admin portal pages: one DB connection plus the
+// validation-display code reused by every admin form page.
 // ===========================================================================
 
 require_once __DIR__ . '/../lib/config.php';
@@ -82,20 +79,26 @@ function rate_limit_check($key, $max, $windowSecs) {
     return true;
 }
 
-// Opens the cyclone_db connection: the connection itself is non-throwing
+// Opens the cyclone_db connection (alias of app_db_open() in lib/config.php):
 // the connection itself is non-throwing (check $conn->connect_error), while
 // statements executed after it report errors strictly.
 function db_connect() {
     return app_db_open();
 }
 
-// After a failed validation, re-show what the user typed instead of stale DB values
-function val($field) {
+// After a failed validation, re-show what the user typed instead of stale DB values.
+// Returns the RAW value; escape it at the output site with htmlspecialchars().
+function raw_val($field) {
     global $current, $errors;
     if (!empty($errors) && array_key_exists($field, $_POST)) {
-        return htmlspecialchars($_POST[$field] ?? '');
+        return (string) ($_POST[$field] ?? '');
     }
-    return htmlspecialchars($current[$field] ?? '');
+    return (string) ($current[$field] ?? '');
+}
+
+// Escaped alias of raw_val() for plain text inputs / textareas.
+function val($field) {
+    return htmlspecialchars(raw_val($field), ENT_QUOTES, 'UTF-8');
 }
 
 function err($field) {
@@ -121,6 +124,32 @@ function cyclone_name($name) {
     return ucwords(strtolower($name));
 }
 
+// Fixed PAGASA rainfall intensity scale. Single source of truth for the
+// add/edit form, the list filter and the list page (was duplicated).
+function rainfall_choices() {
+    return array('Not detected', 'Light to Moderate', 'Moderate to Heavy', 'Heavy to Intense', 'Intense to Torrential');
+}
+
+// Full display names for the highest_category codes stored in the DB.
+// $withCode = true appends the code in brackets ("Typhoon (TY)") for dropdowns.
+function category_labels($withCode = false) {
+    $labels = array(
+        'TD'  => 'Tropical Depression',
+        'TS'  => 'Tropical Storm',
+        'STS' => 'Severe Tropical Storm',
+        'TY'  => 'Typhoon',
+        'STY' => 'Super Typhoon',
+    );
+    if (!$withCode) {
+        return $labels;
+    }
+    $withCodeLabels = array();
+    foreach ($labels as $code => $label) {
+        $withCodeLabels[$code] = $label . ' (' . $code . ')';
+    }
+    return $withCodeLabels;
+}
+
 // Renders the <option> list for one of the form's dropdown fields.
 // - A "— Select —" placeholder (empty value) shows when nothing is chosen yet.
 // - The currently saved (or just-submitted) value is pre-selected.
@@ -131,7 +160,7 @@ function cyclone_name($name) {
 //   value stays the clean string that gets saved. When omitted, the value
 //   itself is displayed.
 function options($field, array $choices, $placeholder = '&mdash; Select &mdash;', array $labels = null) {
-    $current = val($field);
+    $current = raw_val($field);
     $labelFor = function ($value) use ($labels) {
         return ($labels !== null && array_key_exists($value, $labels)) ? $labels[$value] : $value;
     };

@@ -1,6 +1,6 @@
 <?php
-require 'auth.php';
-require_once 'helpers.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/helpers.php';
 
 // ===========================================================================
 // Admin Dashboard — post-login overview.
@@ -21,45 +21,52 @@ $recent = [];
 if ($conn->connect_error) {
     $db_error = 'Database connection failed. Please check that MySQL is running.';
 } else {
-    // Historical cyclone stats ------------------------------------------------
-    $totalCyclones = (int) $conn->query('SELECT COUNT(*) AS c FROM cyclones')->fetch_assoc()['c'];
+    // Statements report errors strictly (see lib/config.php), so the dashboard
+    // queries are wrapped: a broken query must show the error banner below
+    // instead of turning the page into a fatal error.
+    try {
+        // Historical cyclone stats --------------------------------------------
+        $totalCyclones = (int) $conn->query('SELECT COUNT(*) AS c FROM cyclones')->fetch_assoc()['c'];
 
-    $latestYear = (int) $conn->query('SELECT MAX(year) AS y FROM cyclones')->fetch_assoc()['y'];
-    if ($latestYear > 0) {
-        $stmt = $conn->prepare('SELECT COUNT(*) AS c FROM cyclones WHERE year = ?');
-        $stmt->bind_param('i', $latestYear);
-        $stmt->execute();
-        $stormsInLatestYear = (int) $stmt->get_result()->fetch_assoc()['c'];
-        $stmt->close();
+        $latestYear = (int) $conn->query('SELECT MAX(year) AS y FROM cyclones')->fetch_assoc()['y'];
+        if ($latestYear > 0) {
+            $stmt = $conn->prepare('SELECT COUNT(*) AS c FROM cyclones WHERE year = ?');
+            $stmt->bind_param('i', $latestYear);
+            $stmt->execute();
+            $stormsInLatestYear = (int) $stmt->get_result()->fetch_assoc()['c'];
+            $stmt->close();
+        }
+
+        // Strongest storm on record: highest sustained value, stored as "sustained/gust"
+        $strongest = $conn->query(
+            "SELECT local_name, international_name, year, highest_strength, highest_category
+             FROM cyclones
+             WHERE highest_strength IS NOT NULL AND highest_strength <> ''
+             ORDER BY CAST(SUBSTRING_INDEX(highest_strength, '/', 1) AS UNSIGNED) DESC
+             LIMIT 1"
+        )->fetch_assoc();
+
+        // Five most recently added records (created_at is set automatically)
+        $recent = $conn->query(
+            'SELECT id, local_name, international_name, year, highest_category, highest_strength, created_at
+             FROM cyclones
+             ORDER BY created_at DESC, id DESC
+             LIMIT 5'
+        )->fetch_all(MYSQLI_ASSOC);
+    } catch (mysqli_sql_exception $e) {
+        app_log('dashboard query failed: ' . $e->getMessage());
+        $db_error = 'Could not load the dashboard data. Please try again.';
+        $totalCyclones = 0;
+        $latestYear = 0;
+        $stormsInLatestYear = 0;
+        $strongest = null;
+        $recent = [];
     }
-
-    // Strongest storm on record: highest sustained value, stored as "sustained/gust"
-    $strongest = $conn->query(
-        "SELECT local_name, international_name, year, highest_strength, highest_category
-         FROM cyclones
-         WHERE highest_strength IS NOT NULL AND highest_strength <> ''
-         ORDER BY CAST(SUBSTRING_INDEX(highest_strength, '/', 1) AS UNSIGNED) DESC
-         LIMIT 1"
-    )->fetch_assoc();
-
-    // Five most recently added records (created_at is set automatically)
-    $recent = $conn->query(
-        'SELECT id, local_name, international_name, year, highest_category, highest_strength, created_at
-         FROM cyclones
-         ORDER BY created_at DESC, id DESC
-         LIMIT 5'
-    )->fetch_all(MYSQLI_ASSOC);
 
     $conn->close();
 }
 
-$categoryLabels = [
-    'TD'  => 'Tropical Depression',
-    'TS'  => 'Tropical Storm',
-    'STS' => 'Severe Tropical Storm',
-    'TY'  => 'Typhoon',
-    'STY' => 'Super Typhoon',
-];
+$categoryLabels = category_labels();
 
 // Single cyclone artwork (assets/Icons/The icon.png) shown next to every
 // cyclone in the recent-cyclones table — matches the public Historical Data
@@ -107,13 +114,23 @@ if ($strongest) {
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
   <?php require 'nav.php'; ?>
 
   <main class="admin-main">
     <?php if ($db_error !== ''): ?>
-      <div class="alert alert-error">
+      <div class="alert alert-error" role="alert">
         <i class="fa-solid fa-circle-exclamation"></i>
         <span><?php echo htmlspecialchars($db_error); ?></span>
       </div>
@@ -243,6 +260,6 @@ if ($strongest) {
 
   <?php require 'partials/site-footer.php'; ?>
 
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>

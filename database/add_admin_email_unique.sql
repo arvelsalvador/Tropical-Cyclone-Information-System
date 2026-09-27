@@ -1,0 +1,22 @@
+-- ===========================================================================
+-- Step 6 security fix: one admin account per email address.
+--
+-- admin/forgot-password.php and admin/reset-password.php look an account up by
+-- email and require exactly one row, so two admins sharing an email address
+-- silently broke password reset for both of them. The column is still
+-- NULL-able (an account without a recovery email simply cannot reset), and
+-- MySQL allows multiple NULLs in a UNIQUE index.
+--
+-- Pre-flight (must return no rows before running the ALTER):
+--   SELECT email, COUNT(*) c FROM admins WHERE email IS NOT NULL
+--   GROUP BY email HAVING c > 1;
+--
+-- STATUS 2026-09-25: already applied (SHOW INDEX FROM admins shows
+-- uq_admins_email), so the statement below is commented out and kept as the
+-- historical record of the change.
+-- ===========================================================================
+
+-- ALTER TABLE admins ADD UNIQUE KEY uq_admins_email (email);
+
+-- Verify:
+--   SHOW INDEX FROM admins WHERE Key_name = 'uq_admins_email';

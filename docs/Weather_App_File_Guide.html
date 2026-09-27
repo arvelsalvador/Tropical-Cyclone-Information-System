@@ -73,11 +73,11 @@ Public pages show the information</div>
 <div class="group"><h3>admin/nav.php</h3><p>Displays the admin navigation bar and highlights the current admin section.</p></div>
 <div class="group"><h3>admin/partials/site-footer.php</h3><p>Displays the footer used by admin pages.</p></div>
 </div>
-<div class="note"><strong>Security reminder:</strong> The email account password is currently written directly in <code>admin/forgot-password.php</code>. It should be moved to a protected environment variable before deployment.</div>
+<div class="note"><strong>Security reminder:</strong> Database and SMTP credentials now live only in the git-ignored <code>config.php</code> (or real environment variables) — never in the PHP files. The Gmail app-password that used to be hardcoded in <code>admin/forgot-password.php</code> must still be revoked in the Google account.</div>
 
 <h2>API folder</h2>
 <div class="group"><h3>api/get_cyclones.php</h3><p>Reads all historical cyclone rows from MySQL and returns them as JSON. Public JavaScript uses this for tables, statistics, charts, and comparisons.</p></div>
-<div class="group"><h3>api/get_upcoming_storm.php</h3><p>Reads the active upcoming storm and returns it as JSON. If no storm is active, the public site displays an empty state.</p></div>
+<div class="note"><strong>Removed:</strong> <code>api/get_upcoming_storm.php</code> and the <code>upcoming_storm</code> table are no longer used. The public site keeps the "upcoming storm" profile in the browser tab instead (<code>js/upcoming-storm-state.js</code>), so there is nothing on the server to read or edit.</div>
 
 <h2>Public HTML pages</h2>
 <div class="columns">

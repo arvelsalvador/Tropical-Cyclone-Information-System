@@ -147,6 +147,10 @@
   }
 
   function initReveal() {
+    // Tell the admin-page guard in <head> that the reveal code really ran, so
+    // [data-reveal] blocks are never left invisible by a missing script.
+    document.documentElement.setAttribute("data-js-ready", "1");
+
     var items = document.querySelectorAll("[data-reveal]");
     if (!items.length) return;
 

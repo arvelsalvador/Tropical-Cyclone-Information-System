@@ -2,7 +2,15 @@
 require_once __DIR__ . '/helpers.php';
 
 admin_session_start();
-require '../vendor/autoload.php';
+
+// PHPMailer ships through composer (vendor/ is never committed), so a deploy
+// that skipped "composer install" must show a clear message instead of
+// fataling on a missing autoloader.
+$autoload = __DIR__ . '/../vendor/autoload.php';
+$mailerReady = is_file($autoload);
+if ($mailerReady) {
+    require $autoload;
+}
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\Exception;
@@ -14,7 +22,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     csrf_check();
     $email = trim($_POST['email'] ?? '');
 
-    if ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
+    if (!$mailerReady) {
+        $message = "Password reset is unavailable right now (the mail library is missing). Please contact the site administrator.";
+        $messageKind = "error";
+    } elseif ($email === '' || !filter_var($email, FILTER_VALIDATE_EMAIL)) {
         $message = "If that email exists, a verification code was sent.";
         $messageKind = "success";
     } else {
@@ -31,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $message = "If that email exists, a verification code was sent.";
                 $messageKind = "success";
             } else {
-                $stmt = $conn->prepare("SELECT id FROM admins WHERE email = ?");
+                $stmt = $conn->prepare("SELECT id FROM admins WHERE email = ? LIMIT 1");
                 $stmt->bind_param("s", $email);
                 $stmt->execute();
                 $result = $stmt->get_result();
@@ -63,9 +74,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         $code = strval(random_int(100000, 999999));
                         $expiresAt = date('Y-m-d H:i:s', strtotime('+15 minutes'));
 
-                        $insert = $conn->prepare("INSERT INTO password_resets (admin_id, code, expires_at) VALUES (?, ?, ?)");
-                        $insert->bind_param("iss", $adminId, $code, $expiresAt);
-                        $insert->execute();
+                        try {
+                            // Only the newest code may ever work: retire every
+                            // other unused code, and drop rows that are already
+                            // used or expired so the table cannot grow forever.
+                            $conn->query('DELETE FROM password_resets WHERE used = 1 OR expires_at <= NOW()');
+                            $retire = $conn->prepare('UPDATE password_resets SET used = 1 WHERE admin_id = ? AND used = 0');
+                            $retire->bind_param('i', $adminId);
+                            $retire->execute();
+                            $retire->close();
+
+                            $insert = $conn->prepare("INSERT INTO password_resets (admin_id, code, expires_at) VALUES (?, ?, ?)");
+                            $insert->bind_param("iss", $adminId, $code, $expiresAt);
+                            $insert->execute();
+                            $insert->close();
+                        } catch (mysqli_sql_exception $e) {
+                            app_log('forgot-password code storage failed: ' . $e->getMessage());
+                        }
 
                         $mail = new PHPMailer(true);
                         $mailSent = false;
@@ -117,7 +142,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             $messageKind = "error";
                         }
 
-                        $insert->close();
                     }
                 }
 
@@ -144,6 +168,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
   <link rel="stylesheet" href="../assets/vendor/fontawesome/css/all.min.css" />
   <link rel="stylesheet" href="../css/components/footer.css" />
   <link rel="stylesheet" href="../css/admin.css" />
+  <script>
+    // Reveal guard: if js/main.js never runs (blocked, offline or errored) the
+    // [data-reveal] blocks below would stay invisible. js/main.js marks the
+    // document when it starts; without that mark, keep the content readable.
+    window.addEventListener("load", function () {
+      if (!document.documentElement.hasAttribute("data-js-ready")) {
+        document.documentElement.classList.add("no-js");
+      }
+    });
+  </script>
 </head>
 <body>
 
@@ -160,7 +194,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     <section class="admin-card" data-reveal style="--reveal-delay: 0.08s">
       <?php if ($message): ?>
-        <div class="alert <?php echo $messageKind === 'success' ? 'alert-success' : 'alert-error'; ?>">
+        <div class="alert <?php echo $messageKind === 'success' ? 'alert-success' : 'alert-error'; ?>" role="<?php echo $messageKind === 'success' ? 'status' : 'alert'; ?>">
           <i class="fa-solid <?php echo $messageKind === 'success' ? 'fa-circle-check' : 'fa-circle-exclamation'; ?>"></i>
           <span><?php echo htmlspecialchars($message); ?></span>
         </div>
@@ -180,6 +214,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
   <?php require 'partials/site-footer.php'; ?>
 
-  <script src="../js/main.js" data-root="../"></script>
+  <script src="../js/main.js"></script>
 </body>
 </html>
